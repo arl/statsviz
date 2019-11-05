@@ -1,0 +1,419 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Data Stream</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--Development only-->
+    <script src="http://localhost:35729/livereload.js"></script>
+
+    <link rel="stylesheet" href="./uPlot.min.css">
+</head>
+
+<body>
+    <script src="./uPlot.iife.js"></script>
+    <h2 id="wait">Easymon</h2>
+    <script>
+        const dataRetentionMinutes = 1; // maximum time range, last N minutes.
+        const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
+
+        const maxBufferLen = 60 * dataRetentionMinutes; // number of actual datapoints
+        const maxBufferCap = maxBufferLen + (maxBufferLen * extraBufferCapacity) / 100; // number of actual datapoint
+
+        const numSeriesHeap = 4;
+        const numSeries = 1 + numSeriesHeap; // timestamp serie + other series
+
+        const idxTimes = 0;
+        const idxHeapAlloc = 1;
+        const idxHeapSys = 2;
+        const idxHeapIdle = 3;
+        const idxHeapInuse = 4;
+
+        const bySizeSizes = 61; // heatmap sizes (buckets)
+
+        var data = {
+            // timeseries [0]         -> timestamps
+            // [1] to [numSeries - 1] -> timeseries datapoint
+            series: new Array(numSeries), // TODO: rename to timeseries 
+            lastGCs: new Array(),
+
+            bySizes: new Array(4), // [0] min [1] max [2] class sizes [3] live objects
+        };
+
+        // TODO: do all init in a single function (and not a bit in data declaration 
+        // and the rest in initData)
+        function initData() {
+            for (let i = 0; i < numSeries; i++) {
+                data.series[i] = new Buffer(maxBufferLen, maxBufferCap);
+            }
+            for (let i = 0; i < data.bySizes.length; i++) {
+                data.bySizes[i] = new Buffer(maxBufferLen, maxBufferCap);
+            }
+        }
+
+        function pushData(ts, stats) {
+            data.series[idxTimes].push(ts); // timestamp
+            data.series[idxHeapAlloc].push(stats.Mem.HeapAlloc);
+            data.series[idxHeapSys].push(stats.Mem.HeapSys);
+            data.series[idxHeapIdle].push(stats.Mem.HeapIdle);
+            data.series[idxHeapInuse].push(stats.Mem.HeapInuse);
+
+            pushBySize(stats.Mem.BySize);
+
+            const nanoToSeconds = 1000 * 1000 * 1000;
+            let lastGC = Math.floor(stats.Mem.LastGC / nanoToSeconds);
+
+            if (lastGC != data.lastGCs[data.lastGCs.length - 1]) {
+                data.lastGCs.push(lastGC);
+            }
+
+            // Remove from the lastGCs array the timestamps which are prior to
+            // the minimum timestamp in 'series'.
+            // TODO: do this in a trimLastGC function
+            let mints = data.series[idxTimes]._buf[0];
+            let mingc = 0;
+            for (let i = 0, n = data.lastGCs.length; i < n; i++) {
+                if (data.lastGCs[i] > mints) {
+                    break;
+                }
+                mingc = i;
+            }
+            data.lastGCs.splice(0, mingc);
+        }
+
+        function pushBySize(bySizes) {
+            let sizes = new Array(bySizes.length);
+            let counts = new Array(bySizes.length);
+
+            for (let i = 0; i < bySizes.length; i++) {
+                const size = bySizes[i];
+                sizes[i] = size.Size;
+                counts[i] = size.Mallocs - size.Frees;
+            }
+
+            // TODO data.bySizes[0] [1] and [2] in theory never change so there 
+            // should be no need to recreate it each time.
+            data.bySizes[0].push(0);
+            data.bySizes[1].push(sizes[sizes.length - 1]);
+            data.bySizes[2].push(sizes);
+            data.bySizes[3].push(counts);
+        }
+
+        // Slice data in order to keep the last nitems contained in the raw data.
+        // TODO: rename sliceSeries or sliceHeap
+        function sliceData(nitems) {
+            let d = new Array(numSeries);
+            for (let i = 0; i < numSeries; i++) {
+                d[i] = data.series[i].slice(nitems);
+            }
+
+            return d;
+        }
+
+        function sliceHeatmapData(nitems) {
+            let d = new Array(5);
+            // TODO : could reuse the timestamp slice since it has already been
+            // sliced previously (in sliceData).
+            d[0] = data.series[idxTimes].slice(nitems);
+            d[1] = data.bySizes[0].slice(nitems);
+            d[2] = data.bySizes[1].slice(nitems);
+            d[3] = data.bySizes[2].slice(nitems);
+            d[4] = data.bySizes[3].slice(nitems);
+
+            return d;
+        }
+
+        function nowts() {
+            var d = new Date();
+            return Math.round(d.getTime() / 1000);
+        }
+
+        function humanFileSize(bytes, si = false, dp = 1) {
+            const thresh = si ? 1000 : 1024;
+
+            if (Math.abs(bytes) < thresh) {
+                return bytes + ' B';
+            }
+
+            const units = si
+                ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+                : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+            let u = -1;
+            const r = 10 ** dp;
+
+            do {
+                bytes /= thresh;
+                ++u;
+            } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
+
+
+            return bytes.toFixed(dp) + ' ' + units[u];
+        }
+
+        function valueFmt(u, v) {
+            // console.log("valueFmt(" + u + ", " + v + ")");
+            return humanFileSize(v, true);
+            // return v;
+        }
+
+        const opts1 = {
+            title: "Heap",
+            width: 800,
+            height: 600,
+            series: [
+                {},
+                {
+                    label: "HeapAlloc",
+                    scale: "b",
+                    value: valueFmt,
+                    stroke: "red",
+                    points: {
+                        show: true,
+                        size: 3,
+                        fill: "red",
+                    },
+                },
+                {
+                    label: "HeapSys",
+                    scale: "b",
+                    value: valueFmt,
+                    stroke: "blue",
+                    points: {
+                        show: true,
+                        size: 3,
+                        fill: "blue",
+                    },
+                },
+                {
+                    label: "HeapIdle",
+                    scale: "b",
+                    value: valueFmt,
+                    stroke: "green",
+                    points: {
+                        show: true,
+                        size: 3,
+                        fill: "green",
+                    },
+                },
+                {
+                    label: "HeapInuse",
+                    scale: "b",
+                    value: valueFmt,
+                    stroke: "orange",
+                    points: {
+                        show: true,
+                        size: 3,
+                        fill: "orange",
+                    },
+                },
+            ],
+            axes: [
+                {},
+                {
+                    scale: 'b',
+                    values: (u, vals, space) => vals.map(v => humanFileSize(v, true, 0)),
+                    size: 90,
+                },
+            ],
+        };
+
+        function heatmapPlugin() {
+            return {
+                hooks: {
+                    draw: u => {
+                        const { ctx, data } = u;
+
+                        let yData = data[3];
+
+                        yData.forEach((yVals, xi) => {
+                            let xPos = Math.round(u.valToPos(data[0][xi], 'x', true));
+
+                            yVals.forEach(yVal => {
+                                let yPos = Math.round(u.valToPos(yVal, 'y', true));
+                                ctx.fillStyle = "rgba(255,0,0,0.4)";
+                                ctx.fillRect(
+                                    xPos - 4,
+                                    yPos,
+                                    10,
+                                    1,
+                                );
+                            });
+                        });
+                    }
+                }
+            };
+        }
+
+        const opts2 = {
+            width: 800,
+            height: 600,
+            title: "Size classes Heatmap",
+            plugins: [
+                heatmapPlugin(),
+            ],
+            cursor: {
+                // drag: {
+                //     y: true,
+                // },
+                points: {
+                    show: false
+                }
+            },
+            series: [
+                {},
+                {
+                    paths: () => null,
+                    points: { show: false },
+                },
+                {
+                    paths: () => null,
+                    points: { show: false },
+                },
+            ],
+            axes: [
+                {},
+                {
+                    scale: 'b',
+                    values: (u, vals, space) => vals.map(v => humanFileSize(v, true, 0)),
+                    size: 90,
+                },
+            ],
+        };
+
+        // Plot a vertical bar each time GC ends (runtime.MemStats.LastGC).
+        function plotGCs(plt, gcs, mints, maxts) {
+            let y0 = plt.valToPos(plt.scales['b'].min, 'b', true);
+            let y1 = plt.valToPos(plt.scales['b'].max, 'b', true);
+
+            for (let i = 0, n = gcs.length; i < n; i++) {
+                let ts = gcs[i];
+                if (ts < mints || ts > maxts) {
+                    continue;
+                }
+
+                let x = plt.valToPos(ts, 'x', true);
+                plt.ctx.beginPath();
+                plt.ctx.moveTo(x, y0);
+                plt.ctx.lineTo(x, y1);
+                plt.ctx.setLineDash([5, 10]);
+                plt.ctx.lineWidth = 2;
+                plt.ctx.strokeStyle = 'grey';
+                plt.ctx.stroke();
+            }
+        }
+
+        let plotCtx = {
+            uplot1: null, // Heap plot group
+            uplot2: null, // BySize heapmap
+        };
+
+
+        function Buffer(len, cap) {
+            if (cap - len < 0) {
+                console.Error("cap - len must be positive");
+            }
+
+            // TODO(arl): value using TypedArray rather than Array here
+            this._buf = new Array(cap);
+            this._pos = 0;
+            this._len = len;
+            this._cap = cap;
+        }
+
+        Buffer.prototype.last = function () {
+            if (this.length() == 0) {
+                throw 'Cannot call last() on an empty Buffer';
+            }
+            return this._buf[this._pos]
+        }
+
+        Buffer.prototype.push = function (pt) {
+            if (this._pos >= this._cap) {
+                // move data to the beggining of the buffer, effectively discarding
+                // the cap-len oldest elements
+                this._buf.copyWithin(0, this._cap - this._len);
+                this._pos = this._len;
+            }
+
+            this._buf[this._pos] = pt;
+            this._pos++;
+        }
+
+        Buffer.prototype.length = function () {
+            if (this._pos > this._len) {
+                return this._len;
+            }
+
+            return this._pos;
+        }
+
+        // slice returns a slice of the len latest datapoints present in the buffer.
+        Buffer.prototype.slice = function (len) {
+            // Cap the dimension of the returned slice to the data available
+            if (len > this.length()) {
+                len = this.length();
+            }
+
+            let start = this._pos - len;
+            return this._buf.slice(start, start + len);
+        }
+
+        function buildWebsocketURI(params) {
+            var loc = window.location, ws_prot = "ws:";
+            if (loc.protocol === "https:") {
+                ws_uri = "wss:";
+            }
+            return ws_prot + "//" + loc.host + loc.pathname + "ws"
+        }
+
+        let socket = new WebSocket(buildWebsocketURI());
+        console.log("Attempting Connection...");
+
+        socket.onopen = () => {
+            console.log("Successfully Connected");
+            initData();
+            // debugger;
+        };
+
+        socket.onclose = event => {
+            console.log("Socket Closed Connection: ", event);
+            socket.send("Client Closed!")
+        };
+
+        socket.onerror = error => {
+            console.log("Socket Error: ", error);
+        };
+
+        socket.onmessage = event => {
+            stats = JSON.parse(event.data);
+            console.log("Received stats: ", stats);
+
+            pushData(nowts(), stats);
+
+            let numTs = data.series[idxTimes].length();
+
+            let data1 = sliceData(numTs);
+            //            debugger;
+            let data2 = sliceHeatmapData(numTs);
+
+            if (plotCtx.uplot1 == null) {
+                if (data.series[idxTimes].length() < 2) {
+                    return
+                }
+                plotCtx.uplot1 = new uPlot(opts1, data1, document.body);
+                plotCtx.uplot2 = new uPlot(opts2, data2, document.body);
+            }
+
+
+            plotCtx.uplot1.setData(data1);
+            plotCtx.uplot2.setData(data2);
+
+            // Mark garbage collections as vertical lines on the heap plot.
+            plotGCs(plotCtx.uplot1, data.lastGCs, data1[idxTimes][0], data1[idxTimes][data1[idxTimes].length - 1]);
+        }
+    </script>
+</body>
+
+</html>
