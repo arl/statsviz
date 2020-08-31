@@ -158,10 +158,25 @@
             // return v;
         }
 
+        const cursorOpts = {
+            lock: true,
+            focus: {
+                prox: 16,
+            },
+            points: {
+                show: false,
+            },
+            sync: {
+                key: "ts",
+                setSeries: true,
+            },
+        };
+
         const opts1 = {
             title: "Heap",
             width: 800,
             height: 600,
+            cursor: cursorOpts,
             series: [
                 {},
                 {
@@ -247,20 +262,13 @@
         }
 
         const opts2 = {
+            title: "Size classes Heatmap",
             width: 800,
             height: 600,
-            title: "Size classes Heatmap",
+            cursor: cursorOpts,
             plugins: [
                 heatmapPlugin(),
             ],
-            cursor: {
-                // drag: {
-                //     y: true,
-                // },
-                points: {
-                    show: false
-                }
-            },
             series: [
                 {},
                 {
