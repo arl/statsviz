@@ -225,7 +225,10 @@
                 },
             ],
             axes: [
-                {},
+                {
+                    values: (u, vals, space) => vals.map(v => formatTimestamps(v)),
+                    rotate: 50,
+                },
                 {
                     scale: 'b',
                     values: (u, vals, space) => vals.map(v => humanFileSize(v, true, 0)),
@@ -233,6 +236,23 @@
                 },
             ],
         };
+
+        function formatTimestamps(ts) {
+            let d = new Date(ts * 1000);
+            let h = d.getHours()
+            let m = d.getMinutes()
+            let s = d.getSeconds()
+
+            if (s % 5 == 0) {
+                // hh:mm:ss
+                return h.toString().padStart(2, '0')
+                    + ":" + m.toString().padStart(2, '0')
+                    + ":" + s.toString().padStart(2, '0')
+            }
+
+            // ss
+            return s.toString().padStart(2, '0')
+        }
 
         function heatmapPlugin() {
             return {
@@ -274,16 +294,21 @@
                 {
                     paths: () => null,
                     points: { show: false },
+                    scale: 'y',
                 },
                 {
                     paths: () => null,
                     points: { show: false },
+                    scale: 'y',
                 },
             ],
             axes: [
-                {},
                 {
-                    scale: 'b',
+                    values: (u, vals, space) => vals.map(v => formatTimestamps(v)),
+                    rotate: 50,
+                },
+                {
+                    scale: 'y',
                     values: (u, vals, space) => vals.map(v => humanFileSize(v, true, 0)),
                     size: 90,
                 },
