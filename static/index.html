@@ -281,28 +281,23 @@
                         const recth = u.bbox.height / classSizes.length;
 
                         let maxCount = -Infinity;
-                        let minCount = Infinity;
 
                         yQtys.forEach(qtys => {
                             maxCount = Math.max(maxCount, Math.max.apply(null, qtys));
-                            minCount = Math.min(minCount, Math.min.apply(null, qtys));
                         });
 
-                        console.log(maxCount, minCount);
-
                         yData.forEach((yVals, xi) => {
-                            // let xPos = Math.round(u.valToPos(data[0][xi], 'x', true));
                             let xPos = u.valToPos(data[0][xi], 'x', true);
 
                             yVals.forEach((yVal, yi) => {
-                                let yPos = Math.round(u.valToPos(yVal, 'y', true));
-                                ctx.fillStyle = fillStyle(yQtys[xi][yi], minCount, maxCount);
-                                ctx.fillRect(
-                                    xPos,
-                                    yPos,
-                                    rectw,
-                                    recth,
-                                );
+                                const count = yQtys[xi][yi];
+                                if (count == 0) {
+                                    // Skip empty size classes
+                                    return;
+                                }
+                                const yPos = Math.round(u.valToPos(yVal, 'y', true));
+                                ctx.fillStyle = fillStyle(count, 0, maxCount);
+                                ctx.fillRect(xPos, yPos, rectw, recth);
                             });
                         });
                     }
