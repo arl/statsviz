@@ -157,14 +157,11 @@
                 ++u;
             } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
 
-
             return bytes.toFixed(dp) + ' ' + units[u];
         }
 
         function valueFmt(u, v) {
-            // console.log("valueFmt(" + u + ", " + v + ")");
             return humanFileSize(v, true);
-            // return v;
         }
 
         const cursorOpts = {
@@ -371,13 +368,68 @@
                 plt.ctx.lineWidth = 2;
                 plt.ctx.strokeStyle = 'grey';
                 plt.ctx.stroke();
+        function buildWebsocketURI(params) {
+            var loc = window.location, ws_prot = "ws:";
+            if (loc.protocol === "https:") {
+                ws_uri = "wss:";
             }
+            return ws_prot + "//" + loc.host + loc.pathname + "ws"
         }
 
         let plotCtx = {
             uplot1: null, // Heap plot group
             uplot2: null, // BySize heapmap
+        let socket = new WebSocket(buildWebsocketURI());
+        console.log("Attempting Connection...");
+
+        socket.onopen = () => {
+            console.log("Successfully Connected");
+            initData();
         };
+
+        socket.onclose = event => {
+            console.log("Socket Closed Connection: ", event);
+            socket.send("Client Closed!")
+        };
+
+        socket.onerror = error => {
+            console.log("Socket Error: ", error);
+        };
+
+        socket.onmessage = event => {
+            stats = JSON.parse(event.data);
+            console.log("Received stats: ", stats);
+
+            let now = nowts();
+            pushData(now, stats);
+
+            let numTs = maxBufferLen;
+            let data1 = sliceData(numTs);
+            let data2 = sliceHeatmapData(numTs);
+
+            if (plotCtx.uplot1 == null) {
+                if (data.series[idxTimes].length() < 2) {
+                    return
+                }
+                initClassSizes(stats.Mem.BySize);
+                plotCtx.uplot1 = new uPlot(opts1, data1, document.body);
+                plotCtx.uplot2 = new uPlot(opts2, data2, document.body);
+            }
+
+            let xScale = {
+                min: now - 60,
+                max: now,
+            };
+
+            plotCtx.uplot1.batch(() => {
+                plotCtx.uplot1.setData(data1);
+                plotCtx.uplot1.setScale("x", xScale);
+            });
+            plotCtx.uplot2.batch(() => {
+                plotCtx.uplot2.setData(data2);
+                plotCtx.uplot2.setScale("x", xScale);
+            });
+        }
 
 
         function Buffer(len, cap) {
@@ -428,61 +480,6 @@
 
             let start = this._pos - len;
             return this._buf.slice(start, start + len);
-        }
-
-        function buildWebsocketURI(params) {
-            var loc = window.location, ws_prot = "ws:";
-            if (loc.protocol === "https:") {
-                ws_uri = "wss:";
-            }
-            return ws_prot + "//" + loc.host + loc.pathname + "ws"
-        }
-
-        let socket = new WebSocket(buildWebsocketURI());
-        console.log("Attempting Connection...");
-
-        socket.onopen = () => {
-            console.log("Successfully Connected");
-            initData();
-            // debugger;
-        };
-
-        socket.onclose = event => {
-            console.log("Socket Closed Connection: ", event);
-            socket.send("Client Closed!")
-        };
-
-        socket.onerror = error => {
-            console.log("Socket Error: ", error);
-        };
-
-        socket.onmessage = event => {
-            stats = JSON.parse(event.data);
-            console.log("Received stats: ", stats);
-
-            pushData(nowts(), stats);
-
-            let numTs = data.series[idxTimes].length();
-
-            let data1 = sliceData(numTs);
-            //            debugger;
-            let data2 = sliceHeatmapData(numTs);
-
-            if (plotCtx.uplot1 == null) {
-                if (data.series[idxTimes].length() < 2) {
-                    return
-                }
-                initClassSizes(stats.Mem.BySize);
-                plotCtx.uplot1 = new uPlot(opts1, data1, document.body);
-                plotCtx.uplot2 = new uPlot(opts2, data2, document.body);
-            }
-
-
-            plotCtx.uplot1.setData(data1);
-            plotCtx.uplot2.setData(data2);
-
-            // Mark garbage collections as vertical lines on the heap plot.
-            plotGCs(plotCtx.uplot1, data.lastGCs, data1[idxTimes][0], data1[idxTimes][data1[idxTimes].length - 1]);
         }
     </script>
 </body>
