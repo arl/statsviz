@@ -39,7 +39,7 @@
             series: new Array(numSeries), // TODO: rename to timeseries 
             lastGCs: new Array(),
 
-            bySizes: new Array(4), // [0] min [1] max [2] class sizes [3] live objects
+            bySize: new Array(4), // [0] min [1] max [2] class sizes [3] live objects
         };
 
         // TODO: do all init in a single function (and not a bit in data declaration 
@@ -48,8 +48,8 @@
             for (let i = 0; i < numSeries; i++) {
                 data.series[i] = new Buffer(maxBufferLen, maxBufferCap);
             }
-            for (let i = 0; i < data.bySizes.length; i++) {
-                data.bySizes[i] = new Buffer(maxBufferLen, maxBufferCap);
+            for (let i = 0; i < data.bySize.length; i++) {
+                data.bySize[i] = new Buffer(maxBufferLen, maxBufferCap);
             }
         }
 
@@ -83,22 +83,31 @@
             data.lastGCs.splice(0, mingc);
         }
 
-        function pushBySize(bySizes) {
-            let sizes = new Array(bySizes.length);
-            let counts = new Array(bySizes.length);
+        function pushBySize(bySize) {
+            let sizesIndices = new Array(bySize.length);
+            let counts = new Array(bySize.length);
 
-            for (let i = 0; i < bySizes.length; i++) {
-                const size = bySizes[i];
-                sizes[i] = size.Size;
+            for (let i = 0; i < bySize.length; i++) {
+                const size = bySize[i];
+                sizesIndices[i] = i;
                 counts[i] = size.Mallocs - size.Frees;
             }
 
-            // TODO data.bySizes[0] [1] and [2] in theory never change so there 
+            // TODO data.bySize[0] [1] and [2] in theory never change so there 
             // should be no need to recreate it each time.
-            data.bySizes[0].push(0);
-            data.bySizes[1].push(sizes[sizes.length - 1]);
-            data.bySizes[2].push(sizes);
-            data.bySizes[3].push(counts);
+            data.bySize[0].push(0);
+            data.bySize[1].push(sizesIndices.length - 1);
+            data.bySize[2].push(sizesIndices);
+            data.bySize[3].push(counts);
+        }
+
+        // Contain indexed class sizes, this is initialized after reception of the first message.
+        var classSizes = new Array();
+
+        function initClassSizes(bySize) {
+            for (let i = 0; i < bySize.length; i++) {
+                classSizes.push(bySize[i].Size);
+            }
         }
 
         // Slice data in order to keep the last nitems contained in the raw data.
@@ -117,10 +126,10 @@
             // TODO : could reuse the timestamp slice since it has already been
             // sliced previously (in sliceData).
             d[0] = data.series[idxTimes].slice(nitems);
-            d[1] = data.bySizes[0].slice(nitems);
-            d[2] = data.bySizes[1].slice(nitems);
-            d[3] = data.bySizes[2].slice(nitems);
-            d[4] = data.bySizes[3].slice(nitems);
+            d[1] = data.bySize[0].slice(nitems);
+            d[2] = data.bySize[1].slice(nitems);
+            d[3] = data.bySize[2].slice(nitems);
+            d[4] = data.bySize[3].slice(nitems);
 
             return d;
         }
@@ -255,24 +264,44 @@
         }
 
         function heatmapPlugin() {
+            // let global min/max
+            function fillStyle(count, minCount, maxCount) {
+                //	console.log(val);
+                return `hsla(${180 + count / maxCount * 180}, 80%, 50%, 1)`;
+            }
+
             return {
                 hooks: {
                     draw: u => {
                         const { ctx, data } = u;
 
                         let yData = data[3];
+                        let yQtys = data[4];
+                        const rectw = u.bbox.width / data[0].length;
+                        const recth = u.bbox.height / classSizes.length;
+
+                        let maxCount = -Infinity;
+                        let minCount = Infinity;
+
+                        yQtys.forEach(qtys => {
+                            maxCount = Math.max(maxCount, Math.max.apply(null, qtys));
+                            minCount = Math.min(minCount, Math.min.apply(null, qtys));
+                        });
+
+                        console.log(maxCount, minCount);
 
                         yData.forEach((yVals, xi) => {
-                            let xPos = Math.round(u.valToPos(data[0][xi], 'x', true));
+                            // let xPos = Math.round(u.valToPos(data[0][xi], 'x', true));
+                            let xPos = u.valToPos(data[0][xi], 'x', true);
 
-                            yVals.forEach(yVal => {
+                            yVals.forEach((yVal, yi) => {
                                 let yPos = Math.round(u.valToPos(yVal, 'y', true));
-                                ctx.fillStyle = "rgba(255,0,0,0.4)";
+                                ctx.fillStyle = fillStyle(yQtys[xi][yi], minCount, maxCount);
                                 ctx.fillRect(
-                                    xPos - 4,
+                                    xPos,
                                     yPos,
-                                    10,
-                                    1,
+                                    rectw,
+                                    recth,
                                 );
                             });
                         });
@@ -290,7 +319,9 @@
                 heatmapPlugin(),
             ],
             series: [
-                {},
+                {
+                    scale: 'x',
+                },
                 {
                     paths: () => null,
                     points: { show: false },
@@ -304,12 +335,13 @@
             ],
             axes: [
                 {
+                    scale: 'x',
                     values: (u, vals, space) => vals.map(v => formatTimestamps(v)),
                     rotate: 50,
                 },
                 {
                     scale: 'y',
-                    values: (u, vals, space) => vals.map(v => humanFileSize(v, true, 0)),
+                    values: (u, vals, space) => vals.map(v => humanFileSize(classSizes[v], true, 0)),
                     size: 90,
                 },
             ],
@@ -435,6 +467,7 @@
                 if (data.series[idxTimes].length() < 2) {
                     return
                 }
+                initClassSizes(stats.Mem.BySize);
                 plotCtx.uplot1 = new uPlot(opts1, data1, document.body);
                 plotCtx.uplot2 = new uPlot(opts2, data2, document.body);
             }
