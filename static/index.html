@@ -377,7 +377,12 @@
                 },
                 {
                     scale: 'y',
-                    values: (u, vals, space) => vals.map(v => humanFileSize(classSizes[v], true, 0)),
+                    values: (u, vals, space) => vals.map(function (i) {
+                        if (i > classSizes.length - 1) {
+                            return '';
+                        }
+                        return humanFileSize(classSizes[i], true, 0);
+                    }),
                     size: 90,
                 },
             ],
