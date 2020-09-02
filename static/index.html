@@ -265,9 +265,19 @@
 
         function heatmapPlugin() {
             // let global min/max
-            function fillStyle(count, minCount, maxCount) {
-                //	console.log(val);
-                return `hsla(${180 + count / maxCount * 180}, 80%, 50%, 1)`;
+            function fillStyle(count, maxCount) {
+                const norm = count / maxCount;
+
+                // salmon
+                // const r = 254 - (24 * norm);
+                // const g = 230 - (145 * norm);
+                // const b = 206 - (193 * norm);
+
+                // purple
+                const r = 239 - (122 * norm);
+                const g = 237 - (120 * norm);
+                const b = 245 - (68 * norm);
+                return `rgba(${r}, ${g}, ${b}, 1)`;
             }
 
             return {
@@ -296,7 +306,7 @@
                                     return;
                                 }
                                 const yPos = Math.round(u.valToPos(yVal, 'y', true));
-                                ctx.fillStyle = fillStyle(count, 0, maxCount);
+                                ctx.fillStyle = fillStyle(count, maxCount);
                                 ctx.fillRect(xPos, yPos, rectw, recth);
                             });
                         });
