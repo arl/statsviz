@@ -178,11 +178,45 @@
             },
         };
 
+        function gcLinesPlugin() {
+            return {
+                hooks: {
+                    draw: u => {
+                        const { ctx } = u;
+                        const gcs = data.lastGCs;
+                        const mints = u.data[idxTimes][0];
+                        const maxts = u.data[idxTimes][u.data[idxTimes].length - 1];
+                        const y0 = u.valToPos(u.scales['b'].min, 'b', true);
+                        const y1 = u.valToPos(u.scales['b'].max, 'b', true);
+
+                        for (let i = 0, n = gcs.length; i < n; i++) {
+                            const ts = gcs[i];
+                            if (ts < mints || ts > maxts) {
+                                continue;
+                            }
+
+                            const x = u.valToPos(ts, 'x', true);
+                            ctx.beginPath();
+                            ctx.moveTo(x, y0);
+                            ctx.lineTo(x, y1);
+                            ctx.setLineDash([5, 10]);
+                            ctx.lineWidth = 1;
+                            ctx.strokeStyle = 'grey';
+                            ctx.stroke();
+                        }
+                    }
+                }
+            };
+        }
+
         const opts1 = {
             title: "Heap",
             width: 800,
             height: 600,
             cursor: cursorOpts,
+            plugins: [
+                gcLinesPlugin(),
+            ],
             series: [
                 {},
                 {
@@ -349,25 +383,13 @@
             ],
         };
 
-        // Plot a vertical bar each time GC ends (runtime.MemStats.LastGC).
-        function plotGCs(plt, gcs, mints, maxts) {
-            let y0 = plt.valToPos(plt.scales['b'].min, 'b', true);
-            let y1 = plt.valToPos(plt.scales['b'].max, 'b', true);
+        // TODO: either remove plotCtx and declare uplot1, uplot2 etc as free variables or 
+        // move all in plotCtx: the plots and the data.
+        let plotCtx = {
+            uplot1: null, // Heap plot group
+            uplot2: null, // BySize heapmap
+        };
 
-            for (let i = 0, n = gcs.length; i < n; i++) {
-                let ts = gcs[i];
-                if (ts < mints || ts > maxts) {
-                    continue;
-                }
-
-                let x = plt.valToPos(ts, 'x', true);
-                plt.ctx.beginPath();
-                plt.ctx.moveTo(x, y0);
-                plt.ctx.lineTo(x, y1);
-                plt.ctx.setLineDash([5, 10]);
-                plt.ctx.lineWidth = 2;
-                plt.ctx.strokeStyle = 'grey';
-                plt.ctx.stroke();
         function buildWebsocketURI(params) {
             var loc = window.location, ws_prot = "ws:";
             if (loc.protocol === "https:") {
@@ -376,9 +398,6 @@
             return ws_prot + "//" + loc.host + loc.pathname + "ws"
         }
 
-        let plotCtx = {
-            uplot1: null, // Heap plot group
-            uplot2: null, // BySize heapmap
         let socket = new WebSocket(buildWebsocketURI());
         console.log("Attempting Connection...");
 
