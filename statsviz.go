@@ -9,6 +9,39 @@ import (
 	"github.com/arl/statsviz/websocket"
 )
 
+func init() {
+	http.Handle("/debug/statsviz/", Index)
+	http.HandleFunc("/debug/statsviz/ws", Ws)
+}
+
+// Index responds to a request for /debug/statsviz with the statsviz HTML page
+// which shows a live visualization of the statistics sent by the application
+// over the websocket handler Ws.
+//
+// The package initialization registers it as /debug/statsviz/.
+var Index = http.StripPrefix("/debug/statsviz/", http.FileServer(assets))
+
+// Ws upgrades the HTTP server connection to the WebSocket protocol and sends
+// application statistics every second.
+//
+// If the upgrade fails, an HTTP error response is sent to the client.
+// The package initialization registers it as /debug/statsviz/ws.
+func Ws(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("can't upgrade HTTP connection to Websocket protocol:", err)
+		return
+	}
+	defer ws.Close()
+
+	err = sendStats(ws)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -19,9 +52,7 @@ type stats struct {
 	NumGoroutine int
 }
 
-const (
-	defaultSendPeriod = time.Second
-)
+const defaultSendPeriod = time.Second
 
 // sendStats indefinitely send runtime statistics on the websocket connection.
 func sendStats(conn *websocket.Conn) error {
@@ -38,29 +69,4 @@ func sendStats(conn *websocket.Conn) error {
 			}
 		}
 	}
-}
-
-func wsEndpoint(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println("can't upgrade HTTP connection to Websocket protocol:", err)
-		return
-	}
-	defer ws.Close()
-
-	err = sendStats(ws)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-func setupRoutes() {
-	http.Handle("/debug/statsviz/", http.StripPrefix("/debug/statsviz/", http.FileServer(assets)))
-	http.HandleFunc("/debug/statsviz/ws", wsEndpoint)
-}
-
-func init() {
-	setupRoutes()
 }
