@@ -15,6 +15,7 @@
 <body>
     <script src="./uPlot.iife.js"></script>
     <h2 id="wait">Easymon</h2>
+    <button type="button" id="pause-btn">Pause</button>
     <script>
         const dataRetentionMinutes = 1; // maximum time range, last N minutes.
         const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
@@ -458,6 +459,8 @@
         let plotCtx = {
             uplot1: null, // Heap plot group
             uplot2: null, // BySize heapmap
+
+            isPaused: false,
         };
 
         function buildWebsocketURI(params) {
@@ -467,6 +470,8 @@
             }
             return ws_prot + "//" + loc.host + loc.pathname + "ws"
         }
+
+        document.getElementById('pause-btn').onclick = function (e) { plotCtx.isPaused = !plotCtx.isPaused }
 
         let socket = new WebSocket(buildWebsocketURI());
         console.log("Attempting Connection...");
@@ -491,6 +496,10 @@
 
             let now = nowts();
             pushData(now, stats);
+
+            if (plotCtx.isPaused) {
+                return
+            }
 
             let numTs = maxBufferLen;
             let data1 = sliceData(numTs);
