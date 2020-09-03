@@ -1,5 +1,3 @@
 module github.com/arl/statsviz
 
-go 1.12
-
-require github.com/gorilla/websocket v1.4.1
+go 1.15
