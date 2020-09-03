@@ -318,7 +318,11 @@
 
                         let yData = data[3];
                         let yQtys = data[4];
-                        const rectw = u.bbox.width / data[0].length;
+
+                        let iMin = u.scales.x.min;
+                        let iMax = u.scales.x.max;
+
+                        const rectw = u.bbox.width / (iMax - iMin);
                         const recth = u.bbox.height / classSizes.length;
 
                         let maxCount = -Infinity;
@@ -329,6 +333,7 @@
 
                         yData.forEach((yVals, xi) => {
                             let xPos = u.valToPos(data[0][xi], 'x', true);
+                            xPos = xPos - rectw;
 
                             yVals.forEach((yVal, yi) => {
                                 const count = yQtys[xi][yi];
@@ -339,9 +344,68 @@
                                 const yPos = Math.round(u.valToPos(yVal, 'y', true));
                                 ctx.fillStyle = fillStyle(count, maxCount);
                                 ctx.fillRect(xPos, yPos, rectw, recth);
+                                ctx.strokeRect(xPos, yPos, rectw, recth);
                             });
                         });
                     }
+                }
+            };
+        }
+
+        // column-highlights the hovered x index
+        function columnHighlightPlugin({ className, style = { backgroundColor: "rgba(51, 51, 51, 0.1)" } } = {}) {
+            let underEl, overEl, highlightEl, currIdx;
+
+            function init(u) {
+                underEl = u.root.querySelector(".u-under");
+                overEl = u.root.querySelector(".u-over");
+
+                highlightEl = document.createElement("div");
+
+                className && highlightEl.classList.add(className);
+
+                uPlot.assign(highlightEl.style, {
+                    pointerEvents: "none",
+                    display: "none",
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    height: "100%",
+                    ...style
+                });
+
+                overEl.appendChild(highlightEl);
+
+                // show/hide highlight on enter/exit
+                overEl.addEventListener("mouseenter", () => { highlightEl.style.display = null; });
+                overEl.addEventListener("mouseleave", () => { highlightEl.style.display = "none"; });
+            }
+
+            function update(u) {
+                if (currIdx !== u.cursor.idx) {
+                    currIdx = u.cursor.idx;
+                    const dx = u.scales.x.max - u.scales.x.min;
+                    const width = (u.bbox.width / dx) / devicePixelRatio;
+                    const xVal = u.data[0][currIdx];
+                    const left = u.valToPos(xVal, "x") - width;
+
+                    highlightEl.style.transform = "translateX(" + Math.round(left) + "px)";
+                    highlightEl.style.width = Math.round(width) + "px";
+                }
+            }
+
+            return {
+                opts: (u, opts) => {
+                    uPlot.assign(opts, {
+                        cursor: {
+                            x: false,
+                            y: false,
+                        }
+                    });
+                },
+                hooks: {
+                    init: init,
+                    setCursor: update,
                 }
             };
         }
@@ -353,6 +417,7 @@
             cursor: cursorOpts,
             plugins: [
                 heatmapPlugin(),
+                columnHighlightPlugin(),
             ],
             series: [
                 {
