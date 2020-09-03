@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"github.com/arl/statsviz/websocket"
 )
 
 var upgrader = websocket.Upgrader{
