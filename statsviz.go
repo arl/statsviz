@@ -68,11 +68,7 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 // The package initialization registers it as /debug/statsviz/.
 var Index = http.StripPrefix("/debug/statsviz/", http.FileServer(assets))
 
-func setupRoutes() {
+func init() {
 	http.Handle("/debug/statsviz/", Index)
 	http.HandleFunc("/debug/statsviz/ws", Ws)
-}
-
-func init() {
-	setupRoutes()
 }
