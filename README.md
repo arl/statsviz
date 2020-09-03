@@ -1,12 +1,12 @@
 # Statsviz
 
-Instant live visualization of your Go application runtime statistics (GC,
-MemStats, etc.).
+Instant live visualization of your Go application runtime statistics 
+(GC, MemStats, etc.).
 
  - Only depends on Go standard library.
  - Import `import _ "github.com/arl/statsviz"` (à la `"net/http/pprof"`)
  - Open your browser at `http://host:port/debug/statsviz`
- - Enjoy...!
+ - Enjoy... 
 
 
 ## Usage
@@ -24,5 +24,5 @@ go func() {
 }()
 ```
 
-If you are not using http.DefaultServeMux, you will have to register the handler
-with the mux you are using.
+If you are not using [http.DefaultServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux),
+you will have to register the handler with the mux you are using.
