@@ -61,8 +61,15 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Index responds to a request for /debug/statsviz with the statsviz HTML page
+// which shows a live visualization of the statistics sent by the application
+// over the websocket handler Ws.
+//
+// The package initialization registers it as /debug/statsviz/.
+var Index = http.StripPrefix("/debug/statsviz/", http.FileServer(assets))
+
 func setupRoutes() {
-	http.Handle("/debug/statsviz/", http.StripPrefix("/debug/statsviz/", http.FileServer(assets)))
+	http.Handle("/debug/statsviz/", Index)
 	http.HandleFunc("/debug/statsviz/ws", Ws)
 }
 
