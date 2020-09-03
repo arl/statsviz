@@ -1,4 +1,4 @@
-module github.com/arl/rtprof
+module github.com/arl/statsviz
 
 go 1.12
 

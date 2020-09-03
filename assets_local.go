@@ -1,6 +1,6 @@
 // +build dev
 
-package rtprof
+package statsviz
 
 import "net/http"
 

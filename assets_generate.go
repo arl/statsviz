@@ -11,7 +11,7 @@ import (
 
 // This proram uses `github.com/shurcooL/vfsgen` to generate the `assets`
 // variable. `assets` statically implements an `http.FileSystem` rooted at
-// /static/`, and thus contains the files rtprof serves.
+// /static/`, and thus contains the files statsviz serves.
 //
 // Just use the `-dev` build tag when developing to directly use the assets
 // in the `./static` directory.
@@ -27,7 +27,7 @@ import (
 
 func main() {
 	err := vfsgen.Generate(http.Dir("static"), vfsgen.Options{
-		PackageName:  "rtprof",
+		PackageName:  "statsviz",
 		BuildTags:    "!dev",
 		VariableName: "assets",
 		Filename:     "assets_vfsdata.go",

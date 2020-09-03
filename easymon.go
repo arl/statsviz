@@ -1,4 +1,4 @@
-package rtprof
+package statsviz
 
 import (
 	"log"
@@ -57,8 +57,8 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func setupRoutes() {
-	http.Handle("/debug/rtprof/", http.StripPrefix("/debug/rtprof/", http.FileServer(assets)))
-	http.HandleFunc("/debug/rtprof/ws", wsEndpoint)
+	http.Handle("/debug/statsviz/", http.StripPrefix("/debug/statsviz/", http.FileServer(assets)))
+	http.HandleFunc("/debug/statsviz/ws", wsEndpoint)
 }
 
 func init() {
