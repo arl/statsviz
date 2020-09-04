@@ -17,6 +17,7 @@ Installation
 go get -u github.com/arl/statsviz
 ```
 
+
 Usage
 -----
 
@@ -37,7 +38,14 @@ If you are not using [http.DefaultServeMux](https://pkg.go.dev/net/http?tab=doc#
 you will have to register the handler with the mux you are using.
 
 
+Contributing
+------------
+
+Pull-requests are welcome!
+More details in [Contributing](CONTRIBUTING.md)
+
+
 License
 -------
 
--	[MIT License](LICENSE)
+- [MIT License](LICENSE)
