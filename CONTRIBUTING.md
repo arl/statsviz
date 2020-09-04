@@ -35,6 +35,3 @@ To do so just call `go generate` from the project root. With Go modules enabled,
 this will download the latest version of github.com/shurcooL/vfsgen and update 
 `assets_vfsdata.go` so that it reflects the new content of the `/static` 
 directory. Then, commits both the changes to `/static` and those to `assets_vfsdata.go`.
-
-
-
