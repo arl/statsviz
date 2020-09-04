@@ -9,21 +9,21 @@ import (
 	"github.com/shurcooL/vfsgen"
 )
 
-// This proram uses `github.com/shurcooL/vfsgen` to generate the `assets`
+// This program uses `github.com/shurcooL/vfsgen` to generate the `assets`
 // variable. `assets` statically implements an `http.FileSystem` rooted at
-// /static/`, and thus contains the files statsviz serves.
+// `/static/`, it embeds the files that statsviz serves.
 //
-// Just use the `-dev` build tag when developing to directly use the assets
-// in the `./static` directory.
+// While working on statsviz web interface, it's easier to directly serve the
+// content of the /static directory rather than regenerating the assets after
+// each modification. Passing `-tags dev` to `go build` will do just that, the
+// directory served will be that of your filesystem.
 //
-// However when commiting a modified asset `./assets_vfsdata.go` must be
-// re-generated. To do so:
-//
-// Ensure you have the latest version of `vfsgen`:
-//
-//    go get -u github.com/shurcooL/vfsgen
-//    go generate							# from the project root
-//    git add assets_vfsdata.go
+// However to commit the modifications of the /static directory, `assets` must
+// be regenerated, to do so just call `go generate` from the project root.
+// With Go modules enabled, this will download the latest version of
+// github.com/shurcooL/vfsgen and update `assets_vfsdata.go` so that it
+// reflects the new content of the /static directory. Then, commits both
+// /static and assets_vfsdata.go.
 
 func main() {
 	err := vfsgen.Generate(http.Dir("static"), vfsgen.Options{
