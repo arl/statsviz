@@ -34,6 +34,7 @@
         const idxHeapInuse = 4;
 
         const bySizeSizes = 61; // heatmap sizes (buckets)
+        const rightPanelWidth = 200; // unused at the moment
 
         var data = {
             // timeseries [0]         -> timestamps
@@ -536,6 +537,9 @@
             });
         }
 
+        /*
+            Buffer implementation
+        */
 
         function Buffer(len, cap) {
             if (cap - len < 0) {
