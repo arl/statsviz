@@ -13,6 +13,10 @@
     <script src="./uPlot.iife.js"></script>
     <h2 id="wait">Statsviz</h2>
     <button type="button" id="pause-btn">Pause</button>
+    <div class="container">
+        <div class="statsviz" id="heap-plot"></div>
+        <div class="statsviz" id="bysize-plot"></div>
+    </div>
     <script>
         const dataRetentionMinutes = 1; // maximum time range, last N minutes.
         const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
@@ -30,6 +34,7 @@
         const idxHeapInuse = 4;
 
         const bySizeSizes = 61; // heatmap sizes (buckets)
+        const rightPanelWidth = 200; // unused at the moment
 
         var data = {
             // timeseries [0]         -> timestamps
@@ -207,10 +212,16 @@
             };
         }
 
+        function getSize() {
+            return {
+                width: 1000,
+                height: 400,
+            }
+        }
+
         const opts1 = {
             title: "Heap",
-            width: 800,
-            height: 600,
+            ...getSize(),
             cursor: cursorOpts,
             plugins: [
                 gcLinesPlugin(),
@@ -410,8 +421,7 @@
 
         const opts2 = {
             title: "Size classes Heatmap",
-            width: 800,
-            height: 600,
+            ...getSize(),
             cursor: cursorOpts,
             plugins: [
                 heatmapPlugin(),
@@ -507,8 +517,9 @@
                     return
                 }
                 initClassSizes(stats.Mem.BySize);
-                plotCtx.uplot1 = new uPlot(opts1, data1, document.body);
-                plotCtx.uplot2 = new uPlot(opts2, data2, document.body);
+
+                plotCtx.uplot1 = new uPlot(opts1, data1, document.getElementById("heap-plot"));
+                plotCtx.uplot2 = new uPlot(opts2, data2, document.getElementById("bysize-plot"));
             }
 
             let xScale = {
@@ -526,6 +537,9 @@
             });
         }
 
+        /*
+            Buffer implementation
+        */
 
         function Buffer(len, cap) {
             if (cap - len < 0) {
