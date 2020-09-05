@@ -211,10 +211,16 @@
             };
         }
 
+        function getSize() {
+            return {
+                width: 1000,
+                height: 400,
+            }
+        }
+
         const opts1 = {
             title: "Heap",
-            width: 800,
-            height: 600,
+            ...getSize(),
             cursor: cursorOpts,
             plugins: [
                 gcLinesPlugin(),
@@ -414,8 +420,7 @@
 
         const opts2 = {
             title: "Size classes Heatmap",
-            width: 800,
-            height: 600,
+            ...getSize(),
             cursor: cursorOpts,
             plugins: [
                 heatmapPlugin(),
