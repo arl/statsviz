@@ -275,7 +275,7 @@
             ],
             axes: [
                 {
-                    values: (u, vals, space) => vals.map(v => formatTimestamps(v)),
+                    values: (u, vals, space) => vals.map(v => formatAxisTimestamp(v)),
                     rotate: 50,
                 },
                 {
@@ -286,21 +286,22 @@
             ],
         };
 
-        function formatTimestamps(ts) {
+        // formatAxisTimestamp formats a given Unix epoch timestamp for printing
+        // along an axis. It prints:
+        //  - `hh:mm:ss` if ss is a multiple of 5s,
+        //  - only `ss` otherwise
+        function formatAxisTimestamp(ts) {
             let d = new Date(ts * 1000);
-            let h = d.getHours()
-            let m = d.getMinutes()
             let s = d.getSeconds()
+            let ss = s.toString().padStart(2, '0')
 
-            if (s % 5 == 0) {
-                // hh:mm:ss
-                return h.toString().padStart(2, '0')
-                    + ":" + m.toString().padStart(2, '0')
-                    + ":" + s.toString().padStart(2, '0')
+            if (s % 5 != 0) {
+                return ss
             }
 
-            // ss
-            return s.toString().padStart(2, '0')
+            let hh = d.getHours().toString().padStart(2, '0')
+            let mm = d.getMinutes().toString().padStart(2, '0')
+            return hh + ':' + mm + ':' + ss
         }
 
         function heatmapPlugin() {
@@ -445,7 +446,7 @@
             axes: [
                 {
                     scale: 'x',
-                    values: (u, vals, space) => vals.map(v => formatTimestamps(v)),
+                    values: (u, vals, space) => vals.map(v => formatAxisTimestamp(v)),
                     rotate: 50,
                 },
                 {
