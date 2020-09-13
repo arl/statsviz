@@ -1,4 +1,4 @@
-var plotsConfig = (function () {
+(function () {
     function $(id) {
         return document.getElementById(id);
     }
@@ -13,27 +13,10 @@ var plotsConfig = (function () {
 
     $('pause-btn').onclick = function (e) { ui.togglePause(); }
 
-    let socket = new WebSocket(buildWebsocketURI());
-    console.log("Attempting Connection...");
 
     const dataRetentionSeconds = 60;
 
-    socket.onopen = () => {
-        console.log("Successfully Connected");
-        stats.init(dataRetentionSeconds);
-    };
-
-    socket.onclose = event => {
-        console.log("Socket Closed Connection: ", event);
-        socket.send("Client Closed!")
-    };
-
-    socket.onerror = error => {
-        console.log("Socket Error: ", error);
-    };
-
-    socket.onmessage = event => {
-        let memStats = JSON.parse(event.data);
+    function updateStats(memStats) {
         console.log("Received stats: ", memStats);
 
         function nowts() {
@@ -70,5 +53,29 @@ var plotsConfig = (function () {
         };
 
         ui.updatePlots(xScale, data);
+    }
+
+
+    /* WebSocket callbacks */
+
+    let socket = new WebSocket(buildWebsocketURI());
+    console.log("Attempting Connection...");
+
+    socket.onopen = () => {
+        console.log("Successfully Connected");
+        stats.init(dataRetentionSeconds);
+    };
+
+    socket.onclose = event => {
+        console.log("Socket Closed Connection: ", event);
+        socket.send("Client Closed!")
+    };
+
+    socket.onerror = error => {
+        console.log("Socket Error: ", error);
+    };
+
+    socket.onmessage = event => {
+        updateStats(JSON.parse(event.data));
     }
 }());

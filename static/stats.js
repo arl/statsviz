@@ -1,3 +1,4 @@
+// stats holds the data and function to modify it.
 var stats = (function () {
     var m = {};
 

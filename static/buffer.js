@@ -1,3 +1,4 @@
+// Buffer declares the Buffer class.
 var Buffer = (function () {
     class Buffer {
         constructor(len, cap) {

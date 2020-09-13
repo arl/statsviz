@@ -1,3 +1,4 @@
+// opts exports the plots options
 var opts = (function () {
     const rightPanelWidth = 200; // unused at the moment
 

@@ -1,3 +1,4 @@
+// ui holds the user interface state
 var ui = (function () {
     var m = {};
 
