@@ -1,26 +1,24 @@
 var stats = (function () {
     var m = {};
 
-    const numSeriesHeap = 4;
-    const numSeries = 1 + numSeriesHeap; // timestamp serie + other series
-
     const idxTimes = 0;
     const idxHeapAlloc = 1;
     const idxHeapSys = 2;
     const idxHeapIdle = 3;
     const idxHeapInuse = 4;
 
+    const numSeriesHeap = 4;
+    const totalSeries = 1 + numSeriesHeap; // times + other series
+
     var data = {
-        // timeseries [0]         -> timestamps
-        // [1] to [numSeries - 1] -> timeseries datapoint
-        series: new Array(numSeries), // TODO: rename to timeseries 
+        series: new Array(totalSeries), // TODO: rename to timeseries 
         lastGCs: new Array(),
 
         bySize: new Array(4), // [0] min [1] max [2] class sizes [3] live objects
     };
 
     m.init = function () {
-        for (let i = 0; i < numSeries; i++) {
+        for (let i = 0; i < totalSeries; i++) {
             data.series[i] = new Buffer(maxBufferLen, maxBufferCap);
         }
         for (let i = 0; i < data.bySize.length; i++) {
@@ -30,15 +28,7 @@ var stats = (function () {
 
     m.lastGCs = data.lastGCs;
 
-    m.pushData = function (ts, memStats) {
-        data.series[idxTimes].push(ts); // timestamp
-        data.series[idxHeapAlloc].push(memStats.Mem.HeapAlloc);
-        data.series[idxHeapSys].push(memStats.Mem.HeapSys);
-        data.series[idxHeapIdle].push(memStats.Mem.HeapIdle);
-        data.series[idxHeapInuse].push(memStats.Mem.HeapInuse);
-
-        pushBySize(memStats.Mem.BySize);
-
+    function updateLastGC(memStats) {
         const nanoToSeconds = 1000 * 1000 * 1000;
         let lastGC = Math.floor(memStats.Mem.LastGC / nanoToSeconds);
 
@@ -48,7 +38,6 @@ var stats = (function () {
 
         // Remove from the lastGCs array the timestamps which are prior to
         // the minimum timestamp in 'series'.
-        // TODO: do this in a trimLastGC function
         let mints = data.series[idxTimes]._buf[0];
         let mingc = 0;
         for (let i = 0, n = data.lastGCs.length; i < n; i++) {
@@ -60,32 +49,45 @@ var stats = (function () {
         data.lastGCs.splice(0, mingc);
     }
 
-    // Slice data in order to keep the last nitems contained in the raw data.
-    // TODO: rename sliceSeries or sliceHeap
-    m.sliceData = function (nitems) {
-        let d = new Array(numSeries);
-        for (let i = 0; i < numSeries; i++) {
-            d[i] = data.series[i].slice(nitems);
-        }
+    m.pushData = function (ts, memStats) {
+        data.series[idxTimes].push(ts); // timestamp
+        data.series[idxHeapAlloc].push(memStats.Mem.HeapAlloc);
+        data.series[idxHeapSys].push(memStats.Mem.HeapSys);
+        data.series[idxHeapIdle].push(memStats.Mem.HeapIdle);
+        data.series[idxHeapInuse].push(memStats.Mem.HeapInuse);
 
-        return d;
+        pushBySize(memStats.Mem.BySize);
+
+        updateLastGC(memStats);
     }
 
     m.length = function () {
         return data.series[idxTimes].length();
     }
 
-    m.sliceHeatmapData = function (nitems) {
-        let d = new Array(5);
-        // TODO : could reuse the timestamp slice since it has already been
-        // sliced previously (in sliceData).
-        d[0] = data.series[idxTimes].slice(nitems);
-        d[1] = data.bySize[0].slice(nitems);
-        d[2] = data.bySize[1].slice(nitems);
-        d[3] = data.bySize[2].slice(nitems);
-        d[4] = data.bySize[3].slice(nitems);
+    m.slice = function (nitems) {
+        // Time data
+        let times = data.series[idxTimes].slice(nitems);
 
-        return d;
+        // Heap plot data
+        let heap = new Array(numSeriesHeap);
+        heap[0] = times;
+        for (let i = 1; i <= numSeriesHeap; i++) {
+            heap[i] = data.series[i].slice(nitems);
+        }
+
+        // BySizes heatmap data
+        let bySizes = new Array(5);
+        bySizes[0] = times
+        bySizes[1] = data.bySize[0].slice(nitems);
+        bySizes[2] = data.bySize[1].slice(nitems);
+        bySizes[3] = data.bySize[2].slice(nitems);
+        bySizes[4] = data.bySize[3].slice(nitems);
+
+        return {
+            heap: heap,
+            bySizes: bySizes,
+        }
     }
 
     function pushBySize(bySize) {

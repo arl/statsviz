@@ -26,17 +26,8 @@
         const maxBufferLen = 60 * dataRetentionMinutes; // number of actual datapoints
         const maxBufferCap = maxBufferLen + (maxBufferLen * extraBufferCapacity) / 100; // number of actual datapoint
 
-
-
-
-
         const bySizeSizes = 61; // heatmap sizes (buckets)
         const rightPanelWidth = 200; // unused at the moment
-
-
-
-
-
 
         // Contain indexed class sizes, this is initialized after reception of the first message.
         var classSizes = new Array();
@@ -46,9 +37,6 @@
                 classSizes.push(bySize[i].Size);
             }
         }
-
-
-
 
         function nowts() {
             var d = new Date();
@@ -422,9 +410,7 @@
                 return
             }
 
-            let numTs = maxBufferLen;
-            let data1 = stats.sliceData(numTs);
-            let data2 = stats.sliceHeatmapData(numTs);
+            let data = stats.slice(maxBufferLen);
 
             if (plotCtx.uplot1 == null) {
                 if (stats.length() < 2) {
@@ -432,8 +418,8 @@
                 }
                 initClassSizes(memStats.Mem.BySize);
 
-                plotCtx.uplot1 = new uPlot(opts1, data1, document.getElementById("heap-plot"));
-                plotCtx.uplot2 = new uPlot(opts2, data2, document.getElementById("bysize-plot"));
+                plotCtx.uplot1 = new uPlot(opts1, data.heap, document.getElementById("heap-plot"));
+                plotCtx.uplot2 = new uPlot(opts2, data.bySizes, document.getElementById("bysize-plot"));
             }
 
             let xScale = {
@@ -442,11 +428,11 @@
             };
 
             plotCtx.uplot1.batch(() => {
-                plotCtx.uplot1.setData(data1);
+                plotCtx.uplot1.setData(data.heap);
                 plotCtx.uplot1.setScale("x", xScale);
             });
             plotCtx.uplot2.batch(() => {
-                plotCtx.uplot2.setData(data2);
+                plotCtx.uplot2.setData(data.bySizes);
                 plotCtx.uplot2.setScale("x", xScale);
             });
         }
