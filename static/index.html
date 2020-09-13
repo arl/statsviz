@@ -11,6 +11,8 @@
 
 <body>
     <script src="./uPlot.iife.js"></script>
+    <script src="./buffer.js"></script>
+    <script src="./stats.js"></script>
     <h2 id="wait">Statsviz</h2>
     <button type="button" id="pause-btn">Pause</button>
     <div class="container">
@@ -24,85 +26,17 @@
         const maxBufferLen = 60 * dataRetentionMinutes; // number of actual datapoints
         const maxBufferCap = maxBufferLen + (maxBufferLen * extraBufferCapacity) / 100; // number of actual datapoint
 
-        const numSeriesHeap = 4;
-        const numSeries = 1 + numSeriesHeap; // timestamp serie + other series
 
-        const idxTimes = 0;
-        const idxHeapAlloc = 1;
-        const idxHeapSys = 2;
-        const idxHeapIdle = 3;
-        const idxHeapInuse = 4;
+
+
 
         const bySizeSizes = 61; // heatmap sizes (buckets)
         const rightPanelWidth = 200; // unused at the moment
 
-        var data = {
-            // timeseries [0]         -> timestamps
-            // [1] to [numSeries - 1] -> timeseries datapoint
-            series: new Array(numSeries), // TODO: rename to timeseries 
-            lastGCs: new Array(),
 
-            bySize: new Array(4), // [0] min [1] max [2] class sizes [3] live objects
-        };
 
-        // TODO: do all init in a single function (and not a bit in data declaration 
-        // and the rest in initData)
-        function initData() {
-            for (let i = 0; i < numSeries; i++) {
-                data.series[i] = new Buffer(maxBufferLen, maxBufferCap);
-            }
-            for (let i = 0; i < data.bySize.length; i++) {
-                data.bySize[i] = new Buffer(maxBufferLen, maxBufferCap);
-            }
-        }
 
-        function pushData(ts, stats) {
-            data.series[idxTimes].push(ts); // timestamp
-            data.series[idxHeapAlloc].push(stats.Mem.HeapAlloc);
-            data.series[idxHeapSys].push(stats.Mem.HeapSys);
-            data.series[idxHeapIdle].push(stats.Mem.HeapIdle);
-            data.series[idxHeapInuse].push(stats.Mem.HeapInuse);
 
-            pushBySize(stats.Mem.BySize);
-
-            const nanoToSeconds = 1000 * 1000 * 1000;
-            let lastGC = Math.floor(stats.Mem.LastGC / nanoToSeconds);
-
-            if (lastGC != data.lastGCs[data.lastGCs.length - 1]) {
-                data.lastGCs.push(lastGC);
-            }
-
-            // Remove from the lastGCs array the timestamps which are prior to
-            // the minimum timestamp in 'series'.
-            // TODO: do this in a trimLastGC function
-            let mints = data.series[idxTimes]._buf[0];
-            let mingc = 0;
-            for (let i = 0, n = data.lastGCs.length; i < n; i++) {
-                if (data.lastGCs[i] > mints) {
-                    break;
-                }
-                mingc = i;
-            }
-            data.lastGCs.splice(0, mingc);
-        }
-
-        function pushBySize(bySize) {
-            let sizesIndices = new Array(bySize.length);
-            let counts = new Array(bySize.length);
-
-            for (let i = 0; i < bySize.length; i++) {
-                const size = bySize[i];
-                sizesIndices[i] = i;
-                counts[i] = size.Mallocs - size.Frees;
-            }
-
-            // TODO data.bySize[0] [1] and [2] in theory never change so there 
-            // should be no need to recreate it each time.
-            data.bySize[0].push(0);
-            data.bySize[1].push(sizesIndices.length - 1);
-            data.bySize[2].push(sizesIndices);
-            data.bySize[3].push(counts);
-        }
 
         // Contain indexed class sizes, this is initialized after reception of the first message.
         var classSizes = new Array();
@@ -113,29 +47,8 @@
             }
         }
 
-        // Slice data in order to keep the last nitems contained in the raw data.
-        // TODO: rename sliceSeries or sliceHeap
-        function sliceData(nitems) {
-            let d = new Array(numSeries);
-            for (let i = 0; i < numSeries; i++) {
-                d[i] = data.series[i].slice(nitems);
-            }
 
-            return d;
-        }
 
-        function sliceHeatmapData(nitems) {
-            let d = new Array(5);
-            // TODO : could reuse the timestamp slice since it has already been
-            // sliced previously (in sliceData).
-            d[0] = data.series[idxTimes].slice(nitems);
-            d[1] = data.bySize[0].slice(nitems);
-            d[2] = data.bySize[1].slice(nitems);
-            d[3] = data.bySize[2].slice(nitems);
-            d[4] = data.bySize[3].slice(nitems);
-
-            return d;
-        }
 
         function nowts() {
             var d = new Date();
@@ -186,9 +99,9 @@
                 hooks: {
                     draw: u => {
                         const { ctx } = u;
-                        const gcs = data.lastGCs;
-                        const mints = u.data[idxTimes][0];
-                        const maxts = u.data[idxTimes][u.data[idxTimes].length - 1];
+                        const gcs = stats.lastGCs;
+                        const mints = u.data[0][0];
+                        const maxts = u.data[0][u.data[0].length - 1];
                         const y0 = u.valToPos(u.scales['b'].min, 'b', true);
                         const y1 = u.valToPos(u.scales['b'].max, 'b', true);
 
@@ -486,7 +399,7 @@
 
         socket.onopen = () => {
             console.log("Successfully Connected");
-            initData();
+            stats.init()
         };
 
         socket.onclose = event => {
@@ -499,25 +412,25 @@
         };
 
         socket.onmessage = event => {
-            stats = JSON.parse(event.data);
-            console.log("Received stats: ", stats);
+            let memStats = JSON.parse(event.data);
+            console.log("Received stats: ", memStats);
 
             let now = nowts();
-            pushData(now, stats);
+            stats.pushData(now, memStats);
 
             if (plotCtx.isPaused) {
                 return
             }
 
             let numTs = maxBufferLen;
-            let data1 = sliceData(numTs);
-            let data2 = sliceHeatmapData(numTs);
+            let data1 = stats.sliceData(numTs);
+            let data2 = stats.sliceHeatmapData(numTs);
 
             if (plotCtx.uplot1 == null) {
-                if (data.series[idxTimes].length() < 2) {
+                if (stats.length() < 2) {
                     return
                 }
-                initClassSizes(stats.Mem.BySize);
+                initClassSizes(memStats.Mem.BySize);
 
                 plotCtx.uplot1 = new uPlot(opts1, data1, document.getElementById("heap-plot"));
                 plotCtx.uplot2 = new uPlot(opts2, data2, document.getElementById("bysize-plot"));
@@ -536,60 +449,6 @@
                 plotCtx.uplot2.setData(data2);
                 plotCtx.uplot2.setScale("x", xScale);
             });
-        }
-
-        /*
-            Buffer implementation
-        */
-
-        function Buffer(len, cap) {
-            if (cap - len < 0) {
-                console.Error("cap - len must be positive");
-            }
-
-            // TODO(arl): value using TypedArray rather than Array here
-            this._buf = new Array(cap);
-            this._pos = 0;
-            this._len = len;
-            this._cap = cap;
-        }
-
-        Buffer.prototype.last = function () {
-            if (this.length() == 0) {
-                throw 'Cannot call last() on an empty Buffer';
-            }
-            return this._buf[this._pos]
-        }
-
-        Buffer.prototype.push = function (pt) {
-            if (this._pos >= this._cap) {
-                // move data to the beggining of the buffer, effectively discarding
-                // the cap-len oldest elements
-                this._buf.copyWithin(0, this._cap - this._len);
-                this._pos = this._len;
-            }
-
-            this._buf[this._pos] = pt;
-            this._pos++;
-        }
-
-        Buffer.prototype.length = function () {
-            if (this._pos > this._len) {
-                return this._len;
-            }
-
-            return this._pos;
-        }
-
-        // slice returns a slice of the len latest datapoints present in the buffer.
-        Buffer.prototype.slice = function (len) {
-            // Cap the dimension of the returned slice to the data available
-            if (len > this.length()) {
-                len = this.length();
-            }
-
-            let start = this._pos - len;
-            return this._buf.slice(start, start + len);
         }
     </script>
 </body>
