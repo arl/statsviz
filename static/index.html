@@ -13,30 +13,17 @@
     <script src="./uPlot.iife.js"></script>
     <script src="./buffer.js"></script>
     <script src="./stats.js"></script>
-    <h2 id="wait">Statsviz</h2>
+    <script src="./ui.js"></script>
+    <h2>Statsviz</h2>
     <button type="button" id="pause-btn">Pause</button>
     <div class="container">
         <div class="statsviz" id="heap-plot"></div>
-        <div class="statsviz" id="bysize-plot"></div>
+        <div class="statsviz" id="bysizes-plot"></div>
     </div>
     <script>
-        const dataRetentionMinutes = 1; // maximum time range, last N minutes.
-        const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
 
-        const maxBufferLen = 60 * dataRetentionMinutes; // number of actual datapoints
-        const maxBufferCap = maxBufferLen + (maxBufferLen * extraBufferCapacity) / 100; // number of actual datapoint
-
-        const bySizeSizes = 61; // heatmap sizes (buckets)
         const rightPanelWidth = 200; // unused at the moment
 
-        // Contain indexed class sizes, this is initialized after reception of the first message.
-        var classSizes = new Array();
-
-        function initClassSizes(bySize) {
-            for (let i = 0; i < bySize.length; i++) {
-                classSizes.push(bySize[i].Size);
-            }
-        }
 
         function nowts() {
             var d = new Date();
@@ -234,7 +221,7 @@
                         let iMax = u.scales.x.max;
 
                         const rectw = u.bbox.width / (iMax - iMin);
-                        const recth = u.bbox.height / classSizes.length;
+                        const recth = u.bbox.height / stats.classSizes.length;
 
                         let maxCount = -Infinity;
 
@@ -353,23 +340,14 @@
                 {
                     scale: 'y',
                     values: (u, vals, space) => vals.map(function (i) {
-                        if (i > classSizes.length - 1) {
+                        if (i > stats.classSizes.length - 1) {
                             return '';
                         }
-                        return humanFileSize(classSizes[i], true, 0);
+                        return humanFileSize(stats.classSizes[i], true, 0);
                     }),
                     size: 90,
                 },
             ],
-        };
-
-        // TODO: either remove plotCtx and declare uplot1, uplot2 etc as free variables or 
-        // move all in plotCtx: the plots and the data.
-        let plotCtx = {
-            uplot1: null, // Heap plot group
-            uplot2: null, // BySize heapmap
-
-            isPaused: false,
         };
 
         function buildWebsocketURI(params) {
@@ -380,14 +358,16 @@
             return ws_prot + "//" + loc.host + loc.pathname + "ws"
         }
 
-        document.getElementById('pause-btn').onclick = function (e) { plotCtx.isPaused = !plotCtx.isPaused }
+        document.getElementById('pause-btn').onclick = function (e) { ui.togglePause(); }
 
         let socket = new WebSocket(buildWebsocketURI());
         console.log("Attempting Connection...");
 
+        const dataRetentionSeconds = 60;
+
         socket.onopen = () => {
             console.log("Successfully Connected");
-            stats.init()
+            stats.init(dataRetentionSeconds);
         };
 
         socket.onclose = event => {
@@ -406,20 +386,28 @@
             let now = nowts();
             stats.pushData(now, memStats);
 
-            if (plotCtx.isPaused) {
+            if (ui.isPaused()) {
                 return
             }
 
-            let data = stats.slice(maxBufferLen);
+            let data = stats.slice(dataRetentionSeconds);
 
-            if (plotCtx.uplot1 == null) {
+            if (ui.plots == null) {
                 if (stats.length() < 2) {
                     return
                 }
-                initClassSizes(memStats.Mem.BySize);
+                stats.initClassSizes(memStats.Mem.BySize);
 
-                plotCtx.uplot1 = new uPlot(opts1, data.heap, document.getElementById("heap-plot"));
-                plotCtx.uplot2 = new uPlot(opts2, data.bySizes, document.getElementById("bysize-plot"));
+                let opts = {
+                    heap: opts1,
+                    bySizes: opts2
+                };
+                let elts = {
+                    heap: document.getElementById("heap-plot"),
+                    bySizes: document.getElementById("bysizes-plot"),
+                };
+
+                ui.createPlots(opts, data, elts);
             }
 
             let xScale = {
@@ -427,14 +415,7 @@
                 max: now,
             };
 
-            plotCtx.uplot1.batch(() => {
-                plotCtx.uplot1.setData(data.heap);
-                plotCtx.uplot1.setScale("x", xScale);
-            });
-            plotCtx.uplot2.batch(() => {
-                plotCtx.uplot2.setData(data.bySizes);
-                plotCtx.uplot2.setScale("x", xScale);
-            });
+            ui.updatePlots(xScale, data);
         }
     </script>
 </body>

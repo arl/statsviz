@@ -17,16 +17,31 @@ var stats = (function () {
         bySize: new Array(4), // [0] min [1] max [2] class sizes [3] live objects
     };
 
-    m.init = function () {
+    m.init = function (buflen) {
+        const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
+
+        const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
+
+
         for (let i = 0; i < totalSeries; i++) {
-            data.series[i] = new Buffer(maxBufferLen, maxBufferCap);
+            data.series[i] = new Buffer(buflen, bufcap);
         }
         for (let i = 0; i < data.bySize.length; i++) {
-            data.bySize[i] = new Buffer(maxBufferLen, maxBufferCap);
+            data.bySize[i] = new Buffer(buflen, bufcap);
         }
     };
 
+    // Array of the last relevant GC times
     m.lastGCs = data.lastGCs;
+
+    // Contain indexed class sizes, this is initialized after reception of the first message.
+    m.classSizes = new Array();
+
+    m.initClassSizes = function (bySize) {
+        for (let i = 0; i < bySize.length; i++) {
+            m.classSizes.push(bySize[i].Size);
+        }
+    }
 
     function updateLastGC(memStats) {
         const nanoToSeconds = 1000 * 1000 * 1000;
