@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Statsviz</title>
+
+    <meta charset="utf-8">
+    <meta name="description" content="Statsviz interface" />
+    <!--DO NOT REMOVE: this comment gets replaced in development-->
+    <link rel="stylesheet" href="./uPlot.min.css">
+    <link rel="stylesheet" href="./statsviz.css">
+    <link rel="stylesheet" href="./metro4-4.3.10-42934cd48a225fcc34b84936d0a6bdd0.min.css">
+</head>
+
+<body>
+    <!-- https://epochjs.github.io/epoch/real-time -->
+    <div id="header">
+        <h1>Statsviz</h1>
+        <input type="checkbox" id="pause-btn" data-role="switch" data-caption="Pause">
+    </div>
+
+    <div id="container">
+        <div class="grid-container">
+            <div id="heap-plot"></div>
+            <div>
+                <ul data-role="listview" data-view="table" data-select-node="true" data-structure='{"value": true}'>
+                    <li data-caption="Stuff" data-value="123" disabled></li>
+                    <li data-caption="Things" data-value="234"></li>
+                </ul>
+
+            </div>
+            <div id="bysizes-plot"></div>
+            <div>
+                <dl class="inline-flex">
+                    <dt>Name</dt>
+                    <dd>Navaneeth</dd>
+                    <dt>Age</dt>
+                    <dd>25</dd>
+                    <dt>Hobby</dt>
+                    <dd>Programming</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <script src="./uPlot.iife.js"></script>
+    <script src="./buffer.js"></script>
+    <script src="./stats.js"></script>
+    <script src="./ui.js"></script>
+    <script src="./opts.js"></script>
+    <script src="./app.js"></script>
+    <script src="./metro4-4.3.10-42934cd48a225fcc34b84936d0a6bdd0.min.js"></script>
+</body>
+
+</html>
