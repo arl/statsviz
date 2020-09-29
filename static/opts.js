@@ -322,6 +322,7 @@ var opts = (function () {
             {
                 values: (u, vals, space) => vals.map(v => formatAxisTimestamp(v)),
                 rotate: 50,
+                size: 80,
             },
             {
                 scale: 'b',
@@ -504,10 +505,14 @@ var opts = (function () {
         title: "Size classes Heatmap",
         ...getSize(),
         cursor: cursorOpts,
+        legend: { show: false },
         plugins: [
             heatmapPlugin(),
             columnHighlightPlugin(),
         ],
+        gutters: {
+            y: 10,
+        },
         series: [
             {
                 scale: 'x',
@@ -517,40 +522,49 @@ var opts = (function () {
                 points: { show: false },
                 scale: 'y',
                 label: "size class",
+                /*
                 values: (u, sidx, idx) => {
                     let val = " -- ";
                     if (u.data != undefined) {
-                        const { left, top, idx } = u.cursor;
-                        let i = Math.floor(u.posToIdx(left, 'x'));
-                        let j = Math.floor(u.posToVal(top, 'y'));
-                        if (i < u.data[4].length && j < u.data[4][i].length) {
-                            val = stats.classSizes[j];
+                        const { top } = u.cursor;
+                        if (top !== null) {
+                            // console.log("left: " + left + " top: " + top + " idx: " + idx);
+                            // console.log(`bbox: left:${u.bbox.left} top:${u.bbox.top} width:${u.bbox.width} height:${u.bbox.height}`);
+                            // let idx = Math.floor(u.posToIdx(left, 'x'));
+                            let j = Math.floor(u.posToVal(top, 'y'));
+                            if (j >= 0 && j < stats.classSizes.length) {
+                                val = stats.classSizes[j];
+                            }
                         }
                     }
                     return {
                         "value": val + ' - ' + '??',
                     };
                 }
+                */
             },
             {
                 paths: () => null,
                 points: { show: false },
                 scale: 'y',
                 label: "count",
+                /*
                 values: (u, sidx, idx) => {
                     let val = " -- ";
                     if (u.data != undefined) {
-                        const { left, top, idx } = u.cursor;
-                        let i = Math.floor(u.posToIdx(left, 'x'));
-                        let j = Math.floor(u.posToVal(top, 'y'));
-                        if (i < u.data[3].length && j < u.data[3][i].length) {
-                            val = u.data[3][i][j];
+                        const { top, idx } = u.cursor;
+                        if (idx !== null && top !== null) {
+                            let j = Math.floor(u.posToVal(top, 'y'));
+                            if (j >= 0 && j < u.data[4][idx].length) {
+                                val = u.data[4][idx][j];
+                            }
                         }
                     }
                     return {
                         "value": val,
                     };
                 }
+                */
             },
         ],
         axes: [
@@ -558,6 +572,7 @@ var opts = (function () {
                 scale: 'x',
                 values: (u, vals, space) => vals.map(v => formatAxisTimestamp(v)),
                 rotate: 50,
+                size: 80,
             },
             {
                 scale: 'y',
