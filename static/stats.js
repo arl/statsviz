@@ -46,7 +46,9 @@ var stats = (function () {
 
     function updateLastGC(memStats) {
         const nanoToSeconds = 1000 * 1000 * 1000;
-        let lastGC = Math.floor(memStats.Mem.LastGC / nanoToSeconds);
+        let t = Math.floor(memStats.Mem.LastGC / nanoToSeconds);
+
+        let lastGC = new Date(t * 1000);
 
         if (lastGC != data.lastGCs[data.lastGCs.length - 1]) {
             data.lastGCs.push(lastGC);

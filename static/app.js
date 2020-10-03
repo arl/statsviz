@@ -11,19 +11,10 @@
         return ws_prot + "//" + loc.host + loc.pathname + "ws"
     }
 
-    $('pause-btn').onclick = function (e) { ui.togglePause(); }
-
-
     const dataRetentionSeconds = 60;
 
     function updateStats(memStats) {
-        function nowts() {
-            var d = new Date();
-            return Math.round(d.getTime() / 1000);
-        }
-
-        let now = nowts();
-        stats.pushData(now, memStats);
+        stats.pushData(new Date(), memStats);
 
         if (ui.isPaused()) {
             return
@@ -45,12 +36,12 @@
             ui.createPlots(opts, data, elts);
         }
 
-        let xScale = {
-            min: now - 60,
-            max: now,
-        };
+        // let xScale = {
+        //     min: now - 60,
+        //     max: now,
+        // };
 
-        ui.updatePlots(xScale, data);
+        ui.updatePlots(/*xScale*/ null, data);
     }
 
 
