@@ -6,12 +6,16 @@ var stats = (function () {
     const idxHeapSys = 1;
     const idxHeapIdle = 2;
     const idxHeapInuse = 3;
-
     const numSeriesHeap = 4;
+
+    const idxObjectsLive = 0;
+    const idxObjectsLookups = 1;
+    const numSeriesObjects = 2;
 
     var data = {
         times: null,
         heap: new Array(numSeriesHeap),
+        objects: new Array(numSeriesObjects),
         lastGCs: new Array(),
         bySize: null,
     };
@@ -24,6 +28,10 @@ var stats = (function () {
 
         for (let i = 0; i < numSeriesHeap; i++) {
             data.heap[i] = new Buffer(buflen, bufcap);
+        }
+
+        for (let i = 0; i < numSeriesObjects; i++) {
+            data.objects[i] = new Buffer(buflen, bufcap);
         }
 
         // size classes heatmap
@@ -81,6 +89,8 @@ var stats = (function () {
         data.heap[idxHeapSys].push(memStats.HeapSys);
         data.heap[idxHeapIdle].push(memStats.HeapIdle);
         data.heap[idxHeapInuse].push(memStats.HeapInuse);
+        data.objects[idxObjectsLive].push(memStats.Mallocs - memStats.Frees);
+        data.objects[idxObjectsLookups].push(memStats.Lookups);
 
         for (let i = 0; i < memStats.BySize.length; i++) {
             const size = memStats.BySize[i];
@@ -104,6 +114,12 @@ var stats = (function () {
             heap[i] = data.heap[i].slice(nitems);
         }
 
+        // Objects plot data
+        let objects = new Array(numSeriesObjects);
+        for (let i = 0; i < numSeriesObjects; i++) {
+            objects[i] = data.objects[i].slice(nitems);
+        }
+
         // BySizes heatmap data
         let bySizes = new Array(data.bySize.length);
         for (let i = 0; i < data.bySize.length; i++) {
@@ -114,6 +130,7 @@ var stats = (function () {
         return {
             times: times,
             heap: heap,
+            objects: objects,
             bySizes: bySizes,
         }
     }

@@ -39,21 +39,6 @@ var ui = (function () {
         return shapes;
     }
 
-    // https://plotly.com/javascript/reference/layout
-    let heapLayout = {
-        title: 'Heap',
-        xaxis: {
-            title: 'time',
-            tickformat: '%H:%M:%S',
-        },
-        yaxis: {
-            title: 'bytes',
-            ticksuffix: 'B',
-            // tickformat: ' ',
-            exponentformat: 'SI',
-        }
-    };
-
     function heapData(data) {
         return [
             {
@@ -87,14 +72,17 @@ var ui = (function () {
         ]
     }
 
-    let sizeClassLayout = {
-        title: 'Size Classes',
+    // https://plotly.com/javascript/reference/layout
+    let heapLayout = {
+        title: 'Heap',
         xaxis: {
             title: 'time',
             tickformat: '%H:%M:%S',
         },
         yaxis: {
-            title: 'size class',
+            title: 'bytes',
+            ticksuffix: 'B',
+            // tickformat: ' ',
             exponentformat: 'SI',
         }
     };
@@ -123,15 +111,62 @@ var ui = (function () {
         return ret;
     }
 
+    let sizeClassLayout = {
+        title: 'Size Classes',
+        xaxis: {
+            title: 'time',
+            tickformat: '%H:%M:%S',
+        },
+        yaxis: {
+            title: 'size class',
+            exponentformat: 'SI',
+        }
+    };
+
+    function objectsData(data) {
+        return [
+            {
+                x: data.times,
+                y: data.objects[0],
+                type: 'scatter',
+                name: 'live',
+                hovertemplate: '<b>Live objects</b>: %{y}',
+            },
+            {
+                x: data.times,
+                y: data.objects[1],
+                type: 'scatter',
+                name: 'lookups',
+                hovertemplate: '<b>Pointer lookups</b>: %{y}',
+            },
+        ]
+    }
+
+    let objectsLayout = {
+        title: 'Objects',
+        xaxis: {
+            title: 'time',
+            tickformat: '%H:%M:%S',
+        },
+        yaxis: {
+            title: 'objects'
+        }
+    };
+
     m.createPlots = function (data) {
         Plotly.plot('heap', heapData(data), heapLayout);
         Plotly.plot('size-class', sizeClassData(data), sizeClassLayout);
+        Plotly.plot('objects', objectsData(data), objectsLayout);
     }
 
     var updateIdx = 0;
     m.updatePlots = function (data) {
-        heapLayout.shapes = GCLines(data);
+        let gcLines = GCLines(data);
+        heapLayout.shapes = gcLines;
+        objectsLayout.shapes = gcLines;
+
         Plotly.react('heap', heapData(data), heapLayout)
+        Plotly.react('objects', objectsData(data), objectsLayout);
 
         if (updateIdx % 5 == 0) {
             // Update the size class heatmap 5 times less often since it's expensive. 
