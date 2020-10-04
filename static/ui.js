@@ -46,28 +46,28 @@ var ui = (function () {
                 y: data.heap[0],
                 type: 'scatter',
                 name: 'heap alloc',
-                hovertemplate: '<b>Heap alloc</b>: %{y:.4s}B',
+                hovertemplate: '<b>heap alloc</b>: %{y:.4s}B',
             },
             {
                 x: data.times,
                 y: data.heap[1],
                 type: 'scatter',
                 name: 'heap sys',
-                hovertemplate: '<b>Heap sys</b>: $%{y:.4s}B',
+                hovertemplate: '<b>heap sys</b>: $%{y:.4s}B',
             },
             {
                 x: data.times,
                 y: data.heap[2],
                 type: 'scatter',
                 name: 'heap idle',
-                hovertemplate: '<b>Heap idle</b>: %{y:.4s}B',
+                hovertemplate: '<b>heap idle</b>: %{y:.4s}B',
             },
             {
                 x: data.times,
                 y: data.heap[3],
                 type: 'scatter',
                 name: 'heap in-use',
-                hovertemplate: '<b>Heap in-use</b>: %{y:.4s}B',
+                hovertemplate: '<b>heap in-use</b>: %{y:.4s}B',
             },
         ]
     }
@@ -130,14 +130,21 @@ var ui = (function () {
                 y: data.objects[0],
                 type: 'scatter',
                 name: 'live',
-                hovertemplate: '<b>Live objects</b>: %{y}',
+                hovertemplate: '<b>live objects</b>: %{y}',
             },
             {
                 x: data.times,
                 y: data.objects[1],
                 type: 'scatter',
                 name: 'lookups',
-                hovertemplate: '<b>Pointer lookups</b>: %{y}',
+                hovertemplate: '<b>pointer lookups</b>: %{y}',
+            },
+            {
+                x: data.times,
+                y: data.objects[2],
+                type: 'scatter',
+                name: 'heap',
+                hovertemplate: '<b>heap objects</b>: %{y}',
             },
         ]
     }

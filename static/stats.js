@@ -10,7 +10,8 @@ var stats = (function () {
 
     const idxObjectsLive = 0;
     const idxObjectsLookups = 1;
-    const numSeriesObjects = 2;
+    const idxObjectsHeap = 2;
+    const numSeriesObjects = 3;
 
     var data = {
         times: null,
@@ -91,6 +92,7 @@ var stats = (function () {
         data.heap[idxHeapInuse].push(memStats.HeapInuse);
         data.objects[idxObjectsLive].push(memStats.Mallocs - memStats.Frees);
         data.objects[idxObjectsLookups].push(memStats.Lookups);
+        data.objects[idxObjectsHeap].push(memStats.HeapObjects);
 
         for (let i = 0; i < memStats.BySize.length; i++) {
             const size = memStats.BySize[i];
