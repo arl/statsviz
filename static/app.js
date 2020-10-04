@@ -13,38 +13,6 @@
 
     const dataRetentionSeconds = 60;
 
-    function updateStats(memStats) {
-        stats.pushData(new Date(), memStats);
-
-        if (ui.isPaused()) {
-            return
-        }
-
-        let data = stats.slice(dataRetentionSeconds);
-
-        if (ui.plots == null) {
-            if (stats.length() < 2) {
-                return
-            }
-            stats.initClassSizes(memStats.Mem.BySize);
-
-            let elts = {
-                heap: $("heap-plot"),
-                bySizes: $("bysizes-plot"),
-            };
-
-            ui.createPlots(opts, data, elts);
-        }
-
-        // let xScale = {
-        //     min: now - 60,
-        //     max: now,
-        // };
-
-        ui.updatePlots(/*xScale*/ null, data);
-    }
-
-
     /* WebSocket callbacks */
 
     let socket = new WebSocket(buildWebsocketURI());
@@ -52,7 +20,6 @@
 
     socket.onopen = () => {
         console.log("Successfully Connected");
-        stats.init(dataRetentionSeconds);
     };
 
     socket.onclose = event => {
@@ -64,7 +31,30 @@
         console.log("Socket Error: ", error);
     };
 
+    var initDone = false;
     socket.onmessage = event => {
-        updateStats(JSON.parse(event.data));
+        let memStats = JSON.parse(event.data)
+        if (!initDone) {
+            stats.init(dataRetentionSeconds, memStats.Mem);
+            initDone = true;
+            return;
+        }
+
+        updateStats(memStats.Mem);
     }
+
+    function updateStats(memStats) {
+        stats.pushData(new Date(), memStats);
+
+        if (ui.isPaused()) {
+            return
+        }
+
+        let data = stats.slice(dataRetentionSeconds);
+        if (data.heap[0].length == 1) {
+            ui.createPlots(data);
+        }
+        ui.updatePlots(data);
+    }
+
 }());

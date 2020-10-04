@@ -8,59 +8,6 @@ var ui = (function () {
     m.togglePause = function () { paused = !paused; }
     m.plots = null;
 
-    function heapData(data) {
-        return [
-            {
-                x: data.heap[0],
-                y: data.heap[1],
-                type: 'scatter',
-                name: 'heap alloc'
-            },
-            {
-                x: data.heap[0],
-                y: data.heap[2],
-                type: 'scatter',
-                name: 'heap sys'
-            },
-            {
-                x: data.heap[0],
-                y: data.heap[3],
-                type: 'scatter',
-                name: 'heap idle'
-            },
-            {
-                x: data.heap[0],
-                y: data.heap[4],
-                type: 'scatter',
-                name: 'heap in-use'
-            },
-        ]
-    }
-
-    // https://plotly.com/javascript/reference/layout
-    let heapLayout = {
-        title: 'Heap',
-        xaxis: {
-            title: 'time',
-            tickformat: '%H:%M:%S',
-        },
-        yaxis: {
-            title: 'bytes',
-            ticksuffix: 'B',
-            // tickformat: ' ',
-            exponentformat: 'SI',
-        }
-    };
-
-    m.createPlots = function (opts, data, elts) {
-        Plotly.plot('heap', heapData(data), heapLayout);
-    }
-
-
-    function dateFromTimestamp(ts) {
-        return
-    }
-
     function GCLines(data) {
         const gcs = stats.lastGCs;
         const mints = data.heap[0][0];
@@ -92,10 +39,125 @@ var ui = (function () {
         return shapes;
     }
 
-    m.updatePlots = function (xScale, data) {
+    // https://plotly.com/javascript/reference/layout
+    let heapLayout = {
+        title: 'Heap',
+        xaxis: {
+            title: 'time',
+            tickformat: '%H:%M:%S',
+        },
+        yaxis: {
+            title: 'bytes',
+            ticksuffix: 'B',
+            // tickformat: ' ',
+            exponentformat: 'SI',
+        }
+    };
+
+    function heapData(data) {
+        return [
+            {
+                x: data.heap[0],
+                y: data.heap[1],
+                type: 'scatter',
+                name: 'heap alloc'
+            },
+            {
+                x: data.heap[0],
+                y: data.heap[2],
+                type: 'scatter',
+                name: 'heap sys'
+            },
+            {
+                x: data.heap[0],
+                y: data.heap[3],
+                type: 'scatter',
+                name: 'heap idle'
+            },
+            {
+                x: data.heap[0],
+                y: data.heap[4],
+                type: 'scatter',
+                name: 'heap in-use'
+            },
+        ]
+    }
+
+    let sizeClassLayout = {
+        title: 'Size Classes',
+        xaxis: {
+            title: 'time',
+            tickformat: '%H:%M:%S',
+        },
+        yaxis: {
+            title: 'size class',
+            exponentformat: 'SI',
+        }
+    };
+
+    const colorscale = [
+        [0, 'rgb(166,206,227, 0.5)'],
+        [0.05, 'rgb(31,120,180,0.5)'],
+        [0.2, 'rgb(178,223,138,0.5)'],
+        [0.5, 'rgb(51,160,44,0.5)'],
+        [1, 'rgb(227,26,28,0.5)']
+    ];
+
+    function sizeClassData(data) {
+        var ret = [
+            {
+                x: data.times,
+                y: stats.classSizes,
+                z: data.bySizes,
+                type: 'heatmap',
+                hovertemplate: '<br><b>size class</b>: %{y:} B' +
+                    '<br><b>objects</b>: %{z}<br>',
+                showlegend: false,
+                colorscale: colorscale,
+            }
+        ];
+        return ret;
+    }
+
+    m.createPlots = function (data) {
+        Plotly.plot('heap', heapData(data), heapLayout);
+        Plotly.plot('size-class', sizeClassData(data), sizeClassLayout);
+    }
+
+    var updateIdx = 0;
+    m.updatePlots = function (data) {
         heapLayout.shapes = GCLines(data);
         Plotly.react('heap', heapData(data), heapLayout)
+
+        if (updateIdx % 5 == 0) {
+            // Update the size class heatmap 5 times less often since it's expensive. 
+            Plotly.react('size-class', sizeClassData(data), sizeClassLayout)
+        }
+
+        updateIdx++;
     }
+
+    m.humanBytes = function (bytes, si = false, dp = 1) {
+        const thresh = si ? 1000 : 1024;
+
+        if (Math.abs(bytes) < thresh) {
+            return bytes + ' B';
+        }
+
+        const units = si
+            ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+            : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+        let u = -1;
+        const r = 10 ** dp;
+
+        do {
+            bytes /= thresh;
+            ++u;
+        } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
+
+        return bytes.toFixed(dp) + ' ' + units[u];
+    }
+
 
     return m;
 }());
