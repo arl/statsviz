@@ -60,25 +60,29 @@ var ui = (function () {
                 x: data.times,
                 y: data.heap[0],
                 type: 'scatter',
-                name: 'heap alloc'
+                name: 'heap alloc',
+                hovertemplate: '<b>Heap alloc</b>: %{y:.4s}B',
             },
             {
                 x: data.times,
                 y: data.heap[1],
                 type: 'scatter',
-                name: 'heap sys'
+                name: 'heap sys',
+                hovertemplate: '<b>Heap sys</b>: $%{y:.4s}B',
             },
             {
                 x: data.times,
                 y: data.heap[2],
                 type: 'scatter',
-                name: 'heap idle'
+                name: 'heap idle',
+                hovertemplate: '<b>Heap idle</b>: %{y:.4s}B',
             },
             {
                 x: data.times,
                 y: data.heap[3],
                 type: 'scatter',
-                name: 'heap in-use'
+                name: 'heap in-use',
+                hovertemplate: '<b>Heap in-use</b>: %{y:.4s}B',
             },
         ]
     }
