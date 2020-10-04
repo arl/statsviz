@@ -2,19 +2,17 @@
 var stats = (function () {
     var m = {};
 
-    const idxTimes = 0;
-    const idxHeapAlloc = 1;
-    const idxHeapSys = 2;
-    const idxHeapIdle = 3;
-    const idxHeapInuse = 4;
+    const idxHeapAlloc = 0;
+    const idxHeapSys = 1;
+    const idxHeapIdle = 2;
+    const idxHeapInuse = 3;
 
     const numSeriesHeap = 4;
-    const totalSeries = 1 + numSeriesHeap; // times + other series
 
     var data = {
-        series: new Array(totalSeries), // TODO: rename to timeseries 
+        times: null,
+        heap: new Array(numSeriesHeap),
         lastGCs: new Array(),
-
         bySize: null,
     };
 
@@ -22,11 +20,13 @@ var stats = (function () {
         const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
         const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
 
-        for (let i = 0; i < totalSeries; i++) {
-            data.series[i] = new Buffer(buflen, bufcap);
+        data.times = new Buffer(buflen, bufcap);
+
+        for (let i = 0; i < numSeriesHeap; i++) {
+            data.heap[i] = new Buffer(buflen, bufcap);
         }
 
-        // heatmap: y
+        // size classes heatmap
         for (let i = 0; i < memStats.BySize.length; i++) {
             m.classSizes.push(memStats.BySize[i].Size);
 
@@ -60,7 +60,7 @@ var stats = (function () {
 
         // Remove from the lastGCs array the timestamps which are prior to
         // the minimum timestamp in 'series'.
-        let mints = data.series[idxTimes]._buf[0];
+        let mints = data.times._buf[0];
         let mingc = 0;
         for (let i = 0, n = data.lastGCs.length; i < n; i++) {
             if (data.lastGCs[i] > mints) {
@@ -76,11 +76,11 @@ var stats = (function () {
     m.classSizeNames = new Array();
 
     m.pushData = function (ts, memStats) {
-        data.series[idxTimes].push(ts); // timestamp
-        data.series[idxHeapAlloc].push(memStats.HeapAlloc);
-        data.series[idxHeapSys].push(memStats.HeapSys);
-        data.series[idxHeapIdle].push(memStats.HeapIdle);
-        data.series[idxHeapInuse].push(memStats.HeapInuse);
+        data.times.push(ts); // timestamp
+        data.heap[idxHeapAlloc].push(memStats.HeapAlloc);
+        data.heap[idxHeapSys].push(memStats.HeapSys);
+        data.heap[idxHeapIdle].push(memStats.HeapIdle);
+        data.heap[idxHeapInuse].push(memStats.HeapInuse);
 
         for (let i = 0; i < memStats.BySize.length; i++) {
             const size = memStats.BySize[i];
@@ -91,19 +91,17 @@ var stats = (function () {
     }
 
     m.length = function () {
-        return data.series[idxTimes].length();
+        return data.times.length();
     }
 
     m.slice = function (nitems) {
         // Time data
-        let times = data.series[idxTimes].slice(nitems);
+        let times = data.times.slice(nitems);
 
         // Heap plot data
         let heap = new Array(numSeriesHeap);
-        // TODO: remove since now we declare times separately
-        heap[0] = times;
-        for (let i = 1; i <= numSeriesHeap; i++) {
-            heap[i] = data.series[i].slice(nitems);
+        for (let i = 0; i < numSeriesHeap; i++) {
+            heap[i] = data.heap[i].slice(nitems);
         }
 
         // BySizes heatmap data

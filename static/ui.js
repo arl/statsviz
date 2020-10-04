@@ -10,8 +10,8 @@ var ui = (function () {
 
     function GCLines(data) {
         const gcs = stats.lastGCs;
-        const mints = data.heap[0][0];
-        const maxts = data.heap[0][data.heap[0].length - 1];
+        const mints = data.times[0];
+        const maxts = data.times[data.times.length - 1];
 
         let shapes = [];
 
@@ -57,26 +57,26 @@ var ui = (function () {
     function heapData(data) {
         return [
             {
-                x: data.heap[0],
-                y: data.heap[1],
+                x: data.times,
+                y: data.heap[0],
                 type: 'scatter',
                 name: 'heap alloc'
             },
             {
-                x: data.heap[0],
-                y: data.heap[2],
+                x: data.times,
+                y: data.heap[1],
                 type: 'scatter',
                 name: 'heap sys'
             },
             {
-                x: data.heap[0],
-                y: data.heap[3],
+                x: data.times,
+                y: data.heap[2],
                 type: 'scatter',
                 name: 'heap idle'
             },
             {
-                x: data.heap[0],
-                y: data.heap[4],
+                x: data.times,
+                y: data.heap[3],
                 type: 'scatter',
                 name: 'heap in-use'
             },
