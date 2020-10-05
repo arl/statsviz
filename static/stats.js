@@ -56,14 +56,6 @@ var stats = (function () {
         // size classes heatmap
         for (let i = 0; i < memStats.BySize.length; i++) {
             m.classSizes.push(memStats.BySize[i].Size);
-
-            if (i == memStats.BySize.length - 1) {
-                let name = '> ' + ui.humanBytes(memStats.BySize[i].Size);
-                m.classSizeNames.push(name);
-            } else {
-                let name = ui.humanBytes(memStats.BySize[i].Size) + ' -' + ui.humanBytes(memStats.BySize[i + 1].Size)
-                m.classSizeNames.push(name);
-            }
         }
 
         data.bySize = new Array(m.classSizes.length);
@@ -100,7 +92,6 @@ var stats = (function () {
 
     // Contain indexed class sizes, this is initialized after reception of the first message.
     m.classSizes = new Array();
-    m.classSizeNames = new Array();
 
     m.pushData = function (ts, allStats) {
         data.times.push(ts); // timestamp
