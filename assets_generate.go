@@ -86,5 +86,15 @@ func genMemStatsDoc() ([]byte, error) {
 		js[f.Names[0].Name] = f.Doc.Text()
 	}
 
-	return json.MarshalIndent(js, "", "  ")
+	const before = `function memStatsDoc(field) {
+	const m = `
+	const after = `;
+return m[field];
+}`
+	buf, err := json.MarshalIndent(js, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	return append([]byte(before), append(buf, []byte(after)...)...), nil
 }
