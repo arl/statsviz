@@ -33,18 +33,18 @@
 
     var initDone = false;
     socket.onmessage = event => {
-        let memStats = JSON.parse(event.data)
+        let allStats = JSON.parse(event.data)
         if (!initDone) {
-            stats.init(dataRetentionSeconds, memStats.Mem);
+            stats.init(dataRetentionSeconds, allStats);
             initDone = true;
             return;
         }
 
-        updateStats(memStats.Mem);
+        updateStats(allStats);
     }
 
-    function updateStats(memStats) {
-        stats.pushData(new Date(), memStats);
+    function updateStats(allStats) {
+        stats.pushData(new Date(), allStats);
 
         if (ui.isPaused()) {
             return

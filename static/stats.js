@@ -25,16 +25,20 @@ var stats = (function () {
         heap: new Array(numSeriesHeap),
         mspanMCache: new Array(numSeriesMSpanMCache),
         objects: new Array(numSeriesObjects),
+        goroutines: null,
         gcfraction: null,
         lastGCs: new Array(),
         bySize: null,
     };
 
-    m.init = function (buflen, memStats) {
+    m.init = function (buflen, allStats) {
         const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
         const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
 
+        const memStats = allStats.Mem;
+
         data.times = new Buffer(buflen, bufcap);
+        data.goroutines = new Buffer(buflen, bufcap);
         data.gcfraction = new Buffer(buflen, bufcap);
 
         for (let i = 0; i < numSeriesHeap; i++) {
@@ -98,10 +102,13 @@ var stats = (function () {
     m.classSizes = new Array();
     m.classSizeNames = new Array();
 
-    m.pushData = function (ts, memStats) {
+    m.pushData = function (ts, allStats) {
         data.times.push(ts); // timestamp
 
+        const memStats = allStats.Mem;
+
         data.gcfraction.push(memStats.GCCPUFraction);
+        data.goroutines.push(allStats.NumGoroutine);
 
         data.heap[idxHeapAlloc].push(memStats.HeapAlloc);
         data.heap[idxHeapSys].push(memStats.HeapSys);
@@ -131,10 +138,9 @@ var stats = (function () {
     }
 
     m.slice = function (nitems) {
-        // Time data
-        let times = data.times.slice(nitems);
-
-        let gcfraction = data.gcfraction.slice(nitems);
+        const times = data.times.slice(nitems);
+        const gcfraction = data.gcfraction.slice(nitems);
+        const goroutines = data.goroutines.slice(nitems);
 
         // Heap plot data
         let heap = new Array(numSeriesHeap);
@@ -164,6 +170,7 @@ var stats = (function () {
         return {
             times: times,
             gcfraction: gcfraction,
+            goroutines: goroutines,
             heap: heap,
             mspanMCache: mspanMCache,
             objects: objects,

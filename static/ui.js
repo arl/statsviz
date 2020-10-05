@@ -214,6 +214,29 @@ var ui = (function () {
         }
     };
 
+    function goroutinesData(data) {
+        return [
+            {
+                x: data.times,
+                y: data.goroutines,
+                type: 'scatter',
+                name: 'goroutines',
+                hovertemplate: '<b>goroutines</b>: %{y}',
+            },
+        ]
+    }
+
+    let goroutinesLayout = {
+        title: 'Goroutines',
+        xaxis: {
+            title: 'time',
+            tickformat: '%H:%M:%S',
+        },
+        yaxis: {
+            title: 'goroutines',
+        }
+    };
+
     function gcFractionData(data) {
         return [
             {
@@ -244,6 +267,7 @@ var ui = (function () {
         Plotly.plot('size-class', sizeClassData(data), sizeClassLayout);
         Plotly.plot('objects', objectsData(data), objectsLayout);
         Plotly.plot('gcfraction', gcFractionData(data), gcFractionLayout);
+        Plotly.plot('goroutines', goroutinesData(data), goroutinesLayout);
     }
 
     var updateIdx = 0;
@@ -260,6 +284,7 @@ var ui = (function () {
         Plotly.react('objects', objectsData(data), objectsLayout);
 
         Plotly.react('gcfraction', gcFractionData(data), gcFractionLayout);
+        Plotly.react('goroutines', goroutinesData(data), goroutinesLayout);
 
         if (updateIdx % 5 == 0) {
             // Update the size class heatmap 5 times less often since it's expensive. 
