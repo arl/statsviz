@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta name="description" content="Statsviz interface" />
     <!--DO NOT REMOVE: this comment gets replaced in development-->
-    <!-- <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> -->
+    <link rel="stylesheet" href="./statsviz.css">
     <script src="./plotly-basic.min.js"></script>
     <script src="./plotly-cartesian.min.js"></script>
 </head>
@@ -17,12 +17,14 @@
         <h1>Statsviz</h1>
     </div>
 
-    <div id="heap"></div>
-    <div id="mspan-mcache"></div>
-    <div id="size-class"></div>
-    <div id="objects"></div>
-    <div id="goroutines"></div>
-    <div id="gcfraction"></div>
+    <div id="container">
+        <div id="heap"></div>
+        <div id="mspan-mcache"></div>
+        <div id="size-class"></div>
+        <div id="objects"></div>
+        <div id="goroutines"></div>
+        <div id="gcfraction"></div>
+    </div>
 
     <script src="./buffer.js"></script>
     <script src="./stats.js"></script>

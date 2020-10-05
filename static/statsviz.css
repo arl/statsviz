@@ -1,14 +1,6 @@
-html, body, .grid-container {
+html, body {
     height: 100%;
     margin: 0;
-}
-
-.grid-container {
-    display: grid;
-    grid-template-columns: max-content 200px;
-    grid-template-rows: 1fr 1fr 1fr;
-    gap: 1px 1px;
-    grid-template-areas: ". ." ". ." ". .";
 }
 
 #header {
@@ -18,50 +10,4 @@ html, body, .grid-container {
 #container {
     width: 1220px;
     margin: 20px auto;
-}
-
-.single-stat {
-    display: flex;
-    justify-content: space-between;
-    width: 60%;
-    margin: .5rem;
-}
-
-dl.inline dd {
-    display: inline;
-    margin: 0;
-    lext
-}
-
-dl.inline dd:after {
-    display: block;
-    content: '';
-}
-
-dl.inline dt {
-    display: inline-block;
-    min-width: 100px;
-}
-
-dl.inline-flex {
-    display: flex;
-    flex-flow: row;
-    flex-wrap: wrap;
-    width: 300px;
-    /* set the container width*/
-    overflow: visible;
-}
-
-dl.inline-flex dt {
-    flex: 0 0 50%;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-dl.inline-flex dd {
-    margin-left: auto;
-    text-align: left;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    flex: 0 0 50%
 }
