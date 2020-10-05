@@ -6,7 +6,8 @@ var stats = (function () {
     const idxHeapSys = 1;
     const idxHeapIdle = 2;
     const idxHeapInuse = 3;
-    const numSeriesHeap = 4;
+    const idxHeapNextGC = 4;
+    const numSeriesHeap = 5;
 
     const idxMSpanMCacheMSpanInUse = 0;
     const idxMSpanMCacheMSpanSys = 1;
@@ -24,6 +25,7 @@ var stats = (function () {
         heap: new Array(numSeriesHeap),
         mspanMCache: new Array(numSeriesMSpanMCache),
         objects: new Array(numSeriesObjects),
+        gcfraction: null,
         lastGCs: new Array(),
         bySize: null,
     };
@@ -33,6 +35,7 @@ var stats = (function () {
         const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
 
         data.times = new Buffer(buflen, bufcap);
+        data.gcfraction = new Buffer(buflen, bufcap);
 
         for (let i = 0; i < numSeriesHeap; i++) {
             data.heap[i] = new Buffer(buflen, bufcap);
@@ -98,10 +101,13 @@ var stats = (function () {
     m.pushData = function (ts, memStats) {
         data.times.push(ts); // timestamp
 
+        data.gcfraction.push(memStats.GCCPUFraction);
+
         data.heap[idxHeapAlloc].push(memStats.HeapAlloc);
         data.heap[idxHeapSys].push(memStats.HeapSys);
         data.heap[idxHeapIdle].push(memStats.HeapIdle);
         data.heap[idxHeapInuse].push(memStats.HeapInuse);
+        data.heap[idxHeapNextGC].push(memStats.NextGC);
 
         data.mspanMCache[idxMSpanMCacheMSpanInUse].push(memStats.MSpanInuse);
         data.mspanMCache[idxMSpanMCacheMSpanSys].push(memStats.MSpanSys);
@@ -127,6 +133,8 @@ var stats = (function () {
     m.slice = function (nitems) {
         // Time data
         let times = data.times.slice(nitems);
+
+        let gcfraction = data.gcfraction.slice(nitems);
 
         // Heap plot data
         let heap = new Array(numSeriesHeap);
@@ -155,6 +163,7 @@ var stats = (function () {
 
         return {
             times: times,
+            gcfraction: gcfraction,
             heap: heap,
             mspanMCache: mspanMCache,
             objects: objects,

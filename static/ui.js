@@ -69,6 +69,13 @@ var ui = (function () {
                 name: 'heap in-use',
                 hovertemplate: '<b>heap in-use</b>: %{y:.4s}B',
             },
+            {
+                x: data.times,
+                y: data.heap[4],
+                type: 'scatter',
+                name: 'next gc',
+                hovertemplate: '<b>next gc</b>: %{y:.4s}B',
+            },
         ]
     }
 
@@ -207,11 +214,36 @@ var ui = (function () {
         }
     };
 
+    function gcFractionData(data) {
+        return [
+            {
+                x: data.times,
+                y: data.gcfraction,
+                type: 'scatter',
+                name: 'gc/cpu',
+                hovertemplate: '<b>gcc/CPU fraction</b>: %{y:,.4%}',
+            },
+        ]
+    }
+
+    let gcFractionLayout = {
+        title: 'GC CPU fraction',
+        xaxis: {
+            title: 'time',
+            tickformat: '%H:%M:%S',
+        },
+        yaxis: {
+            title: 'gc/cpu (%)',
+            tickformat: ',.5%',
+        }
+    };
+
     m.createPlots = function (data) {
         Plotly.plot('heap', heapData(data), heapLayout);
         Plotly.plot('mspan-mcache', mspanMCacheData(data), mspanMCacheLayout);
         Plotly.plot('size-class', sizeClassData(data), sizeClassLayout);
         Plotly.plot('objects', objectsData(data), objectsLayout);
+        Plotly.plot('gcfraction', gcFractionData(data), gcFractionLayout);
     }
 
     var updateIdx = 0;
@@ -226,6 +258,8 @@ var ui = (function () {
 
         objectsLayout.shapes = gcLines;
         Plotly.react('objects', objectsData(data), objectsLayout);
+
+        Plotly.react('gcfraction', gcFractionData(data), gcFractionLayout);
 
         if (updateIdx % 5 == 0) {
             // Update the size class heatmap 5 times less often since it's expensive. 
