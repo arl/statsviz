@@ -261,13 +261,17 @@ var ui = (function () {
         }
     };
 
+    const config = {
+        displayModeBar: false,
+    }
+
     m.createPlots = function (data) {
-        Plotly.plot('heap', heapData(data), heapLayout);
-        Plotly.plot('mspan-mcache', mspanMCacheData(data), mspanMCacheLayout);
-        Plotly.plot('size-class', sizeClassData(data), sizeClassLayout);
-        Plotly.plot('objects', objectsData(data), objectsLayout);
-        Plotly.plot('gcfraction', gcFractionData(data), gcFractionLayout);
-        Plotly.plot('goroutines', goroutinesData(data), goroutinesLayout);
+        Plotly.plot('heap', heapData(data), heapLayout, config);
+        Plotly.plot('mspan-mcache', mspanMCacheData(data), mspanMCacheLayout, config);
+        Plotly.plot('size-class', sizeClassData(data), sizeClassLayout, config);
+        Plotly.plot('objects', objectsData(data), objectsLayout, config);
+        Plotly.plot('gcfraction', gcFractionData(data), gcFractionLayout, config);
+        Plotly.plot('goroutines', goroutinesData(data), goroutinesLayout, config);
     }
 
     var updateIdx = 0;
