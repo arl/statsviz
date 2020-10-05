@@ -8,6 +8,12 @@ var stats = (function () {
     const idxHeapInuse = 3;
     const numSeriesHeap = 4;
 
+    const idxMSpanMCacheMSpanInUse = 0;
+    const idxMSpanMCacheMSpanSys = 1;
+    const idxMSpanMSpanMSCacheInUse = 2;
+    const idxMSpanMSpanMSCacheSys = 3;
+    const numSeriesMSpanMCache = 4;
+
     const idxObjectsLive = 0;
     const idxObjectsLookups = 1;
     const idxObjectsHeap = 2;
@@ -16,6 +22,7 @@ var stats = (function () {
     var data = {
         times: null,
         heap: new Array(numSeriesHeap),
+        mspanMCache: new Array(numSeriesMSpanMCache),
         objects: new Array(numSeriesObjects),
         lastGCs: new Array(),
         bySize: null,
@@ -29,6 +36,10 @@ var stats = (function () {
 
         for (let i = 0; i < numSeriesHeap; i++) {
             data.heap[i] = new Buffer(buflen, bufcap);
+        }
+
+        for (let i = 0; i < numSeriesMSpanMCache; i++) {
+            data.mspanMCache[i] = new Buffer(buflen, bufcap);
         }
 
         for (let i = 0; i < numSeriesObjects; i++) {
@@ -86,10 +97,17 @@ var stats = (function () {
 
     m.pushData = function (ts, memStats) {
         data.times.push(ts); // timestamp
+
         data.heap[idxHeapAlloc].push(memStats.HeapAlloc);
         data.heap[idxHeapSys].push(memStats.HeapSys);
         data.heap[idxHeapIdle].push(memStats.HeapIdle);
         data.heap[idxHeapInuse].push(memStats.HeapInuse);
+
+        data.mspanMCache[idxMSpanMCacheMSpanInUse].push(memStats.MSpanInuse);
+        data.mspanMCache[idxMSpanMCacheMSpanSys].push(memStats.MSpanSys);
+        data.mspanMCache[idxMSpanMSpanMSCacheInUse].push(memStats.MCacheInuse);
+        data.mspanMCache[idxMSpanMSpanMSCacheSys].push(memStats.MCacheSys);
+
         data.objects[idxObjectsLive].push(memStats.Mallocs - memStats.Frees);
         data.objects[idxObjectsLookups].push(memStats.Lookups);
         data.objects[idxObjectsHeap].push(memStats.HeapObjects);
@@ -116,6 +134,12 @@ var stats = (function () {
             heap[i] = data.heap[i].slice(nitems);
         }
 
+        // MSpan/MCache plot data
+        let mspanMCache = new Array(numSeriesMSpanMCache);
+        for (let i = 0; i < numSeriesMSpanMCache; i++) {
+            mspanMCache[i] = data.mspanMCache[i].slice(nitems);
+        }
+
         // Objects plot data
         let objects = new Array(numSeriesObjects);
         for (let i = 0; i < numSeriesObjects; i++) {
@@ -132,6 +156,7 @@ var stats = (function () {
         return {
             times: times,
             heap: heap,
+            mspanMCache: mspanMCache,
             objects: objects,
             bySizes: bySizes,
         }

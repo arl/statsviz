@@ -53,7 +53,7 @@ var ui = (function () {
                 y: data.heap[1],
                 type: 'scatter',
                 name: 'heap sys',
-                hovertemplate: '<b>heap sys</b>: $%{y:.4s}B',
+                hovertemplate: '<b>heap sys</b>: %{y:.4s}B',
             },
             {
                 x: data.times,
@@ -75,6 +75,53 @@ var ui = (function () {
     // https://plotly.com/javascript/reference/layout
     let heapLayout = {
         title: 'Heap',
+        xaxis: {
+            title: 'time',
+            tickformat: '%H:%M:%S',
+        },
+        yaxis: {
+            title: 'bytes',
+            ticksuffix: 'B',
+            // tickformat: ' ',
+            exponentformat: 'SI',
+        }
+    };
+
+    function mspanMCacheData(data) {
+        return [
+            {
+                x: data.times,
+                y: data.mspanMCache[0],
+                type: 'scatter',
+                name: 'mspan inuse',
+                hovertemplate: '<b>mspan in-use</b>: %{y:.4s}B',
+            },
+            {
+                x: data.times,
+                y: data.mspanMCache[1],
+                type: 'scatter',
+                name: 'mspan sys',
+                hovertemplate: '<b>mspan sys</b>: %{y:.4s}B',
+            },
+            {
+                x: data.times,
+                y: data.mspanMCache[2],
+                type: 'scatter',
+                name: 'mcache inuse',
+                hovertemplate: '<b>mcache in-use</b>: %{y:.4s}B',
+            },
+            {
+                x: data.times,
+                y: data.mspanMCache[3],
+                type: 'scatter',
+                name: 'mcache sys',
+                hovertemplate: '<b>mcache sys</b>: %{y:.4s}B',
+            },
+        ]
+    }
+
+    let mspanMCacheLayout = {
+        title: 'MSpan/MCache',
         xaxis: {
             title: 'time',
             tickformat: '%H:%M:%S',
@@ -162,6 +209,7 @@ var ui = (function () {
 
     m.createPlots = function (data) {
         Plotly.plot('heap', heapData(data), heapLayout);
+        Plotly.plot('mspan-mcache', mspanMCacheData(data), mspanMCacheLayout);
         Plotly.plot('size-class', sizeClassData(data), sizeClassLayout);
         Plotly.plot('objects', objectsData(data), objectsLayout);
     }
@@ -169,10 +217,14 @@ var ui = (function () {
     var updateIdx = 0;
     m.updatePlots = function (data) {
         let gcLines = GCLines(data);
-        heapLayout.shapes = gcLines;
-        objectsLayout.shapes = gcLines;
 
+        heapLayout.shapes = gcLines;
         Plotly.react('heap', heapData(data), heapLayout)
+
+        mspanMCacheLayout.shapes = gcLines;
+        Plotly.react('mspan-mcache', mspanMCacheData(data), mspanMCacheLayout);
+
+        objectsLayout.shapes = gcLines;
         Plotly.react('objects', objectsData(data), objectsLayout);
 
         if (updateIdx % 5 == 0) {
