@@ -7,30 +7,44 @@
     <meta charset="utf-8">
     <meta name="description" content="Statsviz interface" />
     <!--DO NOT REMOVE: this comment gets replaced in development-->
-    <link rel="stylesheet" href="./statsviz.css">
+    <!-- <link rel="stylesheet" href="./statsviz.css"> -->
+    <link rel="stylesheet" href="./semantic/semantic.min.css" />
     <script src="./plotly-basic.min.js"></script>
     <script src="./plotly-cartesian.min.js"></script>
+    <script src="./semantic/semantic.min.js"></script>
 </head>
 
 <body>
-    <div id="header">
-        <h1>Statsviz</h1>
-    </div>
+    <div class="ui stackable grid">
+        <div class="eight wide column" style="flex: 0 0 800px;">
+            <div id="heap"></div>
+        </div>
 
-    <div id="container">
-        <div id="heap"></div>
-        <div id="mspan-mcache"></div>
-        <div id="size-class"></div>
-        <div id="objects"></div>
-        <div id="goroutines"></div>
-        <div id="gcfraction"></div>
-    </div>
+        <div class="eight wide column" style="flex: 0 0 800px;">
+            <div id="mspan-mcache"></div>
+        </div>
 
-    <script src="./buffer.js"></script>
-    <script src="./stats.js"></script>
-    <script src="./ui.js"></script>
-    <script src="./app.js"></script>
-    <script src="./memstats.js"></script>
+        <div class="eight wide column" style="flex: 0 0 800px;">
+            <div id="size-classes"></div>
+        </div>
+
+        <div class="eight wide column" style="flex: 0 0 800px;">
+            <div id="objects"></div>
+        </div>
+
+        <div class="eight wide column" style="flex: 0 0 800px;">
+            <div id="goroutines"></div>
+        </div>
+
+        <div class="eight wide column" style="flex: 0 0 800px;">
+            <div id="gcfraction"></div>
+        </div>
+
+        <script src="./buffer.js"></script>
+        <script src="./stats.js"></script>
+        <script src="./ui.js"></script>
+        <script src="./app.js"></script>
+        <script src="./memstats.js"></script>
 </body>
 
 </html>
