@@ -149,7 +149,7 @@ var ui = (function () {
         [1, 'rgb(227,26,28,0.5)']
     ];
 
-    function sizeClassData(data) {
+    function sizeClassesData(data) {
         var ret = [
             {
                 x: data.times,
@@ -165,14 +165,14 @@ var ui = (function () {
         return ret;
     }
 
-    let sizeClassLayout = {
+    let sizeClassesLayout = {
         title: 'Size Classes',
         xaxis: {
             title: 'time',
             tickformat: '%H:%M:%S',
         },
         yaxis: {
-            title: 'size class',
+            title: 'size classes',
             exponentformat: 'SI',
         }
     };
@@ -276,14 +276,14 @@ var ui = (function () {
     m.createPlots = function (data) {
         heapElt = document.getElementById('heap');
         mspanMCacheElt = document.getElementById('mspan-mcache');
-        sizeClassElt = document.getElementById('sizeClass');
+        sizeClassesElt = document.getElementById('size-classes');
         objectsElt = document.getElementById('objects');
         gcfractionElt = document.getElementById('gcfraction');
         goroutinesElt = document.getElementById('goroutines');
 
         Plotly.plot(heapElt, heapData(data), heapLayout, config);
         Plotly.plot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
-        Plotly.plot(sizeClassElt, sizeClassData(data), sizeClassLayout, config);
+        Plotly.plot(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, config);
         Plotly.plot(objectsElt, objectsData(data), objectsLayout, config);
         Plotly.plot(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
         Plotly.plot(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
@@ -307,7 +307,7 @@ var ui = (function () {
 
         if (updateIdx % 5 == 0) {
             // Update the size class heatmap 5 times less often since it's expensive. 
-            Plotly.react(sizeClassElt, sizeClassData(data), sizeClassLayout, config);
+            Plotly.react(sizeClassElt, sizeClassesData(data), sizeClassLayout, config);
         }
 
         updateIdx++;
