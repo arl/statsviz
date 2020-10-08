@@ -100,7 +100,7 @@ var ui = (function () {
                 x: data.times,
                 y: data.mspanMCache[0],
                 type: 'scatter',
-                name: 'mspan inuse',
+                name: 'mspan in-use',
                 hovertemplate: '<b>mspan in-use</b>: %{y:.4s}B',
             },
             {
@@ -114,7 +114,7 @@ var ui = (function () {
                 x: data.times,
                 y: data.mspanMCache[2],
                 type: 'scatter',
-                name: 'mcache inuse',
+                name: 'mcache in-use',
                 hovertemplate: '<b>mcache in-use</b>: %{y:.4s}B',
             },
             {
@@ -149,7 +149,7 @@ var ui = (function () {
         [1, 'rgb(227,26,28,0.5)']
     ];
 
-    function sizeClassData(data) {
+    function sizeClassesData(data) {
         var ret = [
             {
                 x: data.times,
@@ -165,14 +165,14 @@ var ui = (function () {
         return ret;
     }
 
-    let sizeClassLayout = {
+    let sizeClassesLayout = {
         title: 'Size Classes',
         xaxis: {
             title: 'time',
             tickformat: '%H:%M:%S',
         },
         yaxis: {
-            title: 'size class',
+            title: 'size classes',
             exponentformat: 'SI',
         }
     };
@@ -272,21 +272,39 @@ var ui = (function () {
     let gcfractionElt = null;
     let goroutinesElt = null;
 
-
     m.createPlots = function (data) {
+        // $(".ui.accordion").accordion();
+        $('.ui.accordion').accordion({
+            exclusive: false,
+            onOpen: function () {
+                this.firstElementChild.hidden = false;
+            },
+            onClose: function () {
+                this.firstElementChild.hidden = true;
+            }
+        });
+
         heapElt = document.getElementById('heap');
+        heapElt.hidden = false;
+
         mspanMCacheElt = document.getElementById('mspan-mcache');
-        sizeClassElt = document.getElementById('sizeClass');
+        sizeClassesElt = document.getElementById('size-classes');
         objectsElt = document.getElementById('objects');
         gcfractionElt = document.getElementById('gcfraction');
         goroutinesElt = document.getElementById('goroutines');
 
         Plotly.plot(heapElt, heapData(data), heapLayout, config);
         Plotly.plot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
-        Plotly.plot(sizeClassElt, sizeClassData(data), sizeClassLayout, config);
+        Plotly.plot(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, config);
         Plotly.plot(objectsElt, objectsData(data), objectsLayout, config);
         Plotly.plot(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
         Plotly.plot(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
+
+        mspanMCacheElt.hidden = true;
+        sizeClassesElt.hidden = true;
+        objectsElt.hidden = true;
+        gcfractionElt.hidden = true;
+        goroutinesElt.hidden = true;
     }
 
     var updateIdx = 0;
@@ -294,24 +312,76 @@ var ui = (function () {
         let gcLines = GCLines(data);
 
         heapLayout.shapes = gcLines;
-        Plotly.react(heapElt, heapData(data), heapLayout, config);
+        if (!heapElt.hidden) {
+            Plotly.react(heapElt, heapData(data), heapLayout, config);
+            console.log("updating: heap");
+        }
 
         mspanMCacheLayout.shapes = gcLines;
-        Plotly.react(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
+        if (!mspanMCacheElt.hidden) {
+            Plotly.react(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
+            console.log("updating: mspan");
+        }
 
         objectsLayout.shapes = gcLines;
-        Plotly.react(objectsElt, objectsData(data), objectsLayout, config);
+        if (!objectsElt.hidden) {
+            Plotly.react(objectsElt, objectsData(data), objectsLayout, config);
+            console.log("updating: objects");
+        }
 
-        Plotly.react(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
-        Plotly.react(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
-
-        if (updateIdx % 5 == 0) {
+        if (!gcfractionElt.hidden) {
+            Plotly.react(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
+            console.log("updating: gcfracion");
+        }
+        if (!goroutinesElt.hidden) {
+            Plotly.react(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
+            console.log("updating: goroutines");
+        }
+        if (!sizeClassesElt.hidden && updateIdx % 5 == 0) {
             // Update the size class heatmap 5 times less often since it's expensive. 
-            Plotly.react(sizeClassElt, sizeClassData(data), sizeClassLayout, config);
+            Plotly.react(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, config);
+            console.log("updating: heatmap");
         }
 
         updateIdx++;
     }
+
+    function traceInfo(traceName) {
+        let traces = {
+            'heap alloc': 'HeapAlloc',
+            'heap sys': 'HeapSys',
+            'heap idle': 'HeapIdle',
+            'heap in-use': 'HeapInuse',
+            'next gc': 'NextGC',
+
+            'mspan in-use': 'MSpanInuse',
+            'mspan sys': 'MSpanSys',
+            'mcache in-use': 'MCacheInuse',
+            'mcache sys': 'MCacheSys',
+
+            'gcfraction': 'GCCPUFraction',
+
+            'lookups': 'Lookups',
+            'heap objects': 'HeapObjects',
+        };
+
+        let fieldName = traces[traceName];
+        if (fieldName !== undefined) {
+            return memStatsDoc(fieldName);
+        }
+        if (traceName == 'goroutines') {
+            return "The number of goroutines"
+        }
+        if (traceName == 'live') {
+            return "The number of live objects"
+        }
+        if (traceName == 'goroutines') {
+            return "Number of the goroutines"
+        }
+        if (traceName == 'size classes') {
+            return "Reports per-size class allocation statistics"
+        }
+    };
 
     return m;
 }());
