@@ -39,6 +39,29 @@ you will have to register the handler with the mux you are using.
 Then open your browser at http://localhost:6060/debug/statsviz/
 
 
+Plots
+-----
+
+### Heap
+<img alt="Heap plot image" src="https://github.com/arl/statsviz/raw/readme-docs/heap.png" width="600">
+
+### MSpans / MCaches
+<img alt="MSpan/MCache plot image" src="https://github.com/arl/statsviz/raw/readme-docs/mspan-mcache.png" width="600">
+
+### Size classes heatmap
+<img alt="Size classes heatmap image" src="https://github.com/arl/statsviz/raw/readme-docs/size-classes.png" width="600">
+
+### Objects
+<img alt="Objects plot image" src="https://github.com/arl/statsviz/raw/readme-docs/objects.png" width="600">
+
+### Goroutines
+<img alt="Goroutines plot image" src="https://github.com/arl/statsviz/raw/readme-docs/goroutines.png" width="600">
+
+### GC/CPU fraction
+<img alt="GC/CPU fraction plot image" src="https://github.com/arl/statsviz/raw/readme-docs/gc-cpu-fraction.png" width="600">
+
+
+
 Contributing
 ------------
 
