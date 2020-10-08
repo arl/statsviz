@@ -100,7 +100,7 @@ var ui = (function () {
                 x: data.times,
                 y: data.mspanMCache[0],
                 type: 'scatter',
-                name: 'mspan inuse',
+                name: 'mspan in-use',
                 hovertemplate: '<b>mspan in-use</b>: %{y:.4s}B',
             },
             {
@@ -114,7 +114,7 @@ var ui = (function () {
                 x: data.times,
                 y: data.mspanMCache[2],
                 type: 'scatter',
-                name: 'mcache inuse',
+                name: 'mcache in-use',
                 hovertemplate: '<b>mcache in-use</b>: %{y:.4s}B',
             },
             {
@@ -287,16 +287,10 @@ var ui = (function () {
         heapElt.hidden = false;
 
         mspanMCacheElt = document.getElementById('mspan-mcache');
-        mspanMCacheElt.hidden = true;
         sizeClassesElt = document.getElementById('size-classes');
-        sizeClassesElt.hidden = true;
         objectsElt = document.getElementById('objects');
-        objectsElt.hidden = true;
         gcfractionElt = document.getElementById('gcfraction');
-        gcfractionElt.hidden = true;
         goroutinesElt = document.getElementById('goroutines');
-        goroutinesElt.hidden = true;
-
 
         Plotly.plot(heapElt, heapData(data), heapLayout, config);
         Plotly.plot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
@@ -304,6 +298,12 @@ var ui = (function () {
         Plotly.plot(objectsElt, objectsData(data), objectsLayout, config);
         Plotly.plot(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
         Plotly.plot(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
+
+        mspanMCacheElt.hidden = true;
+        sizeClassesElt.hidden = true;
+        objectsElt.hidden = true;
+        gcfractionElt.hidden = true;
+        goroutinesElt.hidden = true;
     }
 
     var updateIdx = 0;
@@ -344,6 +344,43 @@ var ui = (function () {
 
         updateIdx++;
     }
+
+    function traceInfo(traceName) {
+        let traces = {
+            'heap alloc': 'HeapAlloc',
+            'heap sys': 'HeapSys',
+            'heap idle': 'HeapIdle',
+            'heap in-use': 'HeapInuse',
+            'next gc': 'NextGC',
+
+            'mspan in-use': 'MSpanInuse',
+            'mspan sys': 'MSpanSys',
+            'mcache in-use': 'MCacheInuse',
+            'mcache sys': 'MCacheSys',
+
+            'gcfraction': 'GCCPUFraction',
+
+            'lookups': 'Lookups',
+            'heap objects': 'HeapObjects',
+        };
+
+        let fieldName = traces[traceName];
+        if (fieldName !== undefined) {
+            return memStatsDoc(fieldName);
+        }
+        if (traceName == 'goroutines') {
+            return "The number of goroutines"
+        }
+        if (traceName == 'live') {
+            return "The number of live objects"
+        }
+        if (traceName == 'goroutines') {
+            return "Number of the goroutines"
+        }
+        if (traceName == 'size classes') {
+            return "Reports per-size class allocation statistics"
+        }
+    };
 
     return m;
 }());
