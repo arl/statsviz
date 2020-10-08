@@ -273,8 +273,9 @@ var ui = (function () {
     let goroutinesElt = null;
 
     m.createPlots = function (data) {
-        $(".accordion").accordion();
+        // $(".ui.accordion").accordion();
         $('.ui.accordion').accordion({
+            exclusive: false,
             onOpen: function () {
                 this.firstElementChild.hidden = false;
             },
