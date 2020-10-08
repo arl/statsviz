@@ -265,13 +265,28 @@ var ui = (function () {
         displayModeBar: false,
     }
 
+    let heapElt = null;
+    let mspanMCacheElt = null;
+    let sizeClassElt = null;
+    let objectsElt = null;
+    let gcfractionElt = null;
+    let goroutinesElt = null;
+
+
     m.createPlots = function (data) {
-        Plotly.plot('heap', heapData(data), heapLayout, config);
-        Plotly.plot('mspan-mcache', mspanMCacheData(data), mspanMCacheLayout, config);
-        Plotly.plot('size-class', sizeClassData(data), sizeClassLayout, config);
-        Plotly.plot('objects', objectsData(data), objectsLayout, config);
-        Plotly.plot('gcfraction', gcFractionData(data), gcFractionLayout, config);
-        Plotly.plot('goroutines', goroutinesData(data), goroutinesLayout, config);
+        heapElt = document.getElementById('heap');
+        mspanMCacheElt = document.getElementById('mspan-mcache');
+        sizeClassElt = document.getElementById('sizeClass');
+        objectsElt = document.getElementById('objects');
+        gcfractionElt = document.getElementById('gcfraction');
+        goroutinesElt = document.getElementById('goroutines');
+
+        Plotly.plot(heapElt, heapData(data), heapLayout, config);
+        Plotly.plot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
+        Plotly.plot(sizeClassElt, sizeClassData(data), sizeClassLayout, config);
+        Plotly.plot(objectsElt, objectsData(data), objectsLayout, config);
+        Plotly.plot(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
+        Plotly.plot(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
     }
 
     var updateIdx = 0;
@@ -279,20 +294,20 @@ var ui = (function () {
         let gcLines = GCLines(data);
 
         heapLayout.shapes = gcLines;
-        Plotly.react('heap', heapData(data), heapLayout)
+        Plotly.react(heapElt, heapData(data), heapLayout, config);
 
         mspanMCacheLayout.shapes = gcLines;
-        Plotly.react('mspan-mcache', mspanMCacheData(data), mspanMCacheLayout);
+        Plotly.react(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
 
         objectsLayout.shapes = gcLines;
-        Plotly.react('objects', objectsData(data), objectsLayout);
+        Plotly.react(objectsElt, objectsData(data), objectsLayout, config);
 
-        Plotly.react('gcfraction', gcFractionData(data), gcFractionLayout);
-        Plotly.react('goroutines', goroutinesData(data), goroutinesLayout);
+        Plotly.react(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
+        Plotly.react(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
 
         if (updateIdx % 5 == 0) {
             // Update the size class heatmap 5 times less often since it's expensive. 
-            Plotly.react('size-class', sizeClassData(data), sizeClassLayout)
+            Plotly.react(sizeClassElt, sizeClassData(data), sizeClassLayout, config);
         }
 
         updateIdx++;

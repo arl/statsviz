@@ -3,8 +3,16 @@
 package main
 
 import (
+	"encoding/json"
+	"go/ast"
+	"go/doc"
+	"go/parser"
+	"go/token"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
+	"runtime"
 
 	"github.com/shurcooL/vfsgen"
 )
@@ -26,13 +34,67 @@ import (
 // /static and assets_vfsdata.go.
 
 func main() {
-	err := vfsgen.Generate(http.Dir("static"), vfsgen.Options{
+	// Before generating the assets, generate the memstats.js file, it contains
+	// the go documentation for the runtime.MemStats structure and is used inside
+	// the web interface to show that documentation.
+	jsbuf, err := genMemStatsDoc()
+	if err != nil {
+		log.Fatalln("extract memstats doc", err)
+	}
+
+	if err := ioutil.WriteFile("./static/memstats.js", jsbuf, 0644); err != nil {
+		log.Fatalln("write memstats doc", err)
+	}
+
+	err = vfsgen.Generate(http.Dir("static"), vfsgen.Options{
 		PackageName:  "statsviz",
 		BuildTags:    "!dev",
 		VariableName: "assets",
 		Filename:     "assets_vfsdata.go",
 	})
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("generate assets", err)
 	}
+}
+
+func genMemStatsDoc() ([]byte, error) {
+	// Create the AST by parsing src and test.
+	fset := token.NewFileSet()
+	b, err := ioutil.ReadFile(filepath.Join(runtime.GOROOT(), "src", "runtime", "mstats.go"))
+	if err != nil {
+		return nil, err
+	}
+
+	f, err := parser.ParseFile(fset, "mstats.go", b, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+
+	files := []*ast.File{f}
+
+	// Compute package documentation.
+	p, err := doc.NewFromFiles(fset, files, "runtime")
+	if err != nil {
+		return nil, err
+	}
+
+	js := make(map[string]string)
+
+	tspec := p.Types[0].Decl.Specs[0].(*ast.TypeSpec)
+	styp := tspec.Type.(*ast.StructType)
+	for _, f := range styp.Fields.List {
+		js[f.Names[0].Name] = f.Doc.Text()
+	}
+
+	const before = `function memStatsDoc(field) {
+	const m = `
+	const after = `;
+return m[field];
+}`
+	buf, err := json.MarshalIndent(js, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	return append([]byte(before), append(buf, []byte(after)...)...), nil
 }
