@@ -44,7 +44,8 @@ Then open your browser at http://localhost:6060/debug/statsviz/
 Plots
 -----
 
-On the plots where it matters, garbage collections are shown as vertical bars.
+On the plots where it matters, garbage collections are shown as vertical lines.
+
 ### Heap
 <img alt="Heap plot image" src="https://github.com/arl/statsviz/raw/readme-docs/heap.png" width="600">
 
@@ -69,7 +70,7 @@ Contributing
 ------------
 
 Pull-requests are welcome!
-More details in [Contributing](CONTRIBUTING.md)
+More details in [CONTRIBUTING.md](CONTRIBUTING.md)
 
 
 License
