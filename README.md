@@ -6,24 +6,30 @@ Statsviz
 Instant live visualization of your Go application runtime statistics 
 (GC, MemStats, etc.).
 
- - Import `import _ "github.com/arl/statsviz"` (à la `"net/http/pprof"`)
+ - Import `import "github.com/arl/statsviz"`
+ - Register statsviz HTTP handlers
+ - Start your program
  - Open your browser at `http://host:port/debug/statsviz`
  - Enjoy... 
-
-
-Installation
-------------
-
-```bash
-go get -u github.com/arl/statsviz
-```
 
 
 Usage
 -----
 
-This package is typically only imported for the side effect of registering its
-HTTP handler. The handled path is `/debug/statsviz/`.
+    go get -u github.com/arl/statsviz
+
+Either `Register` statsviz HTTP handlers with the [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) you're using (preferred method):
+
+```go
+	mux := http.NewServeMux()
+	statsviz.Register(mux)
+```
+
+Or register them with the `http.DefaultServeMux`:
+
+```go
+	statsviz.RegisterDefault()
+```
 
 If your application is not already running an HTTP server, you need to start
 one. Add `"net/http"` and `"log"` to your imports and the following code to your
@@ -35,16 +41,28 @@ go func() {
 }()
 ```
 
-If you are not using [http.DefaultServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux),
-you will have to register the handler with the mux you are using.
+The handled path is `/debug/statsviz/`.
 
 Then open your browser at http://localhost:6060/debug/statsviz/
+
+Examples
+--------
+
+Using `http.DefaultServeMux`:
+ - [_example/default.go](./_example/default.go)
+
+Using your own `http.ServeMux`:
+ - [_example/mux.go](./_example/mux.go)
+
+Using [gorilla/mux](https://github.com/gorilla/mux) Router:
+ - [_example/gorilla/mux.go](./_example/gorilla/mux.go)
 
 
 Plots
 -----
 
-On the plots where it matters, garbage collections are shown as vertical bars.
+On the plots where it matters, garbage collections are shown as vertical lines.
+
 ### Heap
 <img alt="Heap plot image" src="https://github.com/arl/statsviz/raw/readme-docs/heap.png" width="600">
 
@@ -69,7 +87,7 @@ Contributing
 ------------
 
 Pull-requests are welcome!
-More details in [Contributing](CONTRIBUTING.md)
+More details in [CONTRIBUTING.md](CONTRIBUTING.md)
 
 
 License

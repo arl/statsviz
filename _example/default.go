@@ -13,11 +13,9 @@ func main() {
 	// Force the GC to work to make the plots "move".
 	go work()
 
-	// Create a serve mux and register statsviz handlers.
-	mux := http.NewServeMux()
-	statsviz.Register(mux)
-
-	http.ListenAndServe(":8080", mux)
+	// Register statsviz handlers on the default serve mux.
+	statsviz.RegisterDefault()
+	http.ListenAndServe(":8080", nil)
 }
 
 func work() {
