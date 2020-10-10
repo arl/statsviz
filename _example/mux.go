@@ -40,9 +40,9 @@ func main() {
 		}
 	}()
 
+	// Create a serve mux and register statsviz handlers.
 	mux := http.NewServeMux()
-	mux.Handle("/debug/statsviz/", statsviz.Index)
-	mux.HandleFunc("/debug/statsviz/ws", statsviz.Ws)
+	statsviz.Register(mux)
 
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", mux)
 }

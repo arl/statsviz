@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	_ "github.com/arl/statsviz"
+	"github.com/arl/statsviz"
 )
 
 func garbage() []byte {
@@ -40,5 +40,7 @@ func main() {
 		}
 	}()
 
+	// Register statsviz handlers on the default serve mux.
+	statsviz.RegisterDefault()
 	http.ListenAndServe(":8080", nil)
 }
