@@ -31,9 +31,18 @@ import (
 	"github.com/arl/statsviz/websocket"
 )
 
-func init() {
-	http.Handle("/debug/statsviz/", Index)
-	http.HandleFunc("/debug/statsviz/ws", Ws)
+// Register registers statsviz HTTP handlers on the provided mux.
+func Register(mux *http.ServeMux) {
+	mux.Handle("/debug/statsviz/", Index)
+	mux.HandleFunc("/debug/statsviz/ws", Ws)
+}
+
+// RegisterDefault registers statsviz HTTP handlers on the default serve mux.
+//
+// Note this is not advised on a production server, unless it only serves on
+// localhost.
+func RegisterDefault() {
+	Register(http.DefaultServeMux)
 }
 
 // Index responds to a request for /debug/statsviz with the statsviz HTML page
