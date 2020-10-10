@@ -45,6 +45,18 @@ The handled path is `/debug/statsviz/`.
 
 Then open your browser at http://localhost:6060/debug/statsviz/
 
+Examples
+--------
+
+Using `http.DefaultServeMux`:
+ - [_example/default.go](./_example/default.go)
+
+Using your own `http.ServeMux`:
+ - [_example/mux.go](./_example/mux.go)
+
+Using [gorilla/mux](https://github.com/gorilla/mux) Router:
+ - [_example/gorilla/mux.go](./_example/gorilla/mux.go)
+
 
 Plots
 -----
