@@ -23,7 +23,6 @@
 package statsviz
 
 import (
-	"log"
 	"net/http"
 	"runtime"
 	"time"
@@ -62,15 +61,13 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("can't upgrade HTTP connection to Websocket protocol:", err)
 		return
 	}
 	defer ws.Close()
 
-	err = sendStats(ws)
-	if err != nil {
-		log.Println(err)
-	}
+	// Explicitely ignore this error. We don't want to spam standard output
+	// each time the other end of the websocket connection closes.
+	_ = sendStats(ws)
 }
 
 var upgrader = websocket.Upgrader{
