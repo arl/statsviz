@@ -8,11 +8,13 @@ Pull-requests are welcome!
 
 ## Contribute to statviz Go library
 
-The statsviz API is either inexistant (when imported for its side effects) or 
-very tiny (if installing the handlers yourself because you're not using 
-`http.DefaultServeMux`) so it's highely unlikely that the API will change. 
+The statsviz Go API is very thin so there's much to do and it's unlikely that
+the API will change.
 That being said, there may be things to improve in the implementation, any
 contribution is very welcome!
+
+For more involved additions, please discuss them in an issue before starting to
+code.
 
 
 ## Contribute to the user interface (html/css/javascript)
