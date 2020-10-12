@@ -83,12 +83,23 @@ On the plots where it matters, garbage collections are shown as vertical lines.
 <img alt="GC/CPU fraction plot image" src="https://github.com/arl/statsviz/raw/readme-docs/gc-cpu-fraction.png" width="600">
 
 
-
 Contributing
 ------------
 
 Pull-requests are welcome!
 More details in [CONTRIBUTING.md](CONTRIBUTING.md)
+
+
+Changelog
+---------
+
+* v0.1.1 / 2020-10-12
+
+  * Bugfix: do not leak timer in sendStats
+
+* v0.1.0 / 2020-10-10
+
+  * First released version
 
 
 License
