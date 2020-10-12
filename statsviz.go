@@ -85,6 +85,7 @@ const defaultSendPeriod = time.Second
 // sendStats indefinitely send runtime statistics on the websocket connection.
 func sendStats(conn *websocket.Conn) error {
 	tick := time.NewTicker(defaultSendPeriod)
+	defer tick.Stop()
 
 	var stats stats
 	for {
