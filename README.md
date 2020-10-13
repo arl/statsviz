@@ -90,6 +90,13 @@ Pull-requests are welcome!
 More details in [CONTRIBUTING.md](CONTRIBUTING.md)
 
 
+Roadmap
+-------
+
+ - [ ] add stop-the-world duration heatmap
+ - [ ] increase data retention
+ - [ ] light/dark mode selector
+
 Changelog
 ---------
 
