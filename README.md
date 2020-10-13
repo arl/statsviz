@@ -22,14 +22,14 @@ Usage
 Either `Register` statsviz HTTP handlers with the [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) you're using (preferred method):
 
 ```go
-	mux := http.NewServeMux()
-	statsviz.Register(mux)
+mux := http.NewServeMux()
+statsviz.Register(mux)
 ```
 
 Or register them with the `http.DefaultServeMux`:
 
 ```go
-	statsviz.RegisterDefault()
+statsviz.RegisterDefault()
 ```
 
 If your application is not already running an HTTP server, you need to start
