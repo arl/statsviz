@@ -32,8 +32,8 @@ import (
 
 // Register registers statsviz HTTP handlers on the provided mux.
 func Register(mux *http.ServeMux) {
-	mux.Handle("/debug/statsviz/", Index)
-	mux.HandleFunc("/debug/statsviz/ws", Ws)
+	s := server{mux: mux}
+	s.register()
 }
 
 // RegisterDefault registers statsviz HTTP handlers on the default serve mux.
@@ -41,7 +41,8 @@ func Register(mux *http.ServeMux) {
 // Note this is not advised on a production server, unless it only serves on
 // localhost.
 func RegisterDefault() {
-	Register(http.DefaultServeMux)
+	s := server{mux: http.DefaultServeMux}
+	s.register()
 }
 
 // Index responds to a request for /debug/statsviz with the statsviz HTML page
@@ -68,6 +69,15 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 	// Explicitly ignore this error. We don't want to spam standard output
 	// each time the other end of the websocket connection closes.
 	_ = sendStats(ws)
+}
+
+type server struct {
+	mux *http.ServeMux
+}
+
+func (s *server) register() {
+	s.mux.Handle("/debug/statsviz/", Index)
+	s.mux.HandleFunc("/debug/statsviz/ws", Ws)
 }
 
 var upgrader = websocket.Upgrader{
