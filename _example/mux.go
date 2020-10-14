@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -17,7 +18,7 @@ func main() {
 	mux := http.NewServeMux()
 	statsviz.Register(mux)
 
-	http.ListenAndServe(":8080", mux)
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }
 
 func work() {
