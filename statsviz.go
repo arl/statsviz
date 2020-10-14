@@ -30,10 +30,19 @@ import (
 	"github.com/arl/statsviz/websocket"
 )
 
+var (
+	RootDir = "/debug/statsviz/"
+)
+
+func SetRootDir(prefix string) {
+	RootDir = prefix
+	Index = NewIndex(prefix)
+}
+
 // Register registers statsviz HTTP handlers on the provided mux.
 func Register(mux *http.ServeMux) {
-	mux.Handle("/debug/statsviz/", Index)
-	mux.HandleFunc("/debug/statsviz/ws", Ws)
+	mux.Handle(RootDir, Index)
+	mux.HandleFunc(RootDir+"ws", Ws)
 }
 
 // RegisterDefault registers statsviz HTTP handlers on the default serve mux.
@@ -49,7 +58,11 @@ func RegisterDefault() {
 // over the websocket handler Ws.
 //
 // The package initialization registers it as /debug/statsviz/.
-var Index = http.StripPrefix("/debug/statsviz/", http.FileServer(assets))
+var Index = http.StripPrefix(RootDir, http.FileServer(assets))
+
+func NewIndex(prefix string) http.Handler {
+	return http.StripPrefix(prefix, http.FileServer(assets))
+}
 
 // Ws upgrades the HTTP server connection to the WebSocket protocol and sends
 // application statistics every second.
