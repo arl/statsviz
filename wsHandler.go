@@ -8,35 +8,37 @@ import (
 	"github.com/arl/statsviz/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
 // Ws upgrades the HTTP server connection to the WebSocket protocol and sends
 // application statistics every second.
 //
 // If the upgrade fails, an HTTP error response is sent to the client.
 // The package initialization registers it as /debug/statsviz/ws.
-func Ws(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+func Ws() http.HandlerFunc {
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
 	}
-	defer ws.Close()
 
-	// Explicitly ignore this error. We don't want to spam standard output
-	// each time the other end of the websocket connection closes.
-	_ = sendStats(ws)
+	return func(w http.ResponseWriter, r *http.Request) {
+		upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+		ws, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer ws.Close()
+
+		// Explicitly ignore this error. We don't want to spam standard output
+		// each time the other end of the websocket connection closes.
+		_ = sendStats(ws)
+	}
 }
-
-const defaultSendPeriod = time.Second
 
 // sendStats indefinitely send runtime statistics on the websocket connection.
 func sendStats(conn *websocket.Conn) error {
+	const defaultSendPeriod = time.Second
+
 	tick := time.NewTicker(defaultSendPeriod)
 	defer tick.Stop()
 

@@ -29,7 +29,7 @@ import (
 // Register registers statsviz HTTP handlers on the provided mux.
 func Register(mux *http.ServeMux) {
 	mux.Handle("/debug/statsviz/", Index)
-	mux.HandleFunc("/debug/statsviz/ws", Ws)
+	mux.HandleFunc("/debug/statsviz/ws", Ws())
 }
 
 // RegisterDefault registers statsviz HTTP handlers on the default serve mux.
