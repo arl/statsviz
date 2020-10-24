@@ -14,14 +14,19 @@ import (
 // If the upgrade fails, an HTTP error response is sent to the client.
 // The package initialization registers it as /debug/statsviz/ws.
 func Ws() http.HandlerFunc {
+	const (
+		readBufSize     = 1024
+		writeBufferSize = 1024
+	)
+
 	upgrader := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
+		ReadBufferSize:  readBufSize,
+		WriteBufferSize: writeBufferSize,
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
-		upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
+	return func(w http.ResponseWriter, r *http.Request) {
 		ws, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
