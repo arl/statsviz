@@ -24,8 +24,6 @@ func Ws() http.HandlerFunc {
 		WriteBufferSize: writeBufferSize,
 	}
 
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		ws, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
