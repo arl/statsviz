@@ -36,10 +36,14 @@ func testIndex(t *testing.T, f http.Handler, url string) {
 }
 
 func TestIndex(t *testing.T) {
+	t.Parallel()
+
 	testIndex(t, Index, "http://example.com/debug/statsviz/")
 }
 
 func TestIndexAtRoot(t *testing.T) {
+	t.Parallel()
+
 	testIndex(t, IndexAtRoot("/debug/"), "http://example.com/debug/")
 	testIndex(t, IndexAtRoot("/debug"), "http://example.com/debug/")
 	testIndex(t, IndexAtRoot("/"), "http://example.com/")
@@ -87,6 +91,8 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 }
 
 func TestWs(t *testing.T) {
+	t.Parallel()
+
 	testWs(t, http.HandlerFunc(Ws), "http://example.com/debug/statsviz/ws")
 }
 
@@ -97,6 +103,8 @@ func testRegister(t *testing.T, f http.Handler, baseURL string) {
 }
 
 func TestRegister(t *testing.T) {
+	t.Parallel()
+
 	mux := http.NewServeMux()
 	Register(mux)
 
