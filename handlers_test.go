@@ -1,13 +1,14 @@
-package statsviz_test
+package statsviz
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/arl/statsviz"
+	"github.com/arl/statsviz/websocket"
 )
 
 func testIndex(t *testing.T, f http.Handler, url string) {
@@ -34,12 +35,46 @@ func testIndex(t *testing.T, f http.Handler, url string) {
 }
 
 func TestIndex(t *testing.T) {
-	testIndex(t, statsviz.Index, "http://example.com/debug/statsviz/")
+	testIndex(t, Index, "http://example.com/debug/statsviz/")
 }
 
 func TestIndexAtRoot(t *testing.T) {
-	testIndex(t, statsviz.IndexAtRoot("/debug/"), "http://example.com/debug/")
-	testIndex(t, statsviz.IndexAtRoot("/debug"), "http://example.com/debug/")
-	testIndex(t, statsviz.IndexAtRoot("/"), "http://example.com/")
-	testIndex(t, statsviz.IndexAtRoot("/test/"), "http://example.com/test/")
+	testIndex(t, IndexAtRoot("/debug/"), "http://example.com/debug/")
+	testIndex(t, IndexAtRoot("/debug"), "http://example.com/debug/")
+	testIndex(t, IndexAtRoot("/"), "http://example.com/")
+	testIndex(t, IndexAtRoot("/test/"), "http://example.com/test/")
+}
+
+func testWs(t *testing.T, f http.Handler, url string) {
+	t.Helper()
+
+	s := httptest.NewServer(f)
+	defer s.Close()
+
+	// Convert http://127.0.0.1 to ws://127.0.0.
+	u := "ws" + strings.TrimPrefix(s.URL, "http")
+
+	// Connect to the server
+	ws, _, err := websocket.DefaultDialer.Dial(u, nil)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	defer ws.Close()
+
+	// Wait for 2 messages and check that the payload is what we expect.
+	for i := 0; i < 2; i++ {
+		_, p, err := ws.ReadMessage()
+		if err != nil {
+			t.Fatalf("%v", err)
+		}
+
+		var stats stats
+		if err := json.Unmarshal(p, &stats); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestWs(t *testing.T) {
+	testWs(t, http.HandlerFunc(Ws), "http://example.com/debug/statsviz/ws")
 }
