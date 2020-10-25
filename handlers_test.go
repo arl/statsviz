@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/arl/statsviz/websocket"
 )
@@ -103,9 +104,9 @@ func testRegister(t *testing.T, f http.Handler, baseURL string) {
 }
 
 func TestRegister(t *testing.T) {
-	t.Parallel()
-
 	t.Run("default", func(t *testing.T) {
+		t.Parallel()
+
 		mux := http.NewServeMux()
 		if err := Register(mux); err != nil {
 			t.Fatal(err)
@@ -115,6 +116,8 @@ func TestRegister(t *testing.T) {
 	})
 
 	t.Run("root", func(t *testing.T) {
+		t.Parallel()
+
 		mux := http.NewServeMux()
 		if err := Register(mux, Root("")); err != nil {
 			t.Fatal(err)
@@ -124,6 +127,8 @@ func TestRegister(t *testing.T) {
 	})
 
 	t.Run("root2", func(t *testing.T) {
+		t.Parallel()
+
 		mux := http.NewServeMux()
 		if err := Register(mux, Root("/root/to/statsviz")); err != nil {
 			t.Fatal(err)
@@ -133,6 +138,8 @@ func TestRegister(t *testing.T) {
 	})
 
 	t.Run("root+frequency", func(t *testing.T) {
+		t.Parallel()
+
 		mux := http.NewServeMux()
 		err := Register(mux,
 			Root("/root/to/statsviz"),
