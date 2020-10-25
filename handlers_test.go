@@ -105,8 +105,30 @@ func testRegister(t *testing.T, f http.Handler, baseURL string) {
 func TestRegister(t *testing.T) {
 	t.Parallel()
 
-	mux := http.NewServeMux()
-	Register(mux)
+	t.Run("default", func(t *testing.T) {
+		mux := http.NewServeMux()
+		if err := Register(mux); err != nil {
+			t.Fatal(err)
+		}
 
-	testRegister(t, mux, "http://example.com/debug/statsviz/")
+		testRegister(t, mux, "http://example.com/debug/statsviz/")
+	})
+
+	t.Run("root", func(t *testing.T) {
+		mux := http.NewServeMux()
+		if err := Register(mux, Root("")); err != nil {
+			t.Fatal(err)
+		}
+
+		testRegister(t, mux, "http://example.com/")
+	})
+
+	t.Run("root2", func(t *testing.T) {
+		mux := http.NewServeMux()
+		if err := Register(mux, Root("/root/to/statsviz")); err != nil {
+			t.Fatal(err)
+		}
+
+		testRegister(t, mux, "http://example.com/root/to/statsviz/")
+	})
 }
