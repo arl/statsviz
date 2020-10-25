@@ -31,5 +31,5 @@ jobs:
       uses: actions/checkout@v2
     - name: Vet
       run: go vet ./...
-    - name: Test
-      run: go test ./...
+    - name: Test and Coverage
+      run: go test -race -coverprofile=coverage.txt -covermode=atomic && bash <(curl -s https://codecov.io/bash)
