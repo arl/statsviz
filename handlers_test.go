@@ -131,4 +131,16 @@ func TestRegister(t *testing.T) {
 
 		testRegister(t, mux, "http://example.com/root/to/statsviz/")
 	})
+
+	t.Run("root+frequency", func(t *testing.T) {
+		mux := http.NewServeMux()
+		err := Register(mux,
+			Root("/root/to/statsviz"),
+			SendFrequency(100*time.Millisecond))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		testRegister(t, mux, "http://example.com/root/to/statsviz/")
+	})
 }
