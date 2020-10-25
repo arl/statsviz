@@ -1,4 +1,5 @@
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/arl/statsviz)
+[![Test Actions Status](https://github.com/arl/statsviz/workflows/Test/badge.svg)](https://github.com/arl/statsviz/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/arl/statsviz)](https://goreportcard.com/report/github.com/arl/statsviz)
 [![codecov](https://codecov.io/gh/arl/statsviz/branch/master/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
 
