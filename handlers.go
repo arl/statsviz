@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/arl/statsviz/websocket"
 )
 
 // Index responds to a request for /debug/statsviz with the statsviz HTML page
@@ -24,7 +26,10 @@ func IndexAtRoot(root string) http.Handler {
 //
 // If the upgrade fails, an HTTP error response is sent to the client.
 func Ws(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	var upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {

@@ -7,11 +7,6 @@ import (
 	"github.com/arl/statsviz/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
 type stats struct {
 	Mem          runtime.MemStats
 	NumGoroutine int
