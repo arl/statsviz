@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -45,17 +46,27 @@ func TestIndexAtRoot(t *testing.T) {
 	testIndex(t, IndexAtRoot("/test/"), "http://example.com/test/")
 }
 
-func testWs(t *testing.T, f http.Handler, url string) {
+func testWs(t *testing.T, f http.Handler, URL string) {
 	t.Helper()
 
 	s := httptest.NewServer(f)
 	defer s.Close()
 
-	// Convert http://127.0.0.1 to ws://127.0.0.
-	u := "ws" + strings.TrimPrefix(s.URL, "http")
+	// Build a "ws://" url using the httptest server URL and the URL argument.
+	u1, err := url.Parse(s.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u2, err := url.Parse(URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	u1.Scheme = "ws"
+	u1.Path = u2.Path
 
 	// Connect to the server
-	ws, _, err := websocket.DefaultDialer.Dial(u, nil)
+	ws, _, err := websocket.DefaultDialer.Dial(u1.String(), nil)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -77,4 +88,17 @@ func testWs(t *testing.T, f http.Handler, url string) {
 
 func TestWs(t *testing.T) {
 	testWs(t, http.HandlerFunc(Ws), "http://example.com/debug/statsviz/ws")
+}
+
+func testRegister(t *testing.T, f http.Handler, baseURL string) {
+	testIndex(t, f, baseURL)
+	ws := strings.TrimRight(baseURL, "/") + "/ws"
+	testWs(t, f, ws)
+}
+
+func TestRegister(t *testing.T) {
+	mux := http.NewServeMux()
+	Register(mux)
+
+	testRegister(t, mux, "http://example.com/debug/statsviz/")
 }
