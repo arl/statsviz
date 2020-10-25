@@ -42,7 +42,7 @@ go func() {
 }()
 ```
 
-The handled path is `/debug/statsviz/`.
+By default the handled path is `/debug/statsviz/`.
 
 Then open your browser at http://localhost:6060/debug/statsviz/
 
