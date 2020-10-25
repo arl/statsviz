@@ -16,7 +16,9 @@ func main() {
 
 	// Create a serve mux and register statsviz handlers.
 	mux := http.NewServeMux()
-	statsviz.Register(mux)
+	if err := statsviz.Register(mux); err != nil {
+		log.Fatal(err)
+	}
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
