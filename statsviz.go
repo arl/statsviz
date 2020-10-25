@@ -23,62 +23,11 @@
 package statsviz
 
 import (
-	"net/http"
 	"runtime"
 	"time"
 
 	"github.com/arl/statsviz/websocket"
 )
-
-// Register registers statsviz HTTP handlers on the provided mux.
-func Register(mux *http.ServeMux) {
-	s := server{mux: mux}
-	s.register()
-}
-
-// RegisterDefault registers statsviz HTTP handlers on the default serve mux.
-//
-// Note this is not advised on a production server, unless it only serves on
-// localhost.
-func RegisterDefault() {
-	s := server{mux: http.DefaultServeMux}
-	s.register()
-}
-
-// Index responds to a request for /debug/statsviz with the statsviz HTML page
-// which shows a live visualization of the statistics sent by the application
-// over the websocket handler Ws.
-//
-// The package initialization registers it as /debug/statsviz/.
-var Index = http.StripPrefix("/debug/statsviz/", http.FileServer(assets))
-
-// Ws upgrades the HTTP server connection to the WebSocket protocol and sends
-// application statistics every second.
-//
-// If the upgrade fails, an HTTP error response is sent to the client.
-// The package initialization registers it as /debug/statsviz/ws.
-func Ws(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return
-	}
-	defer ws.Close()
-
-	// Explicitly ignore this error. We don't want to spam standard output
-	// each time the other end of the websocket connection closes.
-	_ = sendStats(ws)
-}
-
-type server struct {
-	mux *http.ServeMux
-}
-
-func (s *server) register() {
-	s.mux.Handle("/debug/statsviz/", Index)
-	s.mux.HandleFunc("/debug/statsviz/ws", Ws)
-}
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -90,11 +39,11 @@ type stats struct {
 	NumGoroutine int
 }
 
-const defaultSendPeriod = time.Second
+const defaultSendFrequency = time.Second
 
 // sendStats indefinitely send runtime statistics on the websocket connection.
 func sendStats(conn *websocket.Conn) error {
-	tick := time.NewTicker(defaultSendPeriod)
+	tick := time.NewTicker(defaultSendFrequency)
 	defer tick.Stop()
 
 	var stats stats
