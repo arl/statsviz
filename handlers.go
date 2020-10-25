@@ -15,7 +15,8 @@ var Index = IndexAtRoot(defaultRoot)
 // you desire your server to responds with the statsviz HTML page at a
 // path that is different than /debug/statsviz.
 func IndexAtRoot(root string) http.Handler {
-	return http.StripPrefix(strings.TrimRight(root, "/")+"/", http.FileServer(assets))
+	prefix := strings.TrimRight(root, "/") + "/"
+	return http.StripPrefix(prefix, http.FileServer(assets))
 }
 
 // Ws upgrades the HTTP server connection to the WebSocket protocol and sends
