@@ -8,13 +8,15 @@ Pull-requests are welcome!
 
 ## Contribute to statviz Go library
 
-The statsviz Go API is very thin so there's much to do and it's unlikely that
-the API will change.
+The statsviz Go API is very thin so there's not much to do and it's unlikely that
+the API will change, however some new options can be added to `statsviz.Register` 
+without breaking compatibility.
 That being said, there may be things to improve in the implementation, any
 contribution is very welcome!
 
-For more involved additions, please discuss them in an issue before starting to
-code.
+If you've decided to contribute, thank you so much, please comment on the existing 
+issue or create one stating you want to tackle it, so we can assign it to you and 
+reduce the possibility of duplicate work.
 
 
 ## Contribute to the user interface (html/css/javascript)
