@@ -106,14 +106,7 @@ Roadmap
 Changelog
 ---------
 
-* v0.1.1 / 2020-10-12
-
-  * Bugfix: do not leak timer in sendStats
-
-* v0.1.0 / 2020-10-10
-
-  * First released version
-
+See [CHANGELOG.md](./CHANGELOG.md).
 
 License
 -------
