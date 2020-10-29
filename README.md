@@ -57,7 +57,10 @@ Using `http.DefaultServeMux`:
 Using your own `http.ServeMux`:
  - [_example/mux.go](./_example/mux.go)
 
-Using [gorilla/mux](https://github.com/gorilla/mux) Router:
+Using https`:
+ - [_example/https.go](./_example/https.go)
+
+With [gorilla/mux](https://github.com/gorilla/mux) Router:
  - [_example/gorilla/mux.go](./_example/gorilla/mux.go)
 
 
