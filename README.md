@@ -52,16 +52,19 @@ Examples
 --------
 
 Using `http.DefaultServeMux`:
- - [_example/default.go](./_example/default.go)
+ - [_example/default/main.go](./_example/default/main.go)
 
 Using your own `http.ServeMux`:
- - [_example/mux.go](./_example/mux.go)
+ - [_example/mux/main.go](./_example/mux/main.go)
 
-Using https`:
- - [_example/https.go](./_example/https.go)
+Serve `statsviz` on `/foo/bar` instead of default `/debug/statsviz`:
+ - [_example/root/main.go](./_example/root/main.go)
+
+Serve on `https` (and `wss` for websocket):
+ - [_example/https/main.go](./_example/https/main.go)
 
 With [gorilla/mux](https://github.com/gorilla/mux) router:
- - [_example/gorilla/mux.go](./_example/gorilla/mux.go)
+ - [_example/gorilla/main.go](./_example/gorilla/main.go)
 
 
 Plots
