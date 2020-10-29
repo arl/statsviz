@@ -6,7 +6,7 @@
     function buildWebsocketURI() {
         var loc = window.location, ws_prot = "ws:";
         if (loc.protocol === "https:") {
-            ws_uri = "wss:";
+            ws_prot = "wss:";
         }
         return ws_prot + "//" + loc.host + loc.pathname + "ws"
     }
