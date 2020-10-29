@@ -57,7 +57,10 @@ Using `http.DefaultServeMux`:
 Using your own `http.ServeMux`:
  - [_example/mux.go](./_example/mux.go)
 
-Using [gorilla/mux](https://github.com/gorilla/mux) Router:
+Using https`:
+ - [_example/https.go](./_example/https.go)
+
+With [gorilla/mux](https://github.com/gorilla/mux) Router:
  - [_example/gorilla/mux.go](./_example/gorilla/mux.go)
 
 
@@ -103,14 +106,7 @@ Roadmap
 Changelog
 ---------
 
-* v0.1.1 / 2020-10-12
-
-  * Bugfix: do not leak timer in sendStats
-
-* v0.1.0 / 2020-10-10
-
-  * First released version
-
+See [CHANGELOG.md](./CHANGELOG.md).
 
 License
 -------
