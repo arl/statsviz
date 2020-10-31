@@ -63,8 +63,6 @@ Using https`:
 With [gorilla/mux](https://github.com/gorilla/mux) router:
  - [_example/gorilla/mux.go](./_example/gorilla/mux.go)
 
-With [chi](https://github.com/go-chi/chi) router:
- - [_example/chi/mux.go](./_example/chi/mux.go)
 
 Plots
 -----
