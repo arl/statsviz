@@ -59,6 +59,9 @@ Using your own `http.ServeMux`:
 
 Using [gorilla/mux](https://github.com/gorilla/mux) Router:
  - [_example/gorilla/mux.go](./_example/gorilla/mux.go)
+ 
+Using [labstack/echo](https://github.com/labstack/echo) Router:
+ - [_example/echo.go](./_example/echo.go)
 
 
 Plots

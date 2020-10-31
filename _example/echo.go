@@ -11,20 +11,13 @@ func main(){
 	// Echo instance
 	e := echo.New()
 
-	// Middleware
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
-	// Routes
-	e.GET("/", hello)
-
 	// Start server
 	e.Logger.Fatal(e.Start(":1323"))
 
 	// Statsviz
 	// Add monitor Go application runtime statistics (GC, MemStats, etc.)
-	// Use http DefaultServeMux
-	mux := http.DefaultServeMux
+	// Create a new http ServeMux
+	mux := http.NewServeMux()
 	// Register route
 	_ = statsviz.Register(mux)
 
@@ -32,9 +25,4 @@ func main(){
 	e.GET("/debug/statsviz/", echo.WrapHandler(mux))
 	// Server static content for statsviz UI
 	e.GET("/debug/statsviz/*", echo.WrapHandler(mux))
-}
-
-// Handler
-func hello(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, World!")
 }
