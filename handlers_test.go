@@ -97,6 +97,18 @@ func TestWs(t *testing.T) {
 	testWs(t, http.HandlerFunc(Ws), "http://example.com/debug/statsviz/ws")
 }
 
+func TestWsCantUpgrade(t *testing.T) {
+	url := "http://example.com/debug/statsviz/ws"
+
+	req := httptest.NewRequest("GET", url, nil)
+	w := httptest.NewRecorder()
+	Ws(w, req)
+
+	if w.Result().StatusCode != http.StatusBadRequest {
+		t.Errorf("responded %v to %q with non-websocket-upgradable conn, want %v", w.Result().StatusCode, url, http.StatusBadRequest)
+	}
+}
+
 func testRegister(t *testing.T, f http.Handler, baseURL string) {
 	testIndex(t, f, baseURL)
 	ws := strings.TrimRight(baseURL, "/") + "/ws"
