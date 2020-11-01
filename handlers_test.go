@@ -153,9 +153,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		err := Register(mux,
-			Root("/root/to/statsviz"),
-			SendFrequency(100*time.Millisecond))
+		err := Register(mux, Root("/root/to/statsviz"), SendFrequency(100*time.Millisecond))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -167,9 +165,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		err := Register(mux,
-			Root("/root/to/statsviz"),
-			SendFrequency(0))
+		err := Register(mux, Root("/root/to/statsviz"), SendFrequency(0))
 		if err == nil {
 			t.Fatal(err)
 		}
