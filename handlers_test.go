@@ -171,3 +171,11 @@ func TestRegister(t *testing.T) {
 		}
 	})
 }
+
+func TestRegisterDefault(t *testing.T) {
+	if err := RegisterDefault(); err != nil {
+		t.Fatal(err)
+	}
+
+	testRegister(t, http.DefaultServeMux, "http://example.com/debug/statsviz/")
+}
