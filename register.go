@@ -2,7 +2,6 @@ package statsviz
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 )
@@ -11,10 +10,8 @@ import (
 //
 // Note this is not advised on a production server, unless it only serves on
 // localhost.
-func RegisterDefault(opts ...OptionFunc) {
-	if err := Register(http.DefaultServeMux, opts...); err != nil {
-		log.Fatal(err)
-	}
+func RegisterDefault(opts ...OptionFunc) error {
+	return Register(http.DefaultServeMux, opts...)
 }
 
 // Root sets the root of statsviz handlers.
