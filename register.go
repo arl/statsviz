@@ -1,7 +1,7 @@
 package statsviz
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -10,10 +10,8 @@ import (
 //
 // Note this is not advised on a production server, unless it only serves on
 // localhost.
-func RegisterDefault(opts ...OptionFunc) {
-	if err := Register(http.DefaultServeMux, opts...); err != nil {
-		log.Fatal(err)
-	}
+func RegisterDefault(opts ...OptionFunc) error {
+	return Register(http.DefaultServeMux, opts...)
 }
 
 // Root sets the root of statsviz handlers.
@@ -28,6 +26,9 @@ func Root(root string) OptionFunc {
 // application to the HTML page.
 func SendFrequency(freq time.Duration) OptionFunc {
 	return func(s *server) error {
+		if freq <= 0 {
+			return fmt.Errorf("frequency must be a positive integer")
+		}
 		s.freq = freq
 		return nil
 	}

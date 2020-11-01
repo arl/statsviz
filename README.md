@@ -3,6 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/arl/statsviz)](https://goreportcard.com/report/github.com/arl/statsviz)
 [![codecov](https://codecov.io/gh/arl/statsviz/branch/master/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
 
+
 Statsviz
 ========
 
@@ -14,6 +15,29 @@ Instant live visualization of your Go application runtime statistics
  - Start your program
  - Open your browser at `http://host:port/debug/statsviz`
  - Enjoy... 
+
+
+How does it work?
+-----------------
+
+Statsviz is actually **dead simple**... 
+
+There are 2 HTTP handlers.
+
+When the first one is called(`/debug/statsviz` by default), it serves a browser
+accessible interface showing some plots, initially empty.
+
+The browser then connects to statsviz second HTTP handler. The second handler
+upgrades the connection to the websocket protocol, starts a goroutine which
+periodically calls [runtime.ReadMemStats](https://golang.org/pkg/runtime/#ReadMemStats).
+
+Stats are sent, via the websocket connection, to the user interface, which in
+turn, updates the plots.
+
+Stats are stored in-browser inside a circular buffer which keep tracks of 60
+datapoints, so one minute-worth of data by default. You can change the frequency
+at which stats are sent by passing [SendFrequency](https://pkg.go.dev/github.com/arl/statsviz@v0.2.1#SendFrequency)
+to [Register](https://pkg.go.dev/github.com/arl/statsviz@v0.2.1#Register).
 
 
 Usage
@@ -52,16 +76,19 @@ Examples
 --------
 
 Using `http.DefaultServeMux`:
- - [_example/default.go](./_example/default.go)
+ - [_example/default/main.go](./_example/default/main.go)
 
 Using your own `http.ServeMux`:
- - [_example/mux.go](./_example/mux.go)
+ - [_example/mux/main.go](./_example/mux/main.go)
 
-Using https`:
- - [_example/https.go](./_example/https.go)
+Serve `statsviz` on `/foo/bar` instead of default `/debug/statsviz`:
+ - [_example/root/main.go](./_example/root/main.go)
+
+Serve on `https` (and `wss` for websocket):
+ - [_example/https/main.go](./_example/https/main.go)
 
 With [gorilla/mux](https://github.com/gorilla/mux) router:
- - [_example/gorilla/mux.go](./_example/gorilla/mux.go)
+ - [_example/gorilla/main.go](./_example/gorilla/main.go)
 
 
 Plots

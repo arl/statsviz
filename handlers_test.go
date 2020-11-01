@@ -97,6 +97,18 @@ func TestWs(t *testing.T) {
 	testWs(t, http.HandlerFunc(Ws), "http://example.com/debug/statsviz/ws")
 }
 
+func TestWsCantUpgrade(t *testing.T) {
+	url := "http://example.com/debug/statsviz/ws"
+
+	req := httptest.NewRequest("GET", url, nil)
+	w := httptest.NewRecorder()
+	Ws(w, req)
+
+	if w.Result().StatusCode != http.StatusBadRequest {
+		t.Errorf("responded %v to %q with non-websocket-upgradable conn, want %v", w.Result().StatusCode, url, http.StatusBadRequest)
+	}
+}
+
 func testRegister(t *testing.T, f http.Handler, baseURL string) {
 	testIndex(t, f, baseURL)
 	ws := strings.TrimRight(baseURL, "/") + "/ws"
@@ -141,13 +153,29 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		err := Register(mux,
-			Root("/root/to/statsviz"),
-			SendFrequency(100*time.Millisecond))
+		err := Register(mux, Root("/root/to/statsviz"), SendFrequency(100*time.Millisecond))
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		testRegister(t, mux, "http://example.com/root/to/statsviz/")
 	})
+
+	t.Run("non-positive frequency", func(t *testing.T) {
+		t.Parallel()
+
+		mux := http.NewServeMux()
+		err := Register(mux, Root("/root/to/statsviz"), SendFrequency(0))
+		if err == nil {
+			t.Fatal(err)
+		}
+	})
+}
+
+func TestRegisterDefault(t *testing.T) {
+	if err := RegisterDefault(); err != nil {
+		t.Fatal(err)
+	}
+
+	testRegister(t, http.DefaultServeMux, "http://example.com/debug/statsviz/")
 }
