@@ -2,12 +2,12 @@ package main
 
 import (
 	"net/http"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+
 	"github.com/arl/statsviz"
+	"github.com/labstack/echo/v4"
 )
 
-func main(){
+func main() {
 	// Echo instance
 	e := echo.New()
 
