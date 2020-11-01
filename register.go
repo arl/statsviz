@@ -1,6 +1,7 @@
 package statsviz
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -28,6 +29,9 @@ func Root(root string) OptionFunc {
 // application to the HTML page.
 func SendFrequency(freq time.Duration) OptionFunc {
 	return func(s *server) error {
+		if freq <= 0 {
+			return fmt.Errorf("frequency must be a positive integer")
+		}
 		s.freq = freq
 		return nil
 	}
