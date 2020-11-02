@@ -32,7 +32,15 @@ jobs:
     - name: Vet
       run: go vet ./...
     - name: Test and Coverage
-      run: go test -race -coverprofile=coverage.txt -covermode=atomic && bash <(curl -s https://codecov.io/bash)
+      run: go test -race ./...
     - name: Build examples
       run: ${GITHUB_WORKSPACE}/.github/scripts/build_examples.sh
       shell: sh
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: 1.15.x
+    - run: go test -race -coverprofile=coverage.txt -covermode=atomic && bash <(curl -s https://codecov.io/bash)
