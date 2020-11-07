@@ -128,7 +128,9 @@ Roadmap
  - [ ] add stop-the-world duration heatmap
  - [ ] increase data retention
  - [ ] light/dark mode selector
- - [ ] plot image export
+ - [ ] plot image export as png
+ - [ ] save timeseries to disk
+ - [ ] load from disk previously saved timeseries
 
 Changelog
 ---------
