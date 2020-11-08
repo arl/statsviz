@@ -10,7 +10,7 @@ Statsviz
 Instant live visualization of your Go application runtime statistics 
 (GC, MemStats, etc.).
 
- - Import `import "github.com/arl/statsviz"`
+ - Import `"github.com/arl/statsviz"`
  - Register statsviz HTTP handlers
  - Start your program
  - Open your browser at `http://host:port/debug/statsviz`
