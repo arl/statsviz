@@ -90,8 +90,8 @@ Serve on `https` (and `wss` for websocket):
 With [gorilla/mux](https://github.com/gorilla/mux) router:
  - [_example/gorilla/main.go](./_example/gorilla/main.go)
 
-Using [labstack/echo](https://github.com/labstack/echo) Router:
- - [_example/echo.go](./_example/echo.go)
+Using [labstack/echo](https://github.com/labstack/echo) router:
+ - [_example/echo/main.go](./_example/echo.go)
 
 Plots
 -----

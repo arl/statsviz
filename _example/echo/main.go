@@ -1,6 +1,7 @@
 package main
 
 import (
+	example "github.com/arl/statsviz/_example"
 	"net/http"
 
 	"github.com/arl/statsviz"
@@ -8,21 +9,20 @@ import (
 )
 
 func main() {
+	// Force the GC to work to make the plots "move".
+	go example.Work()
+
 	// Echo instance
 	e := echo.New()
 
-	// Statsviz
-	// Add monitor Go application runtime statistics (GC, MemStats, etc.)
-	// Create a new http ServeMux
 	mux := http.NewServeMux()
-	// Register route
 	_ = statsviz.Register(mux)
 
 	// Use echo WrapHandler to wrap statsviz ServeMux as echo HandleFunc
 	e.GET("/debug/statsviz/", echo.WrapHandler(mux))
-	// Server static content for statsviz UI
+	// Serve static content for statsviz UI
 	e.GET("/debug/statsviz/*", echo.WrapHandler(mux))
 
 	// Start server
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(":8080"))
 }
