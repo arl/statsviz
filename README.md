@@ -10,7 +10,7 @@ Statsviz
 Instant live visualization of your Go application runtime statistics 
 (GC, MemStats, etc.).
 
- - Import `import "github.com/arl/statsviz"`
+ - Import `"github.com/arl/statsviz"`
  - Register statsviz HTTP handlers
  - Start your program
  - Open your browser at `http://host:port/debug/statsviz`
@@ -92,6 +92,10 @@ With [gorilla/mux](https://github.com/gorilla/mux) router:
 
 Using [labstack/echo](https://github.com/labstack/echo) router:
  - [_example/echo/main.go](./_example/echo.go)
+
+With [gin-gonic/gin](https://github.com/gin-gonic/gin) web framework:
+ - [_example/gin/main.go](./_example/gin/main.go)
+
 
 Plots
 -----
