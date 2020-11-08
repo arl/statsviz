@@ -1,7 +1,6 @@
 package statsviz
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
@@ -33,7 +32,6 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("Ws: Upgrade error:", err)
 		return
 	}
 	defer ws.Close()
