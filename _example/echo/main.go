@@ -1,11 +1,12 @@
 package main
 
 import (
-	example "github.com/arl/statsviz/_example"
 	"net/http"
 
-	"github.com/arl/statsviz"
 	"github.com/labstack/echo/v4"
+
+	"github.com/arl/statsviz"
+	example "github.com/arl/statsviz/_example"
 )
 
 func main() {
