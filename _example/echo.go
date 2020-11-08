@@ -11,9 +11,6 @@ func main() {
 	// Echo instance
 	e := echo.New()
 
-	// Start server
-	e.Logger.Fatal(e.Start(":1323"))
-
 	// Statsviz
 	// Add monitor Go application runtime statistics (GC, MemStats, etc.)
 	// Create a new http ServeMux
@@ -25,4 +22,7 @@ func main() {
 	e.GET("/debug/statsviz/", echo.WrapHandler(mux))
 	// Server static content for statsviz UI
 	e.GET("/debug/statsviz/*", echo.WrapHandler(mux))
+
+	// Start server
+	e.Logger.Fatal(e.Start(":1323"))
 }
