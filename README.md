@@ -93,10 +93,10 @@ With [gorilla/mux](https://github.com/gorilla/mux) router:
 Using [valyala/fasthttp](https://github.com/valyala/fasthttp) and router:
  - [_example/fasthttp/main.go](./_example/fasthttp/main.go)
 
-With ohter web frameworks:
- - labstack/echo: [_example/echo/main.go](./_example/echo/main.go)
- - gin-gonic/gin: [_example/gin/main.go](./_example/gin/main.go)
- - gofiber/fiber: [_example/fiber/main.go](./_example/fiber/main.go)
+With other web frameworks:
+ - [labstack/echo](https://github.com/labstack/echo) : [_example/echo/main.go](./_example/echo/main.go)
+ - [gin-gonic/gin](https://github.com/gin-gonic/gin) : [_example/gin/main.go](./_example/gin/main.go)
+ - [gofiber/fiber](https://github.com/gofiber/fiber) : [_example/fiber/main.go](./_example/fiber/main.go)
 
 
 Plots
