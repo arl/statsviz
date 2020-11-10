@@ -38,5 +38,5 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 
 	// Explicitly ignore this error. We don't want to spam standard output
 	// each time the other end of the websocket connection closes.
-	_ = sendStats(ws)
+	_ = SendStats(ws)
 }

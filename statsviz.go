@@ -3,8 +3,6 @@ package statsviz
 import (
 	"runtime"
 	"time"
-
-	"github.com/arl/statsviz/websocket"
 )
 
 type stats struct {
@@ -12,10 +10,15 @@ type stats struct {
 	NumGoroutine int
 }
 
+// various websocket connection interface
+type conn interface {
+	WriteJSON(interface{}) error
+}
+
 const defaultSendFrequency = time.Second
 
-// sendStats indefinitely send runtime statistics on the websocket connection.
-func sendStats(conn *websocket.Conn) error {
+// SendStats indefinitely send runtime statistics on the websocket connection.
+func SendStats(c conn) error {
 	tick := time.NewTicker(defaultSendFrequency)
 	defer tick.Stop()
 
@@ -25,7 +28,7 @@ func sendStats(conn *websocket.Conn) error {
 		case <-tick.C:
 			runtime.ReadMemStats(&stats.Mem)
 			stats.NumGoroutine = runtime.NumGoroutine()
-			if err := conn.WriteJSON(stats); err != nil {
+			if err := c.WriteJSON(stats); err != nil {
 				return err
 			}
 		}
