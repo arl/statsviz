@@ -20,19 +20,18 @@ Instant live visualization of your Go application runtime statistics
 How does it work?
 -----------------
 
-Statsviz is actually **dead simple**... 
+What _statsviz_ does is actually _quite simple_... 
 
-There are 2 HTTP handlers.
+It's composed of 2 HTTP handlers.
 
-When the first one is called(`/debug/statsviz` by default), it serves a browser
-accessible interface showing some plots, initially empty.
+When the first one is called(by default `/debug/statsviz`), it serves an html/js
+user interface showing some plots, initially empty, in your browser.
 
-The browser then connects to statsviz second HTTP handler. The second handler
-upgrades the connection to the websocket protocol, starts a goroutine which
+The browser then connects to statsviz second HTTP handler. The second one
+upgrades the connection to the websocket protocol and starts a goroutine that
 periodically calls [runtime.ReadMemStats](https://golang.org/pkg/runtime/#ReadMemStats).
 
-Stats are sent, via the websocket connection, to the user interface, which in
-turn, updates the plots.
+Stats are sent, via websocket, to the user interface, which inturn, updates the plots.
 
 Stats are stored in-browser inside a circular buffer which keep tracks of 60
 datapoints, so one minute-worth of data by default. You can change the frequency
