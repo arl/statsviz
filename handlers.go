@@ -3,6 +3,7 @@ package statsviz
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/arl/statsviz/websocket"
 )
@@ -20,23 +21,28 @@ func IndexAtRoot(root string) http.Handler {
 	return http.StripPrefix(prefix, http.FileServer(assets))
 }
 
-// Ws upgrades the HTTP server connection to the WebSocket protocol and sends
-// application statistics every second.
+// Ws is a default handler created with 'NewWsHandler' that sends application statistics every second
+var Ws = NewWsHandler(defaultSendFrequency)
+
+// NewWsHandler returns a handler that upgrades the HTTP server connection to the WebSocket
+// protocol and sends application statistics every 'frequency'.
 //
 // If the upgrade fails, an HTTP error response is sent to the client.
-func Ws(w http.ResponseWriter, r *http.Request) {
-	var upgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}
+func NewWsHandler(frequency time.Duration) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var upgrader = websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		}
 
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return
-	}
-	defer ws.Close()
+		ws, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		defer ws.Close()
 
-	// Explicitly ignore this error. We don't want to spam standard output
-	// each time the other end of the websocket connection closes.
-	_ = sendStats(ws)
+		// Explicitly ignore this error. We don't want to spam standard output
+		// each time the other end of the websocket connection closes.
+		_ = sendStats(ws, frequency)
+	}
 }
