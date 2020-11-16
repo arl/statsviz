@@ -1,10 +1,11 @@
 package main
 
 import (
-	"log"
+	"net"
+	"net/http"
 
 	"github.com/fasthttp/router"
-	"github.com/fasthttp/websocket"
+	"github.com/soheilhy/cmux"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpadaptor"
 
@@ -16,23 +17,22 @@ func main() {
 	// Force the GC to work to make the plots "move".
 	go example.Work()
 
+	// Create the main listener and cmux
+	l, _ := net.Listen("tcp", ":8080")
+	m := cmux.New(l)
+
 	// Fasthttp router
 	r := router.New()
-
-	// Use fasthttpadaptor to wrap statsviz handler
+	r.GET("/fasthttp/example", func(ctx *fasthttp.RequestCtx) {})
+	// statsviz http
 	r.GET("/debug/statsviz/{filepath:*}", fasthttpadaptor.NewFastHTTPHandler(statsviz.Index))
-	// Create fasthttp websocket handler
-	r.GET("/debug/statsviz/ws", func(ctx *fasthttp.RequestCtx) {
-		var upgrader = websocket.FastHTTPUpgrader{}
-		err := upgrader.Upgrade(ctx, func(ws *websocket.Conn) {
-			_ = statsviz.SendStats(ws)
-		})
-		if err != nil {
-			log.Println(err)
-			return
-		}
-	})
 
-	// Start server
-	fasthttp.ListenAndServe(":8080", r.Handler)
+	// statsviz websocket
+	ws := http.NewServeMux()
+	ws.HandleFunc("/debug/statsviz/ws", statsviz.Ws)
+
+	// Server start
+	go http.Serve(m.Match(cmux.HTTP1HeaderField("Upgrade", "websocket")), ws)
+	go fasthttp.Serve(m.Match(cmux.Any()), r.Handler)
+	m.Serve()
 }

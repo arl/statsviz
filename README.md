@@ -90,7 +90,7 @@ Serve on `https` (and `wss` for websocket):
 With [gorilla/mux](https://github.com/gorilla/mux) router:
  - [_example/gorilla/main.go](./_example/gorilla/main.go)
 
-Using [valyala/fasthttp](https://github.com/valyala/fasthttp) and router:
+Using [valyala/fasthttp](https://github.com/valyala/fasthttp) with [soheilhy/cmux](https://github.com/soheilhy/cmux):
  - [_example/fasthttp/main.go](./_example/fasthttp/main.go)
 
 With other web frameworks:
