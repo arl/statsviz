@@ -16,18 +16,19 @@ func main() {
 	// Force the GC to work to make the plots "move".
 	go example.Work()
 
-	// Create the main listener and cmux
+	// Create the main listener and mux
 	l, _ := net.Listen("tcp", ":8080")
 	m := cmux.New(l)
+	ws := http.NewServeMux()
 
 	// Fiber instance
 	app := fiber.New()
-	app.Get("/fiber/example", func(ctx *fiber.Ctx) error { return nil })
-	// statsviz http
-	app.Get("/debug/statsviz", adaptor.HTTPHandler(statsviz.Index))
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World 👋!")
+	})
 
-	// statsviz websocket
-	ws := http.NewServeMux()
+	// statsviz
+	app.Get("/debug/statsviz", adaptor.HTTPHandler(statsviz.Index))
 	ws.HandleFunc("/debug/statsviz/ws", statsviz.Ws)
 
 	// Server start

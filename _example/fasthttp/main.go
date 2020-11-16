@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 
@@ -17,18 +18,19 @@ func main() {
 	// Force the GC to work to make the plots "move".
 	go example.Work()
 
-	// Create the main listener and cmux
+	// Create the main listener and mux
 	l, _ := net.Listen("tcp", ":8080")
 	m := cmux.New(l)
-
-	// Fasthttp router
-	r := router.New()
-	r.GET("/fasthttp/example", func(ctx *fasthttp.RequestCtx) {})
-	// statsviz http
-	r.GET("/debug/statsviz/{filepath:*}", fasthttpadaptor.NewFastHTTPHandler(statsviz.Index))
-
-	// statsviz websocket
 	ws := http.NewServeMux()
+
+	// fasthttp routers
+	r := router.New()
+	r.GET("/", func(ctx *fasthttp.RequestCtx) {
+		fmt.Fprintf(ctx, "Hello, world!")
+	})
+
+	// statsviz
+	r.GET("/debug/statsviz/{filepath:*}", fasthttpadaptor.NewFastHTTPHandler(statsviz.Index))
 	ws.HandleFunc("/debug/statsviz/ws", statsviz.Ws)
 
 	// Server start
