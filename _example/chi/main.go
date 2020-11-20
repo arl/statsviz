@@ -2,21 +2,18 @@ package main
 
 import (
 	"log"
-	"math/rand"
 	"net/http"
-	"strconv"
-	"time"
 
 	"github.com/arl/statsviz"
 	"github.com/go-chi/chi"
-	
+
 	example "github.com/arl/statsviz/_example"
 )
 
 func main() {
 
 	// Force the GC to work to make the plots "move".
-	go work()
+	go example.Work()
 
 	// Create a Chi router and register statsviz handlers.
 	r := chi.NewRouter()
