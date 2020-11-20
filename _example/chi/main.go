@@ -9,6 +9,8 @@ import (
 
 	"github.com/arl/statsviz"
 	"github.com/go-chi/chi"
+	
+	example "github.com/arl/statsviz/_example"
 )
 
 func main() {
@@ -29,18 +31,3 @@ func main() {
 	}
 }
 
-func work() {
-	// Generate some allocations
-	m := map[string][]byte{}
-
-	for {
-		b := make([]byte, 512+rand.Intn(16*1024))
-		m[strconv.Itoa(len(m)%(10*100))] = b
-
-		if len(m)%(10*100) == 0 {
-			m = make(map[string][]byte)
-		}
-
-		time.Sleep(10 * time.Millisecond)
-	}
-}
