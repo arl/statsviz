@@ -21,11 +21,12 @@ func IndexAtRoot(root string) http.Handler {
 	return http.StripPrefix(prefix, http.FileServer(assets))
 }
 
-// Ws is a default handler created with 'NewWsHandler' that sends application statistics every second
+// Ws is a default Websocket handler, created with NewWsHandler, sending statistics 
+// at the default frequency of 1 message per second.
 var Ws = NewWsHandler(defaultSendFrequency)
 
 // NewWsHandler returns a handler that upgrades the HTTP server connection to the WebSocket
-// protocol and sends application statistics every 'frequency'.
+// protocol and sends application statistics at the given frequency.
 //
 // If the upgrade fails, an HTTP error response is sent to the client.
 func NewWsHandler(frequency time.Duration) http.HandlerFunc {
