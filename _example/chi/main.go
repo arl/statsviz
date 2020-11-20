@@ -18,6 +18,9 @@ func main() {
 	// Create a Chi router and register statsviz handlers.
 	r := chi.NewRouter()
 	r.Get("/debug/statsviz/ws", statsviz.Ws)
+	r.Get("/debug/statsviz", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/debug/statsviz/", 301)
+	})
 	r.Handle("/debug/statsviz/*", statsviz.Index)
 
 	mux := http.NewServeMux()
@@ -27,4 +30,3 @@ func main() {
 		log.Fatalf("failed to start server: %s", err)
 	}
 }
-
