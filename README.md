@@ -95,6 +95,9 @@ Using [labstack/echo](https://github.com/labstack/echo) router:
 With [gin-gonic/gin](https://github.com/gin-gonic/gin) web framework:
  - [_example/gin/main.go](./_example/gin/main.go)
 
+With [go-chi/chi](https://github.com/go-chi/chi) router:
+ - [_example/chi/main.go](./_example/chi/main.go)
+
 
 Plots
 -----
