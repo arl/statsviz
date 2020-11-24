@@ -37,7 +37,10 @@ func SendFrequency(freq time.Duration) OptionFunc {
 // An OptionFunc is a server configuration option.
 type OptionFunc func(s *server) error
 
-const defaultRoot = "/debug/statsviz"
+const (
+	defaultRoot          = "/debug/statsviz"
+	defaultSendFrequency = time.Second
+)
 
 // Register registers statsviz HTTP handlers on the provided mux.
 func Register(mux *http.ServeMux, opts ...OptionFunc) error {
@@ -65,5 +68,5 @@ type server struct {
 
 func (s *server) register() {
 	s.mux.Handle(s.root+"/", IndexAtRoot(s.root))
-	s.mux.HandleFunc(s.root+"/ws", Ws)
+	s.mux.HandleFunc(s.root+"/ws", NewWsHandler(s.freq))
 }
