@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arl/statsviz/websocket"
+	"github.com/gorilla/websocket"
 )
 
 func testIndex(t *testing.T, f http.Handler, url string) {

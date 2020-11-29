@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arl/statsviz/websocket"
+	"github.com/gorilla/websocket"
 )
 
 // Index responds to a request for /debug/statsviz with the statsviz HTML page
@@ -21,7 +21,7 @@ func IndexAtRoot(root string) http.Handler {
 	return http.StripPrefix(prefix, http.FileServer(assets))
 }
 
-// Ws is a default Websocket handler, created with NewWsHandler, sending statistics 
+// Ws is a default Websocket handler, created with NewWsHandler, sending statistics
 // at the default frequency of 1 message per second.
 var Ws = NewWsHandler(defaultSendFrequency)
 

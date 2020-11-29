@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/arl/statsviz/websocket"
+	"github.com/gorilla/websocket"
 )
 
 type stats struct {
