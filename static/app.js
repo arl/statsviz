@@ -40,6 +40,8 @@
             return;
         }
 
+        console.log(allStats);
+
         updateStats(allStats);
     }
 

@@ -11,12 +11,14 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type stats interface{}
+
 // sendStats indefinitely send runtime statistics on the websocket connection.
 func sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	tick := time.NewTicker(frequency)
 	defer tick.Stop()
 
-	expvar.Publish("NumGoroutine", expvar.Func(func() interface{} {
+	expvar.Publish("numGoroutine", expvar.Func(func() interface{} {
 		return runtime.NumGoroutine()
 	}))
 
@@ -29,8 +31,15 @@ func sendStats(conn *websocket.Conn, frequency time.Duration) error {
 			})
 			sj, _ := json.Marshal(s)
 			j := strings.ReplaceAll(string(sj[1:len(sj)-1]), "\\", "")
-			stats := fmt.Sprintf("{%v\"null\":false}", j)
-			if err := conn.WriteJSON(stats); err != nil {
+			sm := fmt.Sprintf("{%v\"null\":false}", j)
+			var st stats
+			err := json.Unmarshal([]byte(sm), &st)
+			if err != nil {
+				fmt.Println(err)
+				return err
+			}
+			if err := conn.WriteJSON(st); err != nil {
+				fmt.Println(err)
 				return err
 			}
 		}

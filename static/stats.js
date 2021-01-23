@@ -35,7 +35,9 @@ var stats = (function () {
         const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
         const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
 
-        const memStats = allStats.Mem;
+        const memstats = allStats.memstats;
+
+        console.log(memstats);
 
         data.times = new Buffer(buflen, bufcap);
         data.goroutines = new Buffer(buflen, bufcap);
@@ -54,8 +56,8 @@ var stats = (function () {
         }
 
         // size classes heatmap
-        for (let i = 0; i < memStats.BySize.length; i++) {
-            m.classSizes.push(memStats.BySize[i].Size);
+        for (let i = 0; i < memstats.BySize.length; i++) {
+            m.classSizes.push(memstats.BySize[i].Size);
         }
 
         data.bySize = new Array(m.classSizes.length);
@@ -67,9 +69,9 @@ var stats = (function () {
     // Array of the last relevant GC times
     m.lastGCs = data.lastGCs;
 
-    function updateLastGC(memStats) {
+    function updateLastGC(memstats) {
         const nanoToSeconds = 1000 * 1000 * 1000;
-        let t = Math.floor(memStats.LastGC / nanoToSeconds);
+        let t = Math.floor(memstats.LastGC / nanoToSeconds);
 
         let lastGC = new Date(t * 1000);
 
@@ -96,32 +98,32 @@ var stats = (function () {
     m.pushData = function (ts, allStats) {
         data.times.push(ts); // timestamp
 
-        const memStats = allStats.Mem;
+        const memstats = allStats.memstats;
 
-        data.gcfraction.push(memStats.GCCPUFraction);
-        data.goroutines.push(allStats.NumGoroutine);
+        data.gcfraction.push(memstats.GCCPUFraction);
+        data.goroutines.push(allStats.numGoroutine);
 
-        data.heap[idxHeapAlloc].push(memStats.HeapAlloc);
-        data.heap[idxHeapSys].push(memStats.HeapSys);
-        data.heap[idxHeapIdle].push(memStats.HeapIdle);
-        data.heap[idxHeapInuse].push(memStats.HeapInuse);
-        data.heap[idxHeapNextGC].push(memStats.NextGC);
+        data.heap[idxHeapAlloc].push(memstats.HeapAlloc);
+        data.heap[idxHeapSys].push(memstats.HeapSys);
+        data.heap[idxHeapIdle].push(memstats.HeapIdle);
+        data.heap[idxHeapInuse].push(memstats.HeapInuse);
+        data.heap[idxHeapNextGC].push(memstats.NextGC);
 
-        data.mspanMCache[idxMSpanMCacheMSpanInUse].push(memStats.MSpanInuse);
-        data.mspanMCache[idxMSpanMCacheMSpanSys].push(memStats.MSpanSys);
-        data.mspanMCache[idxMSpanMSpanMSCacheInUse].push(memStats.MCacheInuse);
-        data.mspanMCache[idxMSpanMSpanMSCacheSys].push(memStats.MCacheSys);
+        data.mspanMCache[idxMSpanMCacheMSpanInUse].push(memstats.MSpanInuse);
+        data.mspanMCache[idxMSpanMCacheMSpanSys].push(memstats.MSpanSys);
+        data.mspanMCache[idxMSpanMSpanMSCacheInUse].push(memstats.MCacheInuse);
+        data.mspanMCache[idxMSpanMSpanMSCacheSys].push(memstats.MCacheSys);
 
-        data.objects[idxObjectsLive].push(memStats.Mallocs - memStats.Frees);
-        data.objects[idxObjectsLookups].push(memStats.Lookups);
-        data.objects[idxObjectsHeap].push(memStats.HeapObjects);
+        data.objects[idxObjectsLive].push(memstats.Mallocs - memstats.Frees);
+        data.objects[idxObjectsLookups].push(memstats.Lookups);
+        data.objects[idxObjectsHeap].push(memstats.HeapObjects);
 
-        for (let i = 0; i < memStats.BySize.length; i++) {
-            const size = memStats.BySize[i];
+        for (let i = 0; i < memstats.BySize.length; i++) {
+            const size = memstats.BySize[i];
             data.bySize[i].push(size.Mallocs - size.Frees);
         }
 
-        updateLastGC(memStats);
+        updateLastGC(memstats);
     }
 
     m.length = function () {
