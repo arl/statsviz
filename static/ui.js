@@ -261,9 +261,27 @@ var ui = (function () {
         }
     };
 
-    const config = {
-        displayModeBar: false,
-    }
+
+    let configs = function () {
+        let plots = ['heap', 'mspan-mcache', 'size-classes', 'objects', 'gcfraction', 'goroutines'];
+        let cfgs = {};
+
+        plots.forEach(plotName => {
+            // Create plot config where only 'save image' and 'show on hover' toggles are enabled.
+            const config = {
+                displaylogo: false,
+                modeBarButtonsToRemove: ['2D', 'zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'toggleSpikelines'],
+                toImageButtonOptions: {
+                    format: 'png',
+                    filename: plotName
+                }
+            }
+
+            cfgs[plotName] = config;
+        });
+
+        return cfgs;
+    }();
 
     m.createPlots = function (data) {
         $('.ui.accordion').accordion({
@@ -276,6 +294,7 @@ var ui = (function () {
             }
         });
 
+
         heapElt = document.getElementById('heap');
         mspanMCacheElt = document.getElementById('mspan-mcache');
         sizeClassesElt = document.getElementById('size-classes');
@@ -283,12 +302,12 @@ var ui = (function () {
         gcfractionElt = document.getElementById('gcfraction');
         goroutinesElt = document.getElementById('goroutines');
 
-        Plotly.plot(heapElt, heapData(data), heapLayout, config);
-        Plotly.plot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
-        Plotly.plot(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, config);
-        Plotly.plot(objectsElt, objectsData(data), objectsLayout, config);
-        Plotly.plot(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
-        Plotly.plot(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
+        Plotly.plot(heapElt, heapData(data), heapLayout, configs['heap']);
+        Plotly.plot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, configs['mspan-mcache']);
+        Plotly.plot(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, configs['size-classes']);
+        Plotly.plot(objectsElt, objectsData(data), objectsLayout, configs['objects']);
+        Plotly.plot(gcfractionElt, gcFractionData(data), gcFractionLayout, configs['gcfraction']);
+        Plotly.plot(goroutinesElt, goroutinesData(data), goroutinesLayout, configs['goroutines']);
     }
 
     var updateIdx = 0;
@@ -297,30 +316,30 @@ var ui = (function () {
 
         heapLayout.shapes = gcLines;
         if (!heapElt.hidden) {
-            Plotly.react(heapElt, heapData(data), heapLayout, config);
+            Plotly.react(heapElt, heapData(data), heapLayout, configs['heap']);
         }
 
         mspanMCacheLayout.shapes = gcLines;
         if (!mspanMCacheElt.hidden) {
-            Plotly.react(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
+            Plotly.react(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, configs['mspan-mcache']);
         }
 
         objectsLayout.shapes = gcLines;
         if (!objectsElt.hidden) {
-            Plotly.react(objectsElt, objectsData(data), objectsLayout, config);
+            Plotly.react(objectsElt, objectsData(data), objectsLayout, configs['objects']);
         }
 
         if (!gcfractionElt.hidden) {
-            Plotly.react(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
+            Plotly.react(gcfractionElt, gcFractionData(data), gcFractionLayout, configs['gcfraction']);
         }
 
         if (!goroutinesElt.hidden) {
-            Plotly.react(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
+            Plotly.react(goroutinesElt, goroutinesData(data), goroutinesLayout, configs['goroutines']);
         }
 
         if (!sizeClassesElt.hidden && updateIdx % 5 == 0) {
             // Update the size class heatmap 5 times less often since it's expensive. 
-            Plotly.react(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, config);
+            Plotly.react(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, configs['size-classes']);
         }
 
         updateIdx++;
