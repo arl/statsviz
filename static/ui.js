@@ -295,12 +295,12 @@ var ui = (function () {
         });
 
 
-        heapElt = document.getElementById('heap');
-        mspanMCacheElt = document.getElementById('mspan-mcache');
-        sizeClassesElt = document.getElementById('size-classes');
-        objectsElt = document.getElementById('objects');
-        gcfractionElt = document.getElementById('gcfraction');
-        goroutinesElt = document.getElementById('goroutines');
+        heapElt = $('#heap')[0];
+        mspanMCacheElt = $('#mspan-mcache')[0];
+        sizeClassesElt = $('#size-classes')[0];
+        objectsElt = $('#objects')[0];
+        gcfractionElt = $('#gcfraction')[0];
+        goroutinesElt = $('#goroutines')[0];
 
         Plotly.plot(heapElt, heapData(data), heapLayout, configs['heap']);
         Plotly.plot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, configs['mspan-mcache']);
