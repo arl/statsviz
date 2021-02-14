@@ -265,15 +265,7 @@ var ui = (function () {
         displayModeBar: false,
     }
 
-    let heapElt = null;
-    let mspanMCacheElt = null;
-    let sizeClassElt = null;
-    let objectsElt = null;
-    let gcfractionElt = null;
-    let goroutinesElt = null;
-
     m.createPlots = function (data) {
-        // $(".ui.accordion").accordion();
         $('.ui.accordion').accordion({
             exclusive: false,
             onOpen: function () {
@@ -285,8 +277,6 @@ var ui = (function () {
         });
 
         heapElt = document.getElementById('heap');
-        heapElt.hidden = false;
-
         mspanMCacheElt = document.getElementById('mspan-mcache');
         sizeClassesElt = document.getElementById('size-classes');
         objectsElt = document.getElementById('objects');
@@ -299,12 +289,6 @@ var ui = (function () {
         Plotly.plot(objectsElt, objectsData(data), objectsLayout, config);
         Plotly.plot(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
         Plotly.plot(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
-
-        mspanMCacheElt.hidden = true;
-        sizeClassesElt.hidden = true;
-        objectsElt.hidden = true;
-        gcfractionElt.hidden = true;
-        goroutinesElt.hidden = true;
     }
 
     var updateIdx = 0;
@@ -314,33 +298,29 @@ var ui = (function () {
         heapLayout.shapes = gcLines;
         if (!heapElt.hidden) {
             Plotly.react(heapElt, heapData(data), heapLayout, config);
-            console.log("updating: heap");
         }
 
         mspanMCacheLayout.shapes = gcLines;
         if (!mspanMCacheElt.hidden) {
             Plotly.react(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
-            console.log("updating: mspan");
         }
 
         objectsLayout.shapes = gcLines;
         if (!objectsElt.hidden) {
             Plotly.react(objectsElt, objectsData(data), objectsLayout, config);
-            console.log("updating: objects");
         }
 
         if (!gcfractionElt.hidden) {
             Plotly.react(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
-            console.log("updating: gcfracion");
         }
+
         if (!goroutinesElt.hidden) {
             Plotly.react(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
-            console.log("updating: goroutines");
         }
+
         if (!sizeClassesElt.hidden && updateIdx % 5 == 0) {
             // Update the size class heatmap 5 times less often since it's expensive. 
             Plotly.react(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, config);
-            console.log("updating: heatmap");
         }
 
         updateIdx++;
