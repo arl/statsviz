@@ -28,7 +28,7 @@ some initially empty plots.
 When you points your browser to statsviz user interface page, it connects to statsviz
 second HTTP handler. This second handler then upgrades the connection to the websocket
 protocol and starts a goroutine that periodically calls [runtime.ReadMemStats](https://golang.org/pkg/runtime/#ReadMemStats), 
-sending the result to user interface, which inturn, updates the plots.
+sending the result to the user interface, which inturn, updates the plots.
 
 Stats are stored in-browser inside a circular buffer which keep tracks of a predefined number of
 datapoints, 60, so one minute-worth of data, by default. You can change the frequency
