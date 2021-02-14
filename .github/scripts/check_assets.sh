@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-cd ${GITHUB_WORKSPACE:-$(git root)}
+cd ${GITHUB_WORKSPACE:-$(git rev-parse --show-toplevel)}
 
 # Re-generate assets file
 go generate
