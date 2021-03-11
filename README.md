@@ -68,6 +68,29 @@ By default the handled path is `/debug/statsviz/`.
 
 Then open your browser at http://localhost:6060/debug/statsviz/
 
+Plots
+-----
+
+On the plots where it matters, garbage collections are shown as vertical lines.
+
+### Heap
+<img alt="Heap plot image" src="https://github.com/arl/statsviz/raw/readme-docs/heap.png" width="600">
+
+### MSpans / MCaches
+<img alt="MSpan/MCache plot image" src="https://github.com/arl/statsviz/raw/readme-docs/mspan-mcache.png" width="600">
+
+### Size classes heatmap
+<img alt="Size classes heatmap image" src="https://github.com/arl/statsviz/raw/readme-docs/size-classes.png" width="600">
+
+### Objects
+<img alt="Objects plot image" src="https://github.com/arl/statsviz/raw/readme-docs/objects.png" width="600">
+
+### Goroutines
+<img alt="Goroutines plot image" src="https://github.com/arl/statsviz/raw/readme-docs/goroutines.png" width="600">
+
+### GC/CPU fraction
+<img alt="GC/CPU fraction plot image" src="https://github.com/arl/statsviz/raw/readme-docs/gc-cpu-fraction.png" width="600">
+
 Examples
 --------
 
@@ -94,30 +117,6 @@ With [gin-gonic/gin](https://github.com/gin-gonic/gin) web framework:
 
 With [go-chi/chi](https://github.com/go-chi/chi) router:
  - [_example/chi/main.go](./_example/chi/main.go)
-
-
-Plots
------
-
-On the plots where it matters, garbage collections are shown as vertical lines.
-
-### Heap
-<img alt="Heap plot image" src="https://github.com/arl/statsviz/raw/readme-docs/heap.png" width="600">
-
-### MSpans / MCaches
-<img alt="MSpan/MCache plot image" src="https://github.com/arl/statsviz/raw/readme-docs/mspan-mcache.png" width="600">
-
-### Size classes heatmap
-<img alt="Size classes heatmap image" src="https://github.com/arl/statsviz/raw/readme-docs/size-classes.png" width="600">
-
-### Objects
-<img alt="Objects plot image" src="https://github.com/arl/statsviz/raw/readme-docs/objects.png" width="600">
-
-### Goroutines
-<img alt="Goroutines plot image" src="https://github.com/arl/statsviz/raw/readme-docs/goroutines.png" width="600">
-
-### GC/CPU fraction
-<img alt="GC/CPU fraction plot image" src="https://github.com/arl/statsviz/raw/readme-docs/gc-cpu-fraction.png" width="600">
 
 
 Contributing
