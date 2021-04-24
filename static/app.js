@@ -1,10 +1,11 @@
-(function () {
+(function() {
     function $(id) {
         return document.getElementById(id);
     }
 
     function buildWebsocketURI() {
-        var loc = window.location, ws_prot = "ws:";
+        var loc = window.location,
+            ws_prot = "ws:";
         if (loc.protocol === "https:") {
             ws_prot = "wss:";
         }
