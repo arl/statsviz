@@ -17,7 +17,7 @@ Instant live visualization of your Go application runtime statistics
  - Enjoy... 
 
 
-How does it work?
+How does that work?
 -----------------
 
 Statsviz serves 2 HTTP handlers.
@@ -39,7 +39,7 @@ to [Register](https://pkg.go.dev/github.com/arl/statsviz@v0.2.1#Register).
 Usage
 -----
 
-    go get -u github.com/arl/statsviz
+    go get github.com/arl/statsviz
 
 Either `Register` statsviz HTTP handlers with the [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) you're using (preferred method):
 
@@ -91,32 +91,20 @@ On the plots where it matters, garbage collections are shown as vertical lines.
 ### GC/CPU fraction
 <img alt="GC/CPU fraction plot image" src="https://github.com/arl/statsviz/raw/readme-docs/gc-cpu-fraction.png" width="600">
 
+
 Examples
 --------
 
-Using `http.DefaultServeMux`:
- - [_example/default/main.go](./_example/default/main.go)
-
-Using your own `http.ServeMux`:
- - [_example/mux/main.go](./_example/mux/main.go)
-
-Serve `statsviz` on `/foo/bar` instead of default `/debug/statsviz`:
- - [_example/root/main.go](./_example/root/main.go)
-
-Serve on `https` (and `wss` for websocket):
- - [_example/https/main.go](./_example/https/main.go)
-
-With [gorilla/mux](https://github.com/gorilla/mux) router:
- - [_example/gorilla/main.go](./_example/gorilla/main.go)
-
-Using [labstack/echo](https://github.com/labstack/echo) router:
- - [_example/echo/main.go](./_example/echo.go)
-
-With [gin-gonic/gin](https://github.com/gin-gonic/gin) web framework:
- - [_example/gin/main.go](./_example/gin/main.go)
-
-With [go-chi/chi](https://github.com/go-chi/chi) router:
- - [_example/chi/main.go](./_example/chi/main.go)
+Have a look at the [_example](./_example/README.md) directory to see some
+different ways to register Statsviz HTTP handlers, such as:
+ - using `http.DefaultServeMux`
+ - using your own `http.ServeMux`
+ - register at `/foo/bar` instead of `/debug/statviz`
+ - use `https://` rather than `http://`
+ - using with various Go HTTP libraries/frameworks:
+   - [fasthttp](https://github.com/valyala/fasthttp)
+   - [gin](https://github.com/gin-gonic/gin)
+   - and many others thanks to wonderful contributors!
 
 
 Contributing
@@ -136,10 +124,12 @@ Roadmap
  - [ ] save timeseries to disk
  - [ ] load from disk previously saved timeseries
 
+
 Changelog
 ---------
 
 See [CHANGELOG.md](./CHANGELOG.md).
+
 
 License
 -------
