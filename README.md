@@ -17,25 +17,21 @@ Instant live visualization of your Go application runtime statistics
  - Enjoy... 
 
 
-How does it work?
+How does that work?
 -----------------
 
-Statsviz is actually **dead simple**... 
+Statsviz serves 2 HTTP handlers.
 
-There are 2 HTTP handlers.
+The first one (by default `/debug/statsviz`) serves an html/js user interface showing 
+some initially empty plots.
 
-When the first one is called(`/debug/statsviz` by default), it serves a browser
-accessible interface showing some plots, initially empty.
+When you points your browser to statsviz user interface page, it connects to statsviz
+second HTTP handler. This second handler then upgrades the connection to the websocket
+protocol and starts a goroutine that periodically calls [runtime.ReadMemStats](https://golang.org/pkg/runtime/#ReadMemStats), 
+sending the result to the user interface, which inturn, updates the plots.
 
-The browser then connects to statsviz second HTTP handler. The second handler
-upgrades the connection to the websocket protocol, starts a goroutine which
-periodically calls [runtime.ReadMemStats](https://golang.org/pkg/runtime/#ReadMemStats).
-
-Stats are sent, via the websocket connection, to the user interface, which in
-turn, updates the plots.
-
-Stats are stored in-browser inside a circular buffer which keep tracks of 60
-datapoints, so one minute-worth of data by default. You can change the frequency
+Stats are stored in-browser inside a circular buffer which keep tracks of a predefined number of
+datapoints, 60, so one minute-worth of data, by default. You can change the frequency
 at which stats are sent by passing [SendFrequency](https://pkg.go.dev/github.com/arl/statsviz@v0.2.1#SendFrequency)
 to [Register](https://pkg.go.dev/github.com/arl/statsviz@v0.2.1#Register).
 
@@ -43,7 +39,7 @@ to [Register](https://pkg.go.dev/github.com/arl/statsviz@v0.2.1#Register).
 Usage
 -----
 
-    go get -u github.com/arl/statsviz
+    go get github.com/arl/statsviz
 
 Either `Register` statsviz HTTP handlers with the [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) you're using (preferred method):
 
@@ -72,33 +68,6 @@ By default the handled path is `/debug/statsviz/`.
 
 Then open your browser at http://localhost:6060/debug/statsviz/
 
-Examples
---------
-
-Using `http.DefaultServeMux`:
- - [_example/default/main.go](./_example/default/main.go)
-
-Using your own `http.ServeMux`:
- - [_example/mux/main.go](./_example/mux/main.go)
-
-Serve `statsviz` on `/foo/bar` instead of default `/debug/statsviz`:
- - [_example/root/main.go](./_example/root/main.go)
-
-Serve on `https` (and `wss` for websocket):
- - [_example/https/main.go](./_example/https/main.go)
-
-With [gorilla/mux](https://github.com/gorilla/mux) router:
- - [_example/gorilla/main.go](./_example/gorilla/main.go)
-
-Using [valyala/fasthttp](https://github.com/valyala/fasthttp) with [soheilhy/cmux](https://github.com/soheilhy/cmux):
- - [_example/fasthttp/main.go](./_example/fasthttp/main.go)
-
-With other web frameworks:
- - [labstack/echo](https://github.com/labstack/echo) : [_example/echo/main.go](./_example/echo/main.go)
- - [gin-gonic/gin](https://github.com/gin-gonic/gin) : [_example/gin/main.go](./_example/gin/main.go)
- - [gofiber/fiber](https://github.com/gofiber/fiber) : [_example/fiber/main.go](./_example/fiber/main.go)
-
-
 Plots
 -----
 
@@ -123,6 +92,21 @@ On the plots where it matters, garbage collections are shown as vertical lines.
 <img alt="GC/CPU fraction plot image" src="https://github.com/arl/statsviz/raw/readme-docs/gc-cpu-fraction.png" width="600">
 
 
+Examples
+--------
+
+Have a look at the [_example](./_example/README.md) directory to see some
+different ways to register Statsviz HTTP handlers, such as:
+ - using `http.DefaultServeMux`
+ - using your own `http.ServeMux`
+ - register at `/foo/bar` instead of `/debug/statviz`
+ - use `https://` rather than `http://`
+ - using with various Go HTTP libraries/frameworks:
+   - [fasthttp](https://github.com/valyala/fasthttp)
+   - [gin](https://github.com/gin-gonic/gin)
+   - and many others thanks to wonderful contributors!
+
+
 Contributing
 ------------
 
@@ -136,14 +120,16 @@ Roadmap
  - [ ] add stop-the-world duration heatmap
  - [ ] increase data retention
  - [ ] light/dark mode selector
- - [ ] plot image export as png
+ - [x] plot image export as png
  - [ ] save timeseries to disk
  - [ ] load from disk previously saved timeseries
+
 
 Changelog
 ---------
 
 See [CHANGELOG.md](./CHANGELOG.md).
+
 
 License
 -------

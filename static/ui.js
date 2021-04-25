@@ -261,19 +261,29 @@ var ui = (function () {
         }
     };
 
-    const config = {
-        displayModeBar: false,
-    }
 
-    let heapElt = null;
-    let mspanMCacheElt = null;
-    let sizeClassElt = null;
-    let objectsElt = null;
-    let gcfractionElt = null;
-    let goroutinesElt = null;
+    let configs = function () {
+        let plots = ['heap', 'mspan-mcache', 'size-classes', 'objects', 'gcfraction', 'goroutines'];
+        let cfgs = {};
+
+        plots.forEach(plotName => {
+            // Create plot config where only 'save image' and 'show on hover' toggles are enabled.
+            const config = {
+                displaylogo: false,
+                modeBarButtonsToRemove: ['2D', 'zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'toggleSpikelines'],
+                toImageButtonOptions: {
+                    format: 'png',
+                    filename: plotName
+                }
+            }
+
+            cfgs[plotName] = config;
+        });
+
+        return cfgs;
+    }();
 
     m.createPlots = function (data) {
-        // $(".ui.accordion").accordion();
         $('.ui.accordion').accordion({
             exclusive: false,
             onOpen: function () {
@@ -284,27 +294,20 @@ var ui = (function () {
             }
         });
 
-        heapElt = document.getElementById('heap');
-        heapElt.hidden = false;
 
-        mspanMCacheElt = document.getElementById('mspan-mcache');
-        sizeClassesElt = document.getElementById('size-classes');
-        objectsElt = document.getElementById('objects');
-        gcfractionElt = document.getElementById('gcfraction');
-        goroutinesElt = document.getElementById('goroutines');
+        heapElt = $('#heap')[0];
+        mspanMCacheElt = $('#mspan-mcache')[0];
+        sizeClassesElt = $('#size-classes')[0];
+        objectsElt = $('#objects')[0];
+        gcfractionElt = $('#gcfraction')[0];
+        goroutinesElt = $('#goroutines')[0];
 
-        Plotly.plot(heapElt, heapData(data), heapLayout, config);
-        Plotly.plot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
-        Plotly.plot(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, config);
-        Plotly.plot(objectsElt, objectsData(data), objectsLayout, config);
-        Plotly.plot(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
-        Plotly.plot(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
-
-        mspanMCacheElt.hidden = true;
-        sizeClassesElt.hidden = true;
-        objectsElt.hidden = true;
-        gcfractionElt.hidden = true;
-        goroutinesElt.hidden = true;
+        Plotly.plot(heapElt, heapData(data), heapLayout, configs['heap']);
+        Plotly.plot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, configs['mspan-mcache']);
+        Plotly.plot(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, configs['size-classes']);
+        Plotly.plot(objectsElt, objectsData(data), objectsLayout, configs['objects']);
+        Plotly.plot(gcfractionElt, gcFractionData(data), gcFractionLayout, configs['gcfraction']);
+        Plotly.plot(goroutinesElt, goroutinesData(data), goroutinesLayout, configs['goroutines']);
     }
 
     var updateIdx = 0;
@@ -313,34 +316,30 @@ var ui = (function () {
 
         heapLayout.shapes = gcLines;
         if (!heapElt.hidden) {
-            Plotly.react(heapElt, heapData(data), heapLayout, config);
-            console.log("updating: heap");
+            Plotly.react(heapElt, heapData(data), heapLayout, configs['heap']);
         }
 
         mspanMCacheLayout.shapes = gcLines;
         if (!mspanMCacheElt.hidden) {
-            Plotly.react(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, config);
-            console.log("updating: mspan");
+            Plotly.react(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, configs['mspan-mcache']);
         }
 
         objectsLayout.shapes = gcLines;
         if (!objectsElt.hidden) {
-            Plotly.react(objectsElt, objectsData(data), objectsLayout, config);
-            console.log("updating: objects");
+            Plotly.react(objectsElt, objectsData(data), objectsLayout, configs['objects']);
         }
 
         if (!gcfractionElt.hidden) {
-            Plotly.react(gcfractionElt, gcFractionData(data), gcFractionLayout, config);
-            console.log("updating: gcfracion");
+            Plotly.react(gcfractionElt, gcFractionData(data), gcFractionLayout, configs['gcfraction']);
         }
+
         if (!goroutinesElt.hidden) {
-            Plotly.react(goroutinesElt, goroutinesData(data), goroutinesLayout, config);
-            console.log("updating: goroutines");
+            Plotly.react(goroutinesElt, goroutinesData(data), goroutinesLayout, configs['goroutines']);
         }
+
         if (!sizeClassesElt.hidden && updateIdx % 5 == 0) {
             // Update the size class heatmap 5 times less often since it's expensive. 
-            Plotly.react(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, config);
-            console.log("updating: heatmap");
+            Plotly.react(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, configs['size-classes']);
         }
 
         updateIdx++;

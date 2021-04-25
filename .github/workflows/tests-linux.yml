@@ -1,0 +1,20 @@
+on: [push, pull_request]
+name: Tests-linux
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.15.x, 1.16.x]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Vet
+        run: go vet ./...
+      - name: Tests
+        run: go test -race ./...
+      - name: Build examples
+        run: ${GITHUB_WORKSPACE}/.github/scripts/build_examples.sh
+        shell: sh

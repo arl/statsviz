@@ -20,5 +20,4 @@ comment:
   require_changes: no
 
 ignore:
-  - "_example"
   - "assets_*.go"
