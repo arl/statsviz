@@ -1,0 +1,11 @@
+on: [push, pull_request]
+name: Test
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.x
+      - run: go test -race -coverprofile=coverage.txt -covermode=atomic && bash <(curl -s https://codecov.io/bash)
