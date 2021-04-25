@@ -1,5 +1,5 @@
 on: [pull_request]
-name: Test
+name: Coverage
 jobs:
   coverage:
     runs-on: ubuntu-latest
