@@ -9,11 +9,11 @@ Using `http.DefaultServeMux`:
 Using your own `http.ServeMux`:
  - [mux/main.go](./mux/main.go)
 
-Use statsviz options API to serve `statsviz` on `/foo/bar` (instead of default
+Use statsviz options API to serve Statsviz web UI on `/foo/bar` (instead of default
 `/debug/statsviz`) and send metrics with a frequency of _250ms_ (rather than _1s_):
  - [options/main.go](./options/main.go)
 
-Serve on web UI with `https` and Websocket on `wss`:
+Serve the the web UI via `https` and Websocket via `wss`:
  - [https/main.go](./https/main.go)
 
 ## Using various Go libraries
