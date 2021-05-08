@@ -14,7 +14,7 @@ func RegisterDefault(opts ...OptionFunc) error {
 	return Register(http.DefaultServeMux, opts...)
 }
 
-// Root sets the root of statsviz handlers.
+// Root sets the root path of statsviz handlers.
 func Root(root string) OptionFunc {
 	return func(s *server) error {
 		s.root = root

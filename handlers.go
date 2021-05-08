@@ -16,9 +16,9 @@ var Index = IndexAtRoot(defaultRoot)
 // IndexAtRoot returns an index statsviz handler rooted at root. It's useful if
 // you desire your server to responds with the statsviz HTML page at a
 // path that is different than /debug/statsviz.
-func IndexAtRoot(root string) http.Handler {
+func IndexAtRoot(root string) http.HandlerFunc {
 	prefix := strings.TrimRight(root, "/") + "/"
-	return http.StripPrefix(prefix, http.FileServer(assets))
+	return http.StripPrefix(prefix, http.FileServer(assets)).ServeHTTP
 }
 
 // Ws is a default Websocket handler, created with NewWsHandler, sending statistics

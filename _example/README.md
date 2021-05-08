@@ -16,6 +16,9 @@ Use statsviz options API to serve Statsviz web UI on `/foo/bar` (instead of defa
 Serve the the web UI via `https` and Websocket via `wss`:
  - [https/main.go](./https/main.go)
 
+Wrap statviz handlers behind a middleware (HTTP Basic Authentication for example):
+ - [middleware/main.go](./middleware/main.go)
+
 ## Using various Go libraries
 
 With [gorilla/mux](https://github.com/gorilla/mux) router:
