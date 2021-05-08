@@ -2,4 +2,7 @@ module github.com/arl/statsviz
 
 go 1.12
 
-require github.com/gorilla/websocket v1.4.2
+require (
+	github.com/gorilla/websocket v1.4.2
+	github.com/soheilhy/cmux v0.1.5 // indirect
+)
