@@ -96,9 +96,10 @@ Examples
 --------
 
 Have a look at the [_example](./_example/README.md) directory to see some
-different ways to register Statsviz HTTP handlers, such as:
+different ways to use Statsviz, such as:
  - using `http.DefaultServeMux`
  - using your own `http.ServeMux`
+ - wrap HTTP handler behind a middleware
  - register at `/foo/bar` instead of `/debug/statviz`
  - use `https://` rather than `http://`
  - using with various Go HTTP libraries/frameworks:
