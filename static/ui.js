@@ -1,11 +1,11 @@
 // ui holds the user interface state
-var ui = (function () {
+var ui = (function() {
     var m = {};
 
     let paused = false;
 
-    m.isPaused = function () { return paused; }
-    m.togglePause = function () { paused = !paused; }
+    m.isPaused = function() { return paused; }
+    m.togglePause = function() { paused = !paused; }
     m.plots = null;
 
     function GCLines(data) {
@@ -40,8 +40,7 @@ var ui = (function () {
     }
 
     function heapData(data) {
-        return [
-            {
+        return [{
                 x: data.times,
                 y: data.heap[0],
                 type: 'scatter',
@@ -95,8 +94,7 @@ var ui = (function () {
     };
 
     function mspanMCacheData(data) {
-        return [
-            {
+        return [{
                 x: data.times,
                 y: data.mspanMCache[0],
                 type: 'scatter',
@@ -150,18 +148,16 @@ var ui = (function () {
     ];
 
     function sizeClassesData(data) {
-        var ret = [
-            {
-                x: data.times,
-                y: stats.classSizes,
-                z: data.bySizes,
-                type: 'heatmap',
-                hovertemplate: '<br><b>size class</b>: %{y:} B' +
-                    '<br><b>objects</b>: %{z}<br>',
-                showlegend: false,
-                colorscale: colorscale,
-            }
-        ];
+        var ret = [{
+            x: data.times,
+            y: stats.classSizes,
+            z: data.bySizes,
+            type: 'heatmap',
+            hovertemplate: '<br><b>size class</b>: %{y:} B' +
+                '<br><b>objects</b>: %{z}<br>',
+            showlegend: false,
+            colorscale: colorscale,
+        }];
         return ret;
     }
 
@@ -178,8 +174,7 @@ var ui = (function () {
     };
 
     function objectsData(data) {
-        return [
-            {
+        return [{
                 x: data.times,
                 y: data.objects[0],
                 type: 'scatter',
@@ -215,15 +210,13 @@ var ui = (function () {
     };
 
     function goroutinesData(data) {
-        return [
-            {
-                x: data.times,
-                y: data.goroutines,
-                type: 'scatter',
-                name: 'goroutines',
-                hovertemplate: '<b>goroutines</b>: %{y}',
-            },
-        ]
+        return [{
+            x: data.times,
+            y: data.goroutines,
+            type: 'scatter',
+            name: 'goroutines',
+            hovertemplate: '<b>goroutines</b>: %{y}',
+        }, ]
     }
 
     let goroutinesLayout = {
@@ -238,15 +231,13 @@ var ui = (function () {
     };
 
     function gcFractionData(data) {
-        return [
-            {
-                x: data.times,
-                y: data.gcfraction,
-                type: 'scatter',
-                name: 'gc/cpu',
-                hovertemplate: '<b>gcc/CPU fraction</b>: %{y:,.4%}',
-            },
-        ]
+        return [{
+            x: data.times,
+            y: data.gcfraction,
+            type: 'scatter',
+            name: 'gc/cpu',
+            hovertemplate: '<b>gcc/CPU fraction</b>: %{y:,.4%}',
+        }, ]
     }
 
     let gcFractionLayout = {
@@ -262,7 +253,7 @@ var ui = (function () {
     };
 
 
-    let configs = function () {
+    let configs = function() {
         let plots = ['heap', 'mspan-mcache', 'size-classes', 'objects', 'gcfraction', 'goroutines'];
         let cfgs = {};
 
@@ -283,13 +274,13 @@ var ui = (function () {
         return cfgs;
     }();
 
-    m.createPlots = function (data) {
+    m.createPlots = function(data) {
         $('.ui.accordion').accordion({
             exclusive: false,
-            onOpen: function () {
+            onOpen: function() {
                 this.firstElementChild.hidden = false;
             },
-            onClose: function () {
+            onClose: function() {
                 this.firstElementChild.hidden = true;
             }
         });
@@ -302,16 +293,16 @@ var ui = (function () {
         gcfractionElt = $('#gcfraction')[0];
         goroutinesElt = $('#goroutines')[0];
 
-        Plotly.plot(heapElt, heapData(data), heapLayout, configs['heap']);
-        Plotly.plot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, configs['mspan-mcache']);
-        Plotly.plot(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, configs['size-classes']);
-        Plotly.plot(objectsElt, objectsData(data), objectsLayout, configs['objects']);
-        Plotly.plot(gcfractionElt, gcFractionData(data), gcFractionLayout, configs['gcfraction']);
-        Plotly.plot(goroutinesElt, goroutinesData(data), goroutinesLayout, configs['goroutines']);
+        Plotly.newPlot(heapElt, heapData(data), heapLayout, configs['heap']);
+        Plotly.newPlot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, configs['mspan-mcache']);
+        Plotly.newPlot(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, configs['size-classes']);
+        Plotly.newPlot(objectsElt, objectsData(data), objectsLayout, configs['objects']);
+        Plotly.newPlot(gcfractionElt, gcFractionData(data), gcFractionLayout, configs['gcfraction']);
+        Plotly.newPlot(goroutinesElt, goroutinesData(data), goroutinesLayout, configs['goroutines']);
     }
 
     var updateIdx = 0;
-    m.updatePlots = function (data) {
+    m.updatePlots = function(data) {
         let gcLines = GCLines(data);
 
         heapLayout.shapes = gcLines;
