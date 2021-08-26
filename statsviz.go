@@ -8,6 +8,7 @@ import (
 )
 
 type stats struct {
+	GoVersion    string
 	Mem          runtime.MemStats
 	NumGoroutine int
 }
@@ -17,17 +18,14 @@ func sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	tick := time.NewTicker(frequency)
 	defer tick.Stop()
 
-	var (
-		stats stats
-		err   error
-	)
+	stats := stats{GoVersion: runtime.Version()}
 	for range tick.C {
 		runtime.ReadMemStats(&stats.Mem)
 		stats.NumGoroutine = runtime.NumGoroutine()
-		if err = conn.WriteJSON(stats); err != nil {
-			break
+		if err := conn.WriteJSON(stats); err != nil {
+			return err
 		}
 	}
 
-	return err
+	panic("unreachable")
 }
