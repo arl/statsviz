@@ -1,14 +1,19 @@
+Statsviz
+========
+
+<div style="text-align:center">
+    <img alt="statsviz gopher logo" src="https://raw.githubusercontent.com/arl/statsviz/readme-docs/logo.png?sanitize=true" alt="Hugo" width="250">
+</div>
+<br />
+
+
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/arl/statsviz)
 [![Test Actions Status](https://github.com/arl/statsviz/workflows/Test/badge.svg)](https://github.com/arl/statsviz/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/arl/statsviz)](https://goreportcard.com/report/github.com/arl/statsviz)
 [![codecov](https://codecov.io/gh/arl/statsviz/branch/master/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
 
 
-Statsviz
-========
-
-Instant live visualization of your Go application runtime statistics 
-(GC, MemStats, etc.).
+Instant Live Visualization of your Go application runtime statistics Heap, Objects, Goroutines, GC, etc.
 
  - Import `"github.com/arl/statsviz"`
  - Register statsviz HTTP handlers
