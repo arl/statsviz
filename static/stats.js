@@ -1,5 +1,5 @@
 // stats holds the data and function to modify it.
-var stats = (function () {
+var stats = (function() {
     var m = {};
 
     const idxHeapAlloc = 0;
@@ -31,7 +31,7 @@ var stats = (function () {
         bySize: null,
     };
 
-    m.init = function (buflen, allStats) {
+    m.init = function(buflen, allStats) {
         const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
         const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
 
@@ -90,7 +90,7 @@ var stats = (function () {
     // Contain indexed class sizes, this is initialized after reception of the first message.
     m.classSizes = new Array();
 
-    m.pushData = function (ts, allStats) {
+    m.pushData = function(ts, allStats) {
         data.times.push(ts); // timestamp
 
         const memStats = allStats.Mem;
@@ -121,11 +121,11 @@ var stats = (function () {
         updateLastGC(memStats);
     }
 
-    m.length = function () {
+    m.length = function() {
         return data.times.length();
     }
 
-    m.slice = function (nitems) {
+    m.slice = function(nitems) {
         const times = data.times.slice(nitems);
         const gcfraction = data.gcfraction.slice(nitems);
         const goroutines = data.goroutines.slice(nitems);

@@ -1,5 +1,5 @@
 // Buffer declares the Buffer class.
-var Buffer = (function () {
+var Buffer = (function() {
     class Buffer {
         constructor(len, cap) {
             if (cap - len < 0) {
@@ -30,13 +30,13 @@ var Buffer = (function () {
             this._pos++;
         }
         length() {
-            if (this._pos > this._len) {
-                return this._len;
-            }
+                if (this._pos > this._len) {
+                    return this._len;
+                }
 
-            return this._pos;
-        }
-        // slice returns a slice of the len latest datapoints present in the buffer.
+                return this._pos;
+            }
+            // slice returns a slice of the len latest datapoints present in the buffer.
         slice(len) {
             // Cap the dimension of the returned slice to the data available
             if (len > this.length()) {
