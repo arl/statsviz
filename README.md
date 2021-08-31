@@ -1,11 +1,10 @@
 Statsviz
 ========
 
-<div style="text-align:center">
-    <img alt="statsviz gopher logo" src="https://raw.githubusercontent.com/arl/statsviz/readme-docs/logo.png?sanitize=true" alt="Hugo" width="250">
-</div>
+<p align="center">
+  <img alt="Statsviz Gopger Logo" width="250" src="https://raw.githubusercontent.com/arl/statsviz/readme-docs/logo.png?sanitize=true">
+</p>
 <br />
-
 
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=round-square)](https://pkg.go.dev/github.com/arl/statsviz)
 [![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-linux/badge.svg)](https://github.com/arl/statsviz/actions)
@@ -73,6 +72,12 @@ By default the handled path is `/debug/statsviz/`.
 
 Then open your browser at http://localhost:6060/debug/statsviz/
 
+Documentation
+-------------
+
+Check out the [API documentation](https://pkg.go.dev/github.com/arl/statsviz#section-documentation)
+
+
 Plots
 -----
 
@@ -100,8 +105,7 @@ On the plots where it matters, garbage collections are shown as vertical lines.
 Examples
 --------
 
-Have a look at the [_example](./_example/README.md) directory to see some
-different ways to use Statsviz, such as:
+Have a look at the [_example](./_example/README.md) directory to see various ways to use Statsviz, such as:
  - using `http.DefaultServeMux`
  - using your own `http.ServeMux`
  - wrap HTTP handler behind a middleware
@@ -110,7 +114,7 @@ different ways to use Statsviz, such as:
  - using with various Go HTTP libraries/frameworks:
    - [fasthttp](https://github.com/valyala/fasthttp)
    - [gin](https://github.com/gin-gonic/gin)
-   - and many others thanks to wonderful contributors!
+   - and many others thanks to awesome contributors!
 
 
 Contributing
