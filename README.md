@@ -71,12 +71,12 @@ go func() {
 
 By default the handled path is `/debug/statsviz/`.
 
-Then open your browser at http://localhost:6060/debug/statsviz/
+Then open your browser at http://localhost:6060/debug/statsviz/.
 
 Documentation
 -------------
 
-Check out the [API documentation](https://pkg.go.dev/github.com/arl/statsviz#section-documentation)
+Check out the [API documentation](https://pkg.go.dev/github.com/arl/statsviz#section-documentation).
 
 
 Plots
@@ -122,7 +122,7 @@ Contributing
 ------------
 
 Pull-requests are welcome!
-More details in [CONTRIBUTING.md](CONTRIBUTING.md)
+More details in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 
 Roadmap
