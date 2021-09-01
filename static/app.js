@@ -47,26 +47,20 @@
             let allStats = JSON.parse(event.data)
             if (!initDone) {
                 stats.init(dataRetentionSeconds, allStats);
+                stats.pushData(new Date(), allStats);
                 initDone = true;
+                let data = stats.slice(dataRetentionSeconds);
+                ui.createPlots(data);
                 return;
             }
-            updateStats(allStats);
+
+            stats.pushData(new Date(), allStats);
+            if (ui.isPaused()) {
+                return
+            }
+            let data = stats.slice(dataRetentionSeconds);
+            ui.updatePlots(data);
         }
     }
     connect();
-
-    function updateStats(allStats) {
-        stats.pushData(new Date(), allStats);
-
-        if (ui.isPaused()) {
-            return
-        }
-
-        let data = stats.slice(dataRetentionSeconds);
-        if (data.heap[0].length == 1) {
-            ui.createPlots(data);
-        }
-        ui.updatePlots(data);
-    }
-
 }());

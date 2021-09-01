@@ -1,5 +1,5 @@
 // stats holds the data and function to modify it.
-var stats = (function () {
+var stats = (function() {
     var m = {};
 
     const idxHeapAlloc = 0;
@@ -31,7 +31,7 @@ var stats = (function () {
         bySize: null,
     };
 
-    m.init = function (buflen, allStats) {
+    m.init = function(buflen, allStats) {
         const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
         const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
 
@@ -70,30 +70,27 @@ var stats = (function () {
     function updateLastGC(memStats) {
         const nanoToSeconds = 1000 * 1000 * 1000;
         let t = Math.floor(memStats.LastGC / nanoToSeconds);
-
         let lastGC = new Date(t * 1000);
-
-        if (lastGC != data.lastGCs[data.lastGCs.length - 1]) {
+        if (data.lastGCs.length == 0) {
             data.lastGCs.push(lastGC);
+            return;
         }
-
-        // Remove from the lastGCs array the timestamps which are prior to
-        // the minimum timestamp in 'series'.
-        let mints = data.times._buf[0];
-        let mingc = 0;
-        for (let i = 0, n = data.lastGCs.length; i < n; i++) {
-            if (data.lastGCs[i] > mints) {
-                break;
+        if (lastGC.getTime() != data.lastGCs[data.lastGCs.length - 1].getTime()) {
+            data.lastGCs.push(lastGC);
+            // We've added a GC timestamp, check if we can cut the front. We
+            // don't need to keep track data.lastGCs[0] if it happened before
+            // the oldest timestamp we're showing. 
+            let mints = data.times._buf[0];
+            if (data.lastGCs[0] < mints) {
+                data.lastGCs.splice(0, 1);
             }
-            mingc = i;
         }
-        data.lastGCs.splice(0, mingc);
     }
 
     // Contain indexed class sizes, this is initialized after reception of the first message.
     m.classSizes = new Array();
 
-    m.pushData = function (ts, allStats) {
+    m.pushData = function(ts, allStats) {
         data.times.push(ts); // timestamp
 
         const memStats = allStats.Mem;
@@ -124,11 +121,11 @@ var stats = (function () {
         updateLastGC(memStats);
     }
 
-    m.length = function () {
+    m.length = function() {
         return data.times.length();
     }
 
-    m.slice = function (nitems) {
+    m.slice = function(nitems) {
         const times = data.times.slice(nitems);
         const gcfraction = data.gcfraction.slice(nitems);
         const goroutines = data.goroutines.slice(nitems);

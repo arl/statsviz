@@ -1,14 +1,19 @@
-[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/arl/statsviz)
-[![Test Actions Status](https://github.com/arl/statsviz/workflows/Test/badge.svg)](https://github.com/arl/statsviz/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/arl/statsviz)](https://goreportcard.com/report/github.com/arl/statsviz)
-[![codecov](https://codecov.io/gh/arl/statsviz/branch/master/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
-
-
 Statsviz
 ========
 
-Instant live visualization of your Go application runtime statistics 
-(GC, MemStats, etc.).
+[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=round-square)](https://pkg.go.dev/github.com/arl/statsviz)
+[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
+[![Latest tag](https://img.shields.io/github/tag/arl/statsviz.svg)](https://github.com/arl/statsviz/tag/)  
+[![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-linux/badge.svg)](https://github.com/arl/statsviz/actions)
+[![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-others/badge.svg)](https://github.com/arl/statsviz/actions)
+[![codecov](https://codecov.io/gh/arl/statsviz/branch/main/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
+
+<p align="center">
+  <img alt="Statsviz Gopger Logo" width="250" src="https://raw.githubusercontent.com/arl/statsviz/readme-docs/logo.png?sanitize=true">
+</p>
+<br />
+
+Instant Live Visualization of your Go application runtime statistics Heap, Objects, Goroutines, GC, etc.
 
  - Import `"github.com/arl/statsviz"`
  - Register statsviz HTTP handlers
@@ -68,6 +73,12 @@ By default the handled path is `/debug/statsviz/`.
 
 Then open your browser at http://localhost:6060/debug/statsviz/
 
+Documentation
+-------------
+
+Check out the [API documentation](https://pkg.go.dev/github.com/arl/statsviz#section-documentation)
+
+
 Plots
 -----
 
@@ -95,8 +106,7 @@ On the plots where it matters, garbage collections are shown as vertical lines.
 Examples
 --------
 
-Have a look at the [_example](./_example/README.md) directory to see some
-different ways to use Statsviz, such as:
+Have a look at the [_example](./_example/README.md) directory to see various ways to use Statsviz, such as:
  - using `http.DefaultServeMux`
  - using your own `http.ServeMux`
  - wrap HTTP handler behind a middleware
@@ -105,7 +115,7 @@ different ways to use Statsviz, such as:
  - using with various Go HTTP libraries/frameworks:
    - [fasthttp](https://github.com/valyala/fasthttp)
    - [gin](https://github.com/gin-gonic/gin)
-   - and many others thanks to wonderful contributors!
+   - and many others thanks to awesome contributors!
 
 
 Contributing
