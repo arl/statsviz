@@ -9,8 +9,7 @@ import (
 // order to force the garbage collector to work.
 func Work() {
 	m := make(map[int]interface{})
-	i := 0
-	for ; ; i++ {
+	for i := 0; ; i++ {
 
 		var obj interface{}
 		switch i % 6 {
