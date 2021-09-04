@@ -73,6 +73,14 @@ By default the handled path is `/debug/statsviz/`.
 
 Then open your browser at http://localhost:6060/debug/statsviz/.
 
+Go version
+----------
+
+You need at least *go1.16* due to the use of [`go:embed`](https://pkg.go.dev/embed).  
+However you can still use Statsviz with older Go versions, at least *go1.12*, by locking the module to `statsviz@v0.0.4` in your `go.mod`.
+
+    go get github.com/arl/statsviz@v0.0.4
+
 Documentation
 -------------
 
