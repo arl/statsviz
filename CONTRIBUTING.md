@@ -21,31 +21,10 @@ reduce the possibility of duplicate work.
 
 ## Contribute to the user interface (html/css/javascript)
 
-The user interface aims to be light, minimal, simple.
+The user interface aims to be simple, light and minimal.
 
-This program uses [vfsgen](github.com/shurcooL/vfsgen) to embed the content of 
-the `/static` directory into the final binary. `vfsgen` generates the `assets`
-variable in `assets_vfsdata.go`. `assets` statically implements an 
-`http.FileSystem` rooted at `/static/` which contains the files statsviz serves.
-
-While working on statsviz web interface, it's easier to directly serve the
-content of the `/static` directory than regenerating the assets after each 
-modification. Passing `-tags dev` to `go build` will do just that, the
-directory served will be that of your filesystem.
-
-To commit some changes of the files in the `/static` directory, `assets`
-must be regenerated (or the CI will complain anyway).
-To do so just call, from the project root:
-
-```
-go generate
-go mod tidy
-```
-
-With Go modules enabled, this will download the latest version of 
-`github.com/shurcooL/vfsgen` and update `assets_vfsdata.go` so that 
-it reflects the new content of the `/static` directory. Then, 
-commits both the changes to `/static` and those to `assets_vfsdata.go`.
+Assets are located in the `internal/static` directory and are embedded with
+[`go:embed`](https://pkg.go.dev/embed).
 
 
 ## Contribute by improving documentation
