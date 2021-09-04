@@ -10,8 +10,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var Assets = static.Assets
-
 // Index responds to a request for /debug/statsviz with the statsviz HTML page
 // which shows a live visualization of the statistics sent by the application
 // over the websocket handler Ws.
@@ -22,7 +20,7 @@ var Index = IndexAtRoot(defaultRoot)
 // path that is different than /debug/statsviz.
 func IndexAtRoot(root string) http.HandlerFunc {
 	prefix := strings.TrimRight(root, "/") + "/"
-	return http.StripPrefix(prefix, http.FileServer(http.FS(Assets))).ServeHTTP
+	return http.StripPrefix(prefix, http.FileServer(http.FS(static.Assets))).ServeHTTP
 }
 
 // Ws is a default Websocket handler, created with NewWsHandler, sending statistics
