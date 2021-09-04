@@ -25,5 +25,6 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Println("Point your browser to http://localhost:8080/foo/bar")
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
