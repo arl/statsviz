@@ -1,3 +1,9 @@
+Unreleased yet
+==============
+  * Polishing (README, small UI improvements)
+  * Assets are `go:embed`ed, so the minimum go version is now go1.16
+  * Small ui improvements: link to go.dev rather than golang.org
+
 v0.4.0 / 2021-05-08
 ==================
 
