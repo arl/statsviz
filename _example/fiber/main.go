@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
@@ -17,7 +19,11 @@ func main() {
 	go example.Work()
 
 	// Create the main listener and mux
-	l, _ := net.Listen("tcp", ":8080")
+	l, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	m := cmux.New(l)
 	ws := http.NewServeMux()
 
@@ -28,8 +34,10 @@ func main() {
 	})
 
 	// statsviz
-	app.Get("/debug/statsviz", adaptor.HTTPHandler(statsviz.Index))
+	app.Use("/debug/statsviz", adaptor.HTTPHandler(statsviz.Index))
 	ws.HandleFunc("/debug/statsviz/ws", statsviz.Ws)
+
+	fmt.Println("Point your browser to http://localhost:8080/debug/statsviz/")
 
 	// Server start
 	go http.Serve(m.Match(cmux.HTTP1HeaderField("Upgrade", "websocket")), ws)
