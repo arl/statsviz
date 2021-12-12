@@ -19,6 +19,7 @@ Serve the the web UI via `https` and Websocket via `wss`:
 Wrap statviz handlers behind a middleware (HTTP Basic Authentication for example):
  - [middleware/main.go](./middleware/main.go)
 
+
 ## Using various Go libraries
 
 With [gorilla/mux](https://github.com/gorilla/mux) router:
@@ -38,4 +39,7 @@ With [go-chi/chi](https://github.com/go-chi/chi) router:
 
 With [gofiber/fiber](https://github.com/gofiber/fiber) web framework:
  - [fiber/main.go](./fiber/main.go)
+
+With [kataras/iris](https://github.com/kataras/iris) web framework:
+ - [iris/main.go](./iris/main.go)
 
