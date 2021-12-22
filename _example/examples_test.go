@@ -2,7 +2,6 @@ package example
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -34,13 +33,24 @@ func TestExamples(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client := http.Client{}
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
 
+	client := http.Client{}
 	for _, ent := range ents {
 		if !ent.IsDir() {
 			continue
 		}
 		t.Run(ent.Name(), func(t *testing.T) {
+			// Some examples require files in their specific package, so by
+			// convention, we'll always be using the package as working
+			// directory.
+			if err := os.Chdir(filepath.Join(wd, ent.Name())); err != nil {
+				t.Fatal(err)
+			}
+
 			url, ok := examples[ent.Name()]
 			if !ok {
 				t.Fatalf("url not specified for example %q", ent.Name())
@@ -51,7 +61,7 @@ func TestExamples(t *testing.T) {
 				return
 			}
 
-			installScript := filepath.Join(ent.Name(), "install.sh")
+			installScript := filepath.Join("install.sh")
 
 			_, err = os.Stat(installScript)
 			if err != nil && !os.IsNotExist(err) {
@@ -66,20 +76,21 @@ func TestExamples(t *testing.T) {
 				}
 			}
 
-			deadline := time.Now().Add(5 * time.Second)
-			ctx, cancel := context.WithDeadline(context.Background(), deadline)
-			defer cancel()
-
-			// TODO(arl) do NOT use a context here, in case we need more control
-			// of when to kill the server app.
-			err := startStatsviz(ctx, ent.Name())
+			stop, err := startStatsviz(ent.Name())
 			if err != nil {
 				t.Fatal(err)
 			}
-			// Let the time to the example application under test to listen on
-			// the network interface.
+			defer func() {
+				err := stop()
+				if err != nil {
+
+				}
+			}()
+
+			// Let the application we're testing the time to start listening for
+			// HTTP connections.
 			time.Sleep(1 * time.Second)
-			client.Timeout = 3 * time.Second
+			client.Timeout = 1 * time.Second
 
 			resp, err := client.Get(url)
 			if err != nil {
@@ -106,17 +117,17 @@ func TestExamples(t *testing.T) {
 }
 
 // startStatsviz runs go run 'dir', which starts the application opening a
-// statsviz server.
-func startStatsviz(ctx context.Context, dir string) error {
-	binname := "./" + dir + ".test"
-	cmd := exec.CommandContext(ctx, "go", "build", "-o", binname, "./"+dir)
+// statsviz server. The returned function stops (kills) it.
+func startStatsviz(dir string) (func() error, error) {
+	binname := "." + string(os.PathSeparator) + dir + ".test"
+	cmd := exec.Command("go", "build", "-o", binname)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Printf("startStatsviz: go build output:\n%s\n", out)
-		return fmt.Errorf("go build failed: %v", err)
+		return nil, fmt.Errorf("go build failed: %v", err)
 	}
 
-	cmd = exec.CommandContext(ctx, binname)
+	cmd = exec.Command(binname)
 	errc := make(chan error)
 	go func() {
 		outb := &bytes.Buffer{}
@@ -129,6 +140,7 @@ func startStatsviz(ctx context.Context, dir string) error {
 			if outb.Len() > 0 {
 				out = outb.String()
 			}
+
 			fmt.Printf("cmd.Wait failed: startStatsviz: %s output:\n%s\n", binname, out)
 			return
 		}
@@ -137,8 +149,8 @@ func startStatsviz(ctx context.Context, dir string) error {
 		}
 	}()
 	if err := <-errc; err != nil {
-		return fmt.Errorf("startStatsviz: %v", err)
+		return nil, fmt.Errorf("startStatsviz: %v", err)
 	}
 
-	return nil
+	return cmd.Process.Kill, nil
 }
