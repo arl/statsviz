@@ -24,8 +24,8 @@ func TestExamples(t *testing.T) {
 		"https":      "https://localhost:8080/debug/statsviz/",
 		"iris":       "TODO",
 		"middleware": "TODO",
-		"mux":        "TODO",
-		"options":    "TODO",
+		"mux":        "http://localhost:8080/debug/statsviz/",
+		"options":    "http://localhost:8080/foo/bar/",
 	}
 
 	ents, err := os.ReadDir(".")
@@ -134,18 +134,15 @@ func startStatsviz(dir string) (func() error, error) {
 		cmd.Stderr = outb
 		cmd.Stdout = outb
 		errc <- cmd.Start()
-		err := cmd.Wait()
-		if err != nil {
+		// Ignore error since we kill the process ourselves.
+		_ = cmd.Wait()
+
+		if testing.Verbose() {
 			out := "<no output>"
 			if outb.Len() > 0 {
 				out = outb.String()
 			}
-
-			fmt.Printf("cmd.Wait failed: startStatsviz: %s output:\n%s\n", binname, out)
-			return
-		}
-		if testing.Verbose() {
-			fmt.Printf("startStatsviz: %s output:\n%s\n", binname, out)
+			fmt.Printf("startStatsviz: %s output: %s\n", binname, out)
 		}
 	}()
 	if err := <-errc; err != nil {
