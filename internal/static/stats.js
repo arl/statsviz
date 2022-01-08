@@ -62,10 +62,45 @@ var stats = (function() {
         for (let i = 0; i < data.bySize.length; i++) {
             data.bySize[i] = new Buffer(buflen, bufcap);
         }
+
+        // Custom data
+        if (allStats.CustomData != undefined) {
+            let o = {};
+            parseCustomData(allStats.CustomData, o, buflen, bufcap)
+            data.CustomData = o;
+        }
     };
 
     // Array of the last relevant GC times
     m.lastGCs = data.lastGCs;
+
+    function parseCustomData(data, out, buflen, bufcap) {
+        let names = Object.getOwnPropertyNames(data);
+        for (let i = 0; i < names.length; i++) {
+            let name = names[i];
+            let d = data[name];
+            let o = out[name];
+            if (typeof(d) === "object") {
+                if (o == undefined) {
+                    if (buflen == undefined) {
+                        return;
+                    }
+                    o = {};
+                    out[name] = o;
+                }
+                parseCustomData(d, o, buflen, bufcap);
+            } else {
+                if (o == undefined) {
+                    if (buflen == undefined) {
+                        return;
+                    }
+                    out[name] = new Buffer(buflen, bufcap);
+                } else {
+                    o.push(d);
+                }
+            }
+        }
+    }
 
     function updateLastGC(memStats) {
         const nanoToSeconds = 1000 * 1000 * 1000;
@@ -118,6 +153,11 @@ var stats = (function() {
             data.bySize[i].push(size.Mallocs - size.Frees);
         }
 
+        // Custom data
+        if (data.CustomData != undefined) {
+            parseCustomData(allStats.CustomData, data.CustomData);
+        }
+
         updateLastGC(memStats);
     }
 
@@ -163,6 +203,7 @@ var stats = (function() {
             mspanMCache: mspanMCache,
             objects: objects,
             bySizes: bySizes,
+            CustomData: data.CustomData,
         }
     }
 

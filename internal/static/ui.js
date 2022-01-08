@@ -7,6 +7,7 @@ var ui = (function() {
     m.isPaused = function() { return paused; }
     m.togglePause = function() { paused = !paused; }
     m.plots = null;
+    m.customDataPlots = null;
 
     function GCLines(data) {
         const gcs = stats.lastGCs;
@@ -230,6 +231,40 @@ var ui = (function() {
         }
     };
 
+    function customizeData(times, data, old) {
+        let names = Object.getOwnPropertyNames(data);
+        let out = [];
+        for (let i = 0; i < names.length; i++) {
+            let name = names[i];
+            let d = data[name];
+            if (d.constructor == Buffer) {
+                out[out.length] = {
+                    x: times,
+                    y: d.slice(times.length),
+                    type: 'scatter',
+                    name: name,
+                    hovertemplate: '<b>'+name+'</b>: %{y}',
+                    visible: old == undefined || old[i].visible == undefined || old[i].visible,
+                }
+            }
+        }
+        if (out.length == 0) {
+            return;
+        }
+        return out;
+    }
+
+    let customizeLayout = {
+        title: 'Customize',
+        xaxis: {
+            title: 'time',
+            tickformat: '%H:%M:%S',
+        },
+        yaxis: {
+            title: 'count',
+        }
+    };
+
     function gcFractionData(data) {
         return [{
             x: data.times,
@@ -254,7 +289,7 @@ var ui = (function() {
 
 
     let configs = function() {
-        let plots = ['heap', 'mspan-mcache', 'size-classes', 'objects', 'gcfraction', 'goroutines'];
+        let plots = ['heap', 'mspan-mcache', 'size-classes', 'objects', 'gcfraction', 'goroutines', 'customize'];
         let cfgs = {};
 
         plots.forEach(plotName => {
@@ -275,6 +310,33 @@ var ui = (function() {
     }();
 
     m.createPlots = function(data) {
+
+
+        heapElt = $('#heap')[0];
+        mspanMCacheElt = $('#mspan-mcache')[0];
+        sizeClassesElt = $('#size-classes')[0];
+        objectsElt = $('#objects')[0];
+        gcfractionElt = $('#gcfraction')[0];
+        goroutinesElt = $('#goroutines')[0];
+        customizes = $('#customizes');
+        customizeItem = $('#customize_item');
+
+        Plotly.newPlot(heapElt, heapData(data), heapLayout, configs['heap']);
+        Plotly.newPlot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, configs['mspan-mcache']);
+        Plotly.newPlot(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, configs['size-classes']);
+        Plotly.newPlot(objectsElt, objectsData(data), objectsLayout, configs['objects']);
+        Plotly.newPlot(gcfractionElt, gcFractionData(data), gcFractionLayout, configs['gcfraction']);
+        Plotly.newPlot(goroutinesElt, goroutinesData(data), goroutinesLayout, configs['goroutines']);
+       
+        if (data.CustomData != undefined) {
+            m.customDataPlots = {};
+            createPlotsForCustomData(m.customDataPlots, data.times, data.CustomData);
+            customizes[0].removeChild(customizeItem[0]);
+            customizes.show();
+        } else {
+            customizes[0].parentNode.removeChild(customizes[0]);
+        }
+
         $('.ui.accordion').accordion({
             exclusive: false,
             onOpen: function() {
@@ -284,21 +346,57 @@ var ui = (function() {
                 this.firstElementChild.hidden = true;
             }
         });
+    }
 
+    function createPlotsForCustomData(plots, times, data, name) {
+        let names = Object.getOwnPropertyNames(data);
+        let d = customizeData(times, data);
+        if (d != undefined) {
+            let item = customizeItem.clone();
+            customizes.append(item);
+            plots.graphDiv = item.find('#customize')[0];
+            if (name != undefined) {
+                item.find('#title')[0].innerText = name;
+                plots.layout = {
+                    title: name,
+                    xaxis: {
+                        title: 'time',
+                        tickformat: '%H:%M:%S',
+                    },
+                    yaxis: {
+                        title: 'count',
+                    }
+                };
+            } else {
+                plots.layout = customizeLayout;
+            }
+            Plotly.newPlot(plots.graphDiv, d, plots.layout, configs['customize']);
+        }
+        for (let i = 0; i < names.length; i++) {
+            let name = names[i];
+            let d = data[name];
+            if (d.constructor != Buffer) {
+                let plot = {};
+                plots[name] = plot;
+                createPlotsForCustomData(plot, times, d, name);
+            }
+        }
+    }
 
-        heapElt = $('#heap')[0];
-        mspanMCacheElt = $('#mspan-mcache')[0];
-        sizeClassesElt = $('#size-classes')[0];
-        objectsElt = $('#objects')[0];
-        gcfractionElt = $('#gcfraction')[0];
-        goroutinesElt = $('#goroutines')[0];
-
-        Plotly.newPlot(heapElt, heapData(data), heapLayout, configs['heap']);
-        Plotly.newPlot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, configs['mspan-mcache']);
-        Plotly.newPlot(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, configs['size-classes']);
-        Plotly.newPlot(objectsElt, objectsData(data), objectsLayout, configs['objects']);
-        Plotly.newPlot(gcfractionElt, gcFractionData(data), gcFractionLayout, configs['gcfraction']);
-        Plotly.newPlot(goroutinesElt, goroutinesData(data), goroutinesLayout, configs['goroutines']);
+    function updatePlotsForCustomData(plots, times, data) {
+        let names = Object.getOwnPropertyNames(data);
+  
+        let graphDiv = plots.graphDiv;
+        if (graphDiv != undefined) {
+            Plotly.react(graphDiv, customizeData(times, data, graphDiv.data), plots.layout, configs['customize']);
+        }
+        for (let i = 0; i < names.length; i++) {
+            let name = names[i];
+            let d = data[name];
+            if (d.constructor != Buffer) {
+                updatePlotsForCustomData(plots[name], times, d);
+            }
+        }
     }
 
     var updateIdx = 0;
@@ -331,6 +429,10 @@ var ui = (function() {
         if (!sizeClassesElt.hidden && updateIdx % 5 == 0) {
             // Update the size class heatmap 5 times less often since it's expensive. 
             Plotly.react(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, configs['size-classes']);
+        }
+
+        if (data.CustomData != undefined) {
+            updatePlotsForCustomData(m.customDataPlots, data.times, data.CustomData);
         }
 
         updateIdx++;
