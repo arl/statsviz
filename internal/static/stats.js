@@ -68,6 +68,8 @@ var stats = (function() {
             let o = {};
             parseCustomData(allStats.CustomData, o, buflen, bufcap)
             data.CustomData = o;
+        } else {
+            data.CustomData = undefined;
         }
     };
 
@@ -154,7 +156,7 @@ var stats = (function() {
         }
 
         // Custom data
-        if (data.CustomData != undefined) {
+        if (allStats.CustomData != undefined && data.CustomData != undefined) {
             parseCustomData(allStats.CustomData, data.CustomData);
         }
 

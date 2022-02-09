@@ -329,12 +329,15 @@ var ui = (function() {
         Plotly.newPlot(goroutinesElt, goroutinesData(data), goroutinesLayout, configs['goroutines']);
        
         if (data.CustomData != undefined) {
+            let c = customizes[0];
+            while(c.firstChild){
+                c.removeChild(c.firstChild);
+            }
             m.customDataPlots = {};
             createPlotsForCustomData(m.customDataPlots, data.times, data.CustomData);
-            customizes[0].removeChild(customizeItem[0]);
             customizes.show();
         } else {
-            customizes[0].parentNode.removeChild(customizes[0]);
+            customizes.hide();
         }
 
         $('.ui.accordion').accordion({
@@ -387,7 +390,7 @@ var ui = (function() {
         let names = Object.getOwnPropertyNames(data);
   
         let graphDiv = plots.graphDiv;
-        if (graphDiv != undefined) {
+        if (graphDiv != undefined && !graphDiv.hidden) {
             Plotly.react(graphDiv, customizeData(times, data, graphDiv.data), plots.layout, configs['customize']);
         }
         for (let i = 0; i < names.length; i++) {
