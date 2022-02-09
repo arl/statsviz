@@ -243,6 +243,7 @@ var ui = (function() {
                     y: d.slice(times.length),
                     type: 'scatter',
                     name: name,
+                    exponentformat: 'SI',
                     hovertemplate: '<b>'+name+'</b>: %{y}',
                     visible: old == undefined || old[i].visible == undefined || old[i].visible,
                 }
@@ -368,6 +369,7 @@ var ui = (function() {
                     },
                     yaxis: {
                         title: 'count',
+                        exponentformat: 'SI',
                     }
                 };
             } else {
