@@ -23,7 +23,7 @@ func Work() {
 				_ [3]uint64
 			}{}
 		case 2:
-			obj = fmt.Sprint("a relatively long and useless string %d", i)
+			obj = fmt.Sprintf("a relatively long and useless string %d", i)
 		case 3:
 			obj = make([]byte, i%1024)
 		case 4:

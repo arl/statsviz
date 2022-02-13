@@ -14,8 +14,8 @@ func main() {
 
 	const (
 		// Use your own certificates and key files.
-		certFile = "_example/https/cert.pem"
-		keyFile  = "_example/https/key.pem"
+		certFile = "./cert.pem"
+		keyFile  = "./key.pem"
 	)
 
 	// Create a serve mux and register statsviz handlers.

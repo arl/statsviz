@@ -1,5 +1,6 @@
 Unreleased yet
 ==============
+  * Build and test all examples
   * Polishing (README, small UI improvements)
   * Assets are `go:embed`ed, so the minimum go version is now go1.16
   * Small ui improvements: link to go.dev rather than golang.org

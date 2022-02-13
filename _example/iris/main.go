@@ -22,9 +22,9 @@ func main() {
 
 	mux := http.NewServeMux()
 	statsviz.Register(mux)
-	statsSrv := &http.Server{Addr: ":9000", Handler: mux}
+	statsSrv := &http.Server{Addr: ":8080", Handler: mux}
 
-	fmt.Println("Point your browser to http://127.0.0.1:9000/debug/statsviz\n")
+	fmt.Println("Point your browser to http://127.0.0.1:8080/debug/statsviz\n")
 
 	// NewHost puts the http server for statsviz under the control of iris but
 	// iris won't touch its handlers.
