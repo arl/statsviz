@@ -1,29 +1,36 @@
+//go:build linux
+// +build linux
+
 package example
 
 import (
 	"bytes"
+	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
 
 func TestExamples(t *testing.T) {
 	examples := map[string]string{
-		"chi":        "TODO",
+		"chi":        "http://localhost:8080/debug/statsviz/",
 		"default":    "http://localhost:8080/debug/statsviz/",
-		"echo":       "TODO",
-		"fasthttp":   "TODO",
-		"fiber":      "TODO",
-		"gin":        "TODO",
-		"gorilla":    "TODO",
+		"echo":       "http://localhost:8080/debug/statsviz/",
+		"fasthttp":   "http://localhost:8080/debug/statsviz/",
+		"fiber":      "http://localhost:8080/debug/statsviz/",
+		"gin":        "http://localhost:8080/debug/statsviz/",
+		"gorilla":    "http://localhost:8080/debug/statsviz/",
 		"https":      "https://localhost:8080/debug/statsviz/",
-		"iris":       "TODO",
-		"middleware": "TODO",
+		"iris":       "http://localhost:8080/debug/statsviz/",
+		"middleware": "http://localhost:8080/debug/statsviz/",
 		"mux":        "http://localhost:8080/debug/statsviz/",
 		"options":    "http://localhost:8080/foo/bar/",
 	}
@@ -38,7 +45,13 @@ func TestExamples(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client := http.Client{}
+	client := http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
 	for _, ent := range ents {
 		if !ent.IsDir() {
 			continue
@@ -62,17 +75,21 @@ func TestExamples(t *testing.T) {
 			}
 
 			installScript := filepath.Join("install.sh")
-
 			_, err = os.Stat(installScript)
-			if err != nil && !os.IsNotExist(err) {
-				t.Fatalf("stat %s: %v", installScript, err)
-			}
-			if os.IsExist(err) {
-				cmd := exec.Command(installScript)
+			switch {
+			case errors.Is(err, fs.ErrNotExist):
+				break
+			case err != nil:
+				t.Fatal(err)
+			default:
+				cmd := exec.Command("/bin/sh", installScript)
 				out, err := cmd.CombinedOutput()
 				if err != nil {
-					t.Logf("command output: %s", out)
+					t.Logf("%s: %s", installScript, out)
 					t.Fatalf("exec %s: %v", installScript, err)
+				}
+				if testing.Verbose() {
+					t.Logf("%s: %s", installScript, out)
 				}
 			}
 
@@ -92,7 +109,15 @@ func TestExamples(t *testing.T) {
 			time.Sleep(1 * time.Second)
 			client.Timeout = 1 * time.Second
 
-			resp, err := client.Get(url)
+			req, err := http.NewRequest(http.MethodGet, url, nil)
+			if err != nil {
+				t.Fatalf("bad requets: %v", err)
+			}
+			if strings.Contains(t.Name(), "middleware") {
+				req.SetBasicAuth("hello", "world")
+			}
+
+			resp, err := client.Do(req)
 			if err != nil {
 				t.Fatalf("HTTP get %s: %v", url, err)
 			}
@@ -118,7 +143,7 @@ func TestExamples(t *testing.T) {
 
 // startStatsviz runs go run 'dir', which starts the application opening a
 // statsviz server. The returned function stops (kills) it.
-func startStatsviz(dir string) (func() error, error) {
+func startStatsviz(dir string) (stop func() error, err error) {
 	binname := "." + string(os.PathSeparator) + dir + ".test"
 	cmd := exec.Command("go", "build", "-o", binname)
 	out, err := cmd.CombinedOutput()
