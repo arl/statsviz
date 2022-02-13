@@ -11,10 +11,7 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
-      - name: Vet
-        run: go vet ./...
       - name: Tests
         run: go test -race ./...
-      - name: Build examples
-        run: ${GITHUB_WORKSPACE}/.github/scripts/build_examples.sh
-        shell: sh
+      - name: Test Examples
+        run: cd _example && go test -race .
