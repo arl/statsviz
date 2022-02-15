@@ -13,7 +13,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"testing"
 	"time"
 )
@@ -125,14 +124,18 @@ func TestExamples(t *testing.T) {
 // one, or returns a function that can be called at any moment in order to stop
 // both 'go run' and the started process.
 func gorun() (stop func() error, err error) {
-	wd, err := os.Getwd()
+	out, err := exec.Command("go", "build", "-o", "out").CombinedOutput()
+	if testing.Verbose() {
+		if len(out) == 0 {
+			out = []byte("<no output>")
+		}
+		fmt.Printf("go build -o out, output:\n%s\n", string(out))
+	}
 	if err != nil {
-		return nil, fmt.Errorf("go run: %v", err)
+		return nil, fmt.Errorf("go build -o out: %v", err)
 	}
 
-	cmd := exec.Command("go", "run", ".")
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-
+	cmd := exec.Command("./out")
 	errc := make(chan error)
 	go func() {
 		outb := &bytes.Buffer{}
@@ -147,19 +150,13 @@ func gorun() (stop func() error, err error) {
 			if outb.Len() > 0 {
 				out = outb.String()
 			}
-			fmt.Printf("go run %s, output: %s\n", wd, out)
+			fmt.Printf("go run, output:\n%s\n", out)
 		}
 	}()
 
 	if err := <-errc; err != nil {
-		return nil, fmt.Errorf("go run %s: %v", wd, err)
+		return nil, fmt.Errorf("go run: %v", err)
 	}
 
-	stop = func() error {
-		if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil {
-			return fmt.Errorf("go run %s: can't kill pid=%v %v", wd, cmd.Process.Pid, err)
-		}
-		return nil
-	}
-	return stop, nil
+	return cmd.Process.Kill, nil
 }
