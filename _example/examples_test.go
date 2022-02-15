@@ -6,10 +6,8 @@ package example
 import (
 	"bytes"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"net/http"
 	"os"
 	"os/exec"
@@ -74,26 +72,7 @@ func TestExamples(t *testing.T) {
 				return
 			}
 
-			installScript := filepath.Join("install.sh")
-			_, err = os.Stat(installScript)
-			switch {
-			case errors.Is(err, fs.ErrNotExist):
-				break
-			case err != nil:
-				t.Fatal(err)
-			default:
-				cmd := exec.Command("/bin/sh", installScript)
-				out, err := cmd.CombinedOutput()
-				if err != nil {
-					t.Logf("%s: %s", installScript, out)
-					t.Fatalf("exec %s: %v", installScript, err)
-				}
-				if testing.Verbose() {
-					t.Logf("%s: %s", installScript, out)
-				}
-			}
-
-			stop, err := startStatsviz(ent.Name())
+			stop, err := gorun()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -141,18 +120,22 @@ func TestExamples(t *testing.T) {
 	}
 }
 
-// startStatsviz runs go run 'dir', which starts the application opening a
-// statsviz server. The returned function stops (kills) it.
-func startStatsviz(dir string) (stop func() error, err error) {
-	binname := "." + string(os.PathSeparator) + dir + ".test"
-	cmd := exec.Command("go", "build", "-o", binname)
-	out, err := cmd.CombinedOutput()
+// gorun runs 'go run .' and either returns an error immediately if there was
+// one, or returns a function that can be called at any moment in order to stop
+// both 'go run' and the started process.
+func gorun() (stop func() error, err error) {
+	out, err := exec.Command("go", "build", "-o", "out").CombinedOutput()
+	if testing.Verbose() {
+		if len(out) == 0 {
+			out = []byte("<no output>")
+		}
+		fmt.Printf("go build -o out, output:\n%s\n", string(out))
+	}
 	if err != nil {
-		fmt.Printf("startStatsviz: go build output:\n%s\n", out)
-		return nil, fmt.Errorf("go build failed: %v", err)
+		return nil, fmt.Errorf("go build -o out: %v", err)
 	}
 
-	cmd = exec.Command(binname)
+	cmd := exec.Command("./out")
 	errc := make(chan error)
 	go func() {
 		outb := &bytes.Buffer{}
@@ -167,11 +150,12 @@ func startStatsviz(dir string) (stop func() error, err error) {
 			if outb.Len() > 0 {
 				out = outb.String()
 			}
-			fmt.Printf("startStatsviz: %s output: %s\n", binname, out)
+			fmt.Printf("go run, output:\n%s\n", out)
 		}
 	}()
+
 	if err := <-errc; err != nil {
-		return nil, fmt.Errorf("startStatsviz: %v", err)
+		return nil, fmt.Errorf("go run: %v", err)
 	}
 
 	return cmd.Process.Kill, nil
