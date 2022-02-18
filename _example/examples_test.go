@@ -51,7 +51,7 @@ func TestExamples(t *testing.T) {
 		},
 	}
 	for _, ent := range ents {
-		if !ent.IsDir() {
+		if !ent.IsDir() || ent.Name() == "dev" {
 			continue
 		}
 		t.Run(ent.Name(), func(t *testing.T) {
