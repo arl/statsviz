@@ -6,7 +6,7 @@ const GCLines = data => {
     const mints = data.times[0];
     const maxts = data.times[data.times.length - 1];
 
-    let shapes = [];
+    const shapes = [];
 
     for (let i = 0, n = gcs.length; i < n; i++) {
         let d = gcs[i];
@@ -154,7 +154,7 @@ const sizeClassesData = data => {
     return ret;
 }
 
-let sizeClassesLayout = {
+const sizeClassesLayout = {
     title: 'Size Classes',
     xaxis: {
         title: 'time',
@@ -191,7 +191,7 @@ const objectsData = data => {
     ]
 }
 
-let objectsLayout = {
+const objectsLayout = {
     title: 'Objects',
     xaxis: {
         title: 'time',
@@ -212,7 +212,7 @@ const goroutinesData = data => {
     }, ]
 }
 
-let goroutinesLayout = {
+const goroutinesLayout = {
     title: 'Goroutines',
     xaxis: {
         title: 'time',
@@ -233,7 +233,7 @@ const gcFractionData = data => {
     }, ]
 }
 
-let gcFractionLayout = {
+const gcFractionLayout = {
     title: 'GC CPU fraction',
     xaxis: {
         title: 'time',
@@ -247,8 +247,8 @@ let gcFractionLayout = {
 
 
 const configs = () => {
-    let plots = ['heap', 'mspan-mcache', 'size-classes', 'objects', 'gcfraction', 'goroutines'];
-    let cfgs = {};
+    const plots = ['heap', 'mspan-mcache', 'size-classes', 'objects', 'gcfraction', 'goroutines'];
+    const cfgs = {};
 
     plots.forEach(plotName => {
         // Create plot config where only 'save image' and 'show on hover' toggles are enabled.
@@ -267,12 +267,12 @@ const configs = () => {
     return cfgs;
 };
 
-var heapElt = $('#heap')[0];
-var mspanMCacheElt = $('#mspan-mcache')[0];
-var sizeClassesElt = $('#size-classes')[0];
-var objectsElt = $('#objects')[0];
-var gcfractionElt = $('#gcfraction')[0];
-var goroutinesElt = $('#goroutines')[0];
+const heapElt = $('#heap')[0];
+const mspanMCacheElt = $('#mspan-mcache')[0];
+const sizeClassesElt = $('#size-classes')[0];
+const objectsElt = $('#objects')[0];
+const gcfractionElt = $('#gcfraction')[0];
+const goroutinesElt = $('#goroutines')[0];
 
 const createPlots = (data) => {
     $('.ui.accordion').accordion({
@@ -328,43 +328,6 @@ const updatePlots = data => {
 
     updateIdx++;
 }
-
-const traceInfo = traceName => {
-    let traces = {
-        'heap alloc': 'HeapAlloc',
-        'heap sys': 'HeapSys',
-        'heap idle': 'HeapIdle',
-        'heap in-use': 'HeapInuse',
-        'next gc': 'NextGC',
-
-        'mspan in-use': 'MSpanInuse',
-        'mspan sys': 'MSpanSys',
-        'mcache in-use': 'MCacheInuse',
-        'mcache sys': 'MCacheSys',
-
-        'gcfraction': 'GCCPUFraction',
-
-        'lookups': 'Lookups',
-        'heap objects': 'HeapObjects',
-    };
-
-    let fieldName = traces[traceName];
-    if (fieldName !== undefined) {
-        return memStatsDoc(fieldName);
-    }
-    if (traceName == 'goroutines') {
-        return "The number of goroutines"
-    }
-    if (traceName == 'live') {
-        return "The number of live objects"
-    }
-    if (traceName == 'goroutines') {
-        return "Number of the goroutines"
-    }
-    if (traceName == 'size classes') {
-        return "Reports per-size class allocation statistics"
-    }
-};
 
 let paused = false;
 const isPaused = () => { return paused; }
