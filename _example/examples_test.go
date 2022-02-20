@@ -51,7 +51,7 @@ func TestExamples(t *testing.T) {
 		},
 	}
 	for _, ent := range ents {
-		if !ent.IsDir() {
+		if !ent.IsDir() || ent.Name() == "dev" {
 			continue
 		}
 		t.Run(ent.Name(), func(t *testing.T) {
@@ -150,12 +150,12 @@ func gorun() (stop func() error, err error) {
 			if outb.Len() > 0 {
 				out = outb.String()
 			}
-			fmt.Printf("go run, output:\n%s\n", out)
+			fmt.Printf("command output:\n%s\n", out)
 		}
 	}()
 
 	if err := <-errc; err != nil {
-		return nil, fmt.Errorf("go run: %v", err)
+		return nil, fmt.Errorf("command error: %v", err)
 	}
 
 	return cmd.Process.Kill, nil
