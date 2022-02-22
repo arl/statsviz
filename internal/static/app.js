@@ -27,20 +27,20 @@ const clamp = (val, min, max) => {
 
 const connect = () => {
     let ws = new WebSocket(buildWebsocketURI());
-    console.log("Attempting websocket connection to statsviz server...");
+    console.info("Attempting websocket connection to statsviz server...");
 
     ws.onopen = () => {
-        console.log("Successfully connected");
+        console.info("Successfully connected");
         timeout = 250; // reset connection timeout for next time
     };
 
     ws.onclose = event => {
-        console.log("Closed websocket connection: ", event);
+        console.info("Closed websocket connection: ", event);
         setTimeout(connect, clamp(timeout += timeout, 250, 5000));
     };
 
     ws.onerror = error => {
-        console.log("Websocket error: ", error);
+        console.error("Websocket error: ", error);
         ws.close();
     };
 
