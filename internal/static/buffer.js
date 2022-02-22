@@ -2,7 +2,7 @@
 export default class Buffer {
     constructor(len, cap) {
         if (cap - len < 0) {
-            console.Error("cap - len must be positive");
+            throw "cap - len must be positive";
         }
         // TODO(arl): value using TypedArray rather than Array here
         this._buf = new Array(cap);
