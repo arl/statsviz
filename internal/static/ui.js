@@ -71,9 +71,15 @@ const heapData = data => {
     ]
 }
 
+const plotWidth = 620;
+const plotHeight = 420;
+
+
 // https://plotly.com/javascript/reference/layout
 const heapLayout = {
     title: 'Heap',
+    width: plotWidth,
+    height: plotHeight,
     xaxis: {
         title: 'time',
         tickformat: '%H:%M:%S',
@@ -120,6 +126,8 @@ const mspanMCacheData = data => {
 
 const mspanMCacheLayout = {
     title: 'MSpan/MCache',
+    width: plotWidth,
+    height: plotHeight,
     xaxis: {
         title: 'time',
         tickformat: '%H:%M:%S',
@@ -156,6 +164,8 @@ const sizeClassesData = data => {
 
 const sizeClassesLayout = {
     title: 'Size Classes',
+    width: plotWidth,
+    height: plotHeight,
     xaxis: {
         title: 'time',
         tickformat: '%H:%M:%S',
@@ -193,6 +203,8 @@ const objectsData = data => {
 
 const objectsLayout = {
     title: 'Objects',
+    width: plotWidth,
+    height: plotHeight,
     xaxis: {
         title: 'time',
         tickformat: '%H:%M:%S',
@@ -214,6 +226,8 @@ const goroutinesData = data => {
 
 const goroutinesLayout = {
     title: 'Goroutines',
+    width: plotWidth,
+    height: plotHeight,
     xaxis: {
         title: 'time',
         tickformat: '%H:%M:%S',
@@ -235,6 +249,8 @@ const gcFractionData = data => {
 
 const gcFractionLayout = {
     title: 'GC CPU fraction',
+    width: plotWidth,
+    height: plotHeight,
     xaxis: {
         title: 'time',
         tickformat: '%H:%M:%S',
@@ -275,15 +291,15 @@ const gcfractionElt = $('#gcfraction')[0];
 const goroutinesElt = $('#goroutines')[0];
 
 const createPlots = (data) => {
-    $('.ui.accordion').accordion({
-        exclusive: false,
-        onOpen: function() {
-            this.firstElementChild.hidden = false;
-        },
-        onClose: function() {
-            this.firstElementChild.hidden = true;
-        }
-    });
+    // $('.ui.accordion').accordion({
+    //     exclusive: false,
+    //     onOpen: function() {
+    //         this.firstElementChild.hidden = false;
+    //     },
+    //     onClose: function() {
+    //         this.firstElementChild.hidden = true;
+    //     }
+    // });
 
     Plotly.newPlot(heapElt, heapData(data), heapLayout, configs['heap']);
     Plotly.newPlot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, configs['mspan-mcache']);

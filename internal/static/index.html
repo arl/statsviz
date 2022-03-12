@@ -5,76 +5,65 @@
     <title>Statsviz</title>
     <meta charset="utf-8">
     <meta name="description" content="Statsviz interface" />
-    <link rel="stylesheet" href="./semantic/semantic.min.css" />
+    <link rel="stylesheet" href="./bootstrap.min.css" />
     <script src="./jquery-3.6.0.min.js"></script>
     <script src="./plotly-basic-2.9.0.min.js"></script>
     <script src="./plotly-cartesian-2.9.0.min.js"></script>
-    <script src="./semantic/semantic.min.js"></script>
+    <script type="module" src="./bootstrap.bundle.min.js"></script>
 </head>
 
 <body>
-    <div class="ui fixed inverted menu">
-        <div class="ui container">
-            <a class="header item">Statsviz
-            </a>
-            <a class="right item" href="https://github.com/arl/statsviz">
-                <i class="github icon"></i> Github
-            </a>
-            <a class="item" href="https://pkg.go.dev/runtime#MemStats">
-                <i class="info icon"></i> runtime.MemStats
-            </a>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #84afce;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Statsviz</a>
+            <button class="navbar-toggler" type="button">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://github.com/arl/statsviz">Github</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://pkg.go.dev/runtime#MemStats">runtime.Memstats</a>
+                    </li>
+                </ul>
+            </div>
+
         </div>
+    </nav>
+
+    <div class="container-xxl">
+        <div class="row">
+            <div class="col">
+                <div id="heap"></div>
+            </div>
+            <div class="col">
+                <div id="objects"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div id="mspan-mcache"></div>
+            </div>
+            <div class="col">
+                <div id="goroutines"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div id="size-classes"></div>
+            </div>
+            <div class="col">
+                <div id="gcfraction"></div>
+            </div>
+        </div>
+
     </div>
 
-    <div class="ui stackable grid">
-        <div class="eight wide column reveal" style="flex: 0 0 800px;">
-
-            <div class="ui styled fluid accordion">
-                <div class="active title">
-                    <i class="dropdown icon"></i> Heap
-                </div>
-                <div class="active content">
-                    <div id="heap" class="transition visible plot"></div>
-                </div>
-                <div class="title">
-                    <i class="dropdown icon"></i> MSpan / MCache
-                </div>
-                <div class="content">
-                    <div id="mspan-mcache" class="transition hidden plot"></div>
-                </div>
-                <div class="title">
-                    <i class="dropdown icon"></i> Size Classes
-                </div>
-                <div class="content">
-                    <div id="size-classes" class="transition hidden plot"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="eight wide column reveal" style="flex: 0 0 800px;">
-            <div class="ui styled fluid accordion">
-                <div class="title">
-                    <i class="dropdown icon"></i> Objects
-                </div>
-                <div class="content">
-                    <div id="objects" class="transition visible plot"></div>
-                </div>
-                <div class="title">
-                    <i class="dropdown icon"></i> Goroutines
-                </div>
-                <div class="content">
-                    <div id="goroutines" class="transition visible plot"></div>
-                </div>
-                <div class="title">
-                    <i class="dropdown icon"></i> GC / CPU fraction
-                </div>
-                <div class="content">
-                    <div id="gcfraction" class="transition hidden plot"></div>
-                </div>
-            </div>
-        </div>
-
-        <script type="module" src="./app.js"></script>
+    <script type="module" src="./app.js"></script>
 </body>
 
 </html>
