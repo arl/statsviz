@@ -291,16 +291,6 @@ const gcfractionElt = $('#gcfraction')[0];
 const goroutinesElt = $('#goroutines')[0];
 
 const createPlots = (data) => {
-    // $('.ui.accordion').accordion({
-    //     exclusive: false,
-    //     onOpen: function() {
-    //         this.firstElementChild.hidden = false;
-    //     },
-    //     onClose: function() {
-    //         this.firstElementChild.hidden = true;
-    //     }
-    // });
-
     Plotly.newPlot(heapElt, heapData(data), heapLayout, configs['heap']);
     Plotly.newPlot(mspanMCacheElt, mspanMCacheData(data), mspanMCacheLayout, configs['mspan-mcache']);
     Plotly.newPlot(sizeClassesElt, sizeClassesData(data), sizeClassesLayout, configs['size-classes']);
