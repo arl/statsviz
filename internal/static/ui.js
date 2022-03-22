@@ -72,27 +72,6 @@ const heapData = data => {
     ]
 }
 
-const plotWidth = 620;
-const plotHeight = 420;
-
-
-// https://plotly.com/javascript/reference/layout
-const heapLayout = {
-    title: 'Heap',
-    width: plotWidth,
-    height: plotHeight,
-    xaxis: {
-        title: 'time',
-        tickformat: '%H:%M:%S',
-    },
-    yaxis: {
-        title: 'bytes',
-        ticksuffix: 'B',
-        // tickformat: ' ',
-        exponentformat: 'SI',
-    }
-};
-
 const mspanMCacheData = data => {
     return [{
             x: data.times,
@@ -125,22 +104,6 @@ const mspanMCacheData = data => {
     ]
 }
 
-const mspanMCacheLayout = {
-    title: 'MSpan/MCache',
-    width: plotWidth,
-    height: plotHeight,
-    xaxis: {
-        title: 'time',
-        tickformat: '%H:%M:%S',
-    },
-    yaxis: {
-        title: 'bytes',
-        ticksuffix: 'B',
-        // tickformat: ' ',
-        exponentformat: 'SI',
-    }
-};
-
 const colorscale = [
     [0, 'rgb(166,206,227, 0.5)'],
     [0.05, 'rgb(31,120,180,0.5)'],
@@ -162,20 +125,6 @@ const sizeClassesData = data => {
     }];
     return ret;
 }
-
-const sizeClassesLayout = {
-    title: 'Size Classes',
-    width: plotWidth,
-    height: plotHeight,
-    xaxis: {
-        title: 'time',
-        tickformat: '%H:%M:%S',
-    },
-    yaxis: {
-        title: 'size classes',
-        exponentformat: 'SI',
-    }
-};
 
 const objectsData = data => {
     return [{
@@ -202,19 +151,6 @@ const objectsData = data => {
     ]
 }
 
-const objectsLayout = {
-    title: 'Objects',
-    width: plotWidth,
-    height: plotHeight,
-    xaxis: {
-        title: 'time',
-        tickformat: '%H:%M:%S',
-    },
-    yaxis: {
-        title: 'objects'
-    }
-};
-
 const goroutinesData = data => {
     return [{
         x: data.times,
@@ -224,19 +160,6 @@ const goroutinesData = data => {
         hovertemplate: '<b>goroutines</b>: %{y}',
     }, ]
 }
-
-const goroutinesLayout = {
-    title: 'Goroutines',
-    width: plotWidth,
-    height: plotHeight,
-    xaxis: {
-        title: 'time',
-        tickformat: '%H:%M:%S',
-    },
-    yaxis: {
-        title: 'goroutines',
-    }
-};
 
 const gcFractionData = data => {
     return [{
@@ -248,30 +171,102 @@ const gcFractionData = data => {
     }, ]
 }
 
-const gcFractionLayout = {
-    title: 'GC CPU fraction',
-    width: plotWidth,
-    height: plotHeight,
-    xaxis: {
-        title: 'time',
-        tickformat: '%H:%M:%S',
-    },
-    yaxis: {
-        title: 'gc/cpu (%)',
-        tickformat: ',.5%',
-    }
-};
-
 let plots = [];
 
 const createPlots = (data) => {
-    const plotDefs = [
-        { name: "heap", dataFunc: heapData, layout: heapLayout, updateFreq: 0, hasHorsEvents: true },
-        { name: "objects", dataFunc: objectsData, layout: objectsLayout, updateFreq: 0, hasHorsEvents: true },
-        { name: "mspan-mcache", dataFunc: mspanMCacheData, layout: mspanMCacheLayout, updateFreq: 0, hasHorsEvents: true },
-        { name: "goroutines", dataFunc: goroutinesData, layout: goroutinesLayout, updateFreq: 0, hasHorsEvents: false },
-        { name: "size-classes", dataFunc: sizeClassesData, layout: sizeClassesLayout, updateFreq: 5, hasHorsEvents: false },
-        { name: "gcfraction", dataFunc: gcFractionData, layout: gcFractionLayout, updateFreq: 0, hasHorsEvents: false },
+    const plotDefs = [{
+            config: {
+                name: "heap",
+                title: 'Heap',
+                type: 'scatter',
+                updateFreq: 0,
+                hasHorsEvents: true,
+                layout: {
+                    yaxis: {
+                        title: 'bytes',
+                        ticksuffix: 'B',
+                    },
+                },
+            },
+            dataFunc: heapData,
+        },
+        {
+            config: {
+                name: "objects",
+                title: 'Objects',
+                type: 'scatter',
+                updateFreq: 0,
+                hasHorsEvents: true,
+                layout: {
+                    yaxis: {
+                        title: 'objects',
+                    },
+                },
+            },
+            dataFunc: objectsData,
+        },
+        {
+            config: {
+                name: 'mspan-mcache',
+                title: 'MSpan/MCache',
+                type: 'scatter',
+                updateFreq: 0,
+                hasHorsEvents: true,
+                layout: {
+                    yaxis: {
+                        title: 'bytes',
+                        ticksuffix: 'B',
+                    },
+                },
+            },
+            dataFunc: mspanMCacheData,
+        },
+        {
+            config: {
+                name: 'goroutines',
+                title: 'Goroutines',
+                type: 'scatter',
+                updateFreq: 0,
+                hasHorsEvents: false,
+                layout: {
+                    yaxis: {
+                        title: 'goroutines',
+                    },
+                },
+            },
+            dataFunc: goroutinesData,
+        },
+        {
+            config: {
+                name: "size-classes",
+                title: 'Size Classes',
+                type: 'heatmap',
+                updateFreq: 5,
+                hasHorsEvents: false,
+                layout: {
+                    yaxis: {
+                        title: 'size classes',
+                    },
+                },
+            },
+            dataFunc: sizeClassesData,
+        },
+        {
+            config: {
+                name: "gcfraction",
+                title: 'GC CPU fraction',
+                type: 'scatter',
+                updateFreq: 0,
+                hasHorsEvents: false,
+                layout: {
+                    yaxis: {
+                        title: 'gc/cpu (%)',
+                        tickformat: ',.5%',
+                    },
+                },
+            },
+            dataFunc: gcFractionData,
+        },
     ];
 
     let curRow = null;
@@ -284,9 +279,9 @@ const createPlots = (data) => {
             container.append(curRow);
         }
         let col = $('<div>', { class: 'col' });
-        let plotDiv = $('<div>', { id: plotDef.name });
+        let plotDiv = $('<div>', { id: plotDef.config.name });
 
-        let plot = new Plot(plotDiv[0], plotDef.name, plotDef.dataFunc, plotDef.layout, data, plotDef.updateFreq, plotDef.hasHorsEvents);
+        let plot = new Plot(plotDef.config, plotDiv[0], plotDef.dataFunc, data);
         plots.push(plot);
 
         col.append(plotDiv);
