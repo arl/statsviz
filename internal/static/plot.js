@@ -37,6 +37,24 @@ export default class Plot {
                                  //  - 2: update half the time, etc.
             hasHorzEvents: bool  // show events as horizontal bars on this chart
             layout: Object       // Plotly-specific: gets merged over 'plotlyLayoutBase'
+
+            // If type = 'scatter':
+            subplots: [
+                {
+                    name: String    // subplot name
+                    unitfmt: String // unit format string
+                    hover: String   // hover title (optional, defaults to name)
+                },
+            ]
+
+            // If type = 'heatmap':
+            heatmap:
+            {
+                hover: 'TO REFINE (see TODO)',
+                colorscale: [ [Number: 'color'] ] // heatmap colorscale palette, numbers go from 0 to 1
+                buckets: classSizes,              // heatmap list of buckets
+            },
+
         }
         - div: HTMLElement is the div html element passed to Plotly.newPlot
         - dataFunc: function is the function used to extract and fill the plot data from the incoming stats data
@@ -50,13 +68,38 @@ export default class Plot {
         this._updateCount = 0;
         this._htmlElt = div;
 
+        if (this._cfg.type == 'scatter') {
+            this._dataTemplate = [];
+            this._cfg.subplots.forEach(subplot => {
+                const hover = subplot.hover || subplot.name;
+                const unitfmt = subplot.unitfmt;
+
+                this._dataTemplate.push({
+                    x: null,
+                    y: null,
+                    type: 'scatter',
+                    name: subplot.name,
+                    hovertemplate: `<b>${hover}</b>: ${unitfmt}`,
+                })
+            });
+        } else if (this._cfg.type == 'heatmap') {
+            this._dataTemplate = {
+                x: null,
+                y: this._cfg.heatmap.buckets,
+                z: null,
+                type: 'heatmap',
+                showlegend: false,
+                hovertemplate: this._cfg.heatmap.hover,
+            }
+        }
+
         this._plotlyLayout = {...plotlyLayoutBase, ...this._cfg.layout };
         this._plotlyLayout.title = this._cfg.title;
 
         this._plotlyConfig = {...plotlyConfigBase }
         this._plotlyConfig.toImageButtonOptions.filename = this._cfg.name
 
-        Plotly.newPlot(this._htmlElt, this._dataFunc(data), this._plotlyLayout, this._plotlyConfig);
+        Plotly.newPlot(this._htmlElt, this.extractData(data), this._plotlyLayout, this._plotlyConfig);
     }
 
     name() {
@@ -64,11 +107,25 @@ export default class Plot {
     }
 
     extractData(data) {
-        return this._dataFunc(data);
-    }
-
-    layout() {
-        return this._layout
+        if (this._cfg.type == 'scatter') {
+            if (this._dataTemplate.length == 1) {
+                this._dataTemplate[0].x = data.times;
+                this._dataTemplate[0].y = data[this._cfg.name];
+            } else {
+                for (let i = 0; i < this._dataTemplate.length; i++) {
+                    this._dataTemplate[i].x = data.times;
+                    this._dataTemplate[i].y = data[this._cfg.name][i];
+                }
+            }
+        } else if (this._cfg.type == 'heatmap') {
+            this._dataTemplate = {
+                x: data.times,
+                z: data[this._cfg.name],
+                type: 'heatmap',
+                hovertemplate: this._cfg.heatmap.hover,
+            }
+        }
+        return this._dataTemplate;
     }
 
     update(data, horzEvents) {
@@ -77,7 +134,7 @@ export default class Plot {
             if (this._cfg.hasHorzEvents === true) {
                 this._plotlyLayout.shapes = horzEvents;
             }
-            Plotly.react(this._htmlElt, this._dataFunc(data), this._plotlyLayout, this._plotlyConfig);
+            Plotly.react(this._htmlElt, this.extractData(data), this._plotlyLayout, this._plotlyConfig);
         }
     }
 };
