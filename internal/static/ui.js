@@ -195,11 +195,10 @@ const createPlots = (data) => {
             curRow = $('<div>', { class: 'row' });
             container.append(curRow);
         }
+
         let col = $('<div>', { class: 'col' });
         let plotDiv = $('<div>', { id: plotDef.config.name });
-
-        let plot = new Plot(plotDef.config, plotDiv[0], data);
-        plots.push(plot);
+        plots.push(new Plot(plotDef.config, plotDiv[0], data));
 
         col.append(plotDiv);
         curRow.append(col);
