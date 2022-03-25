@@ -79,7 +79,7 @@ export default class Plot {
                     y: null,
                     type: 'scatter',
                     name: subplot.name,
-                    hovertemplate: `<b>${hover}</b>: ${unitfmt}`,
+                    hovertemplate: `<b>${unitfmt}</b>`,
                 })
             });
         } else if (this._cfg.type == 'heatmap') {
