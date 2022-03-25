@@ -146,7 +146,7 @@ const createPlots = (data) => {
         },
     }, {
         config: {
-            name: "size-classes",
+            name: 'bySizes',
             title: 'Size Classes',
             type: 'heatmap',
             updateFreq: 5,
@@ -198,7 +198,7 @@ const createPlots = (data) => {
         let col = $('<div>', { class: 'col' });
         let plotDiv = $('<div>', { id: plotDef.config.name });
 
-        let plot = new Plot(plotDef.config, plotDiv[0], plotDef.dataFunc, data);
+        let plot = new Plot(plotDef.config, plotDiv[0], data);
         plots.push(plot);
 
         col.append(plotDiv);

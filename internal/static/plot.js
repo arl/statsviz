@@ -30,6 +30,7 @@ export default class Plot {
         - cfg is an object expecting the following fields to be present:
         {
             name: String         // plot 'internal' identifier
+                                 // TODO(arl): also temporarily used as key in data
             title: String        // displayed plot title
             type: String         // 'scatter' or 'heatmap'
             updateFreq: Integer  // freq of update:
@@ -57,19 +58,15 @@ export default class Plot {
 
         }
         - div: HTMLElement is the div html element passed to Plotly.newPlot
-        - dataFunc: function is the function used to extract and fill the plot data from the incoming stats data
         - data: Object is the actual data, used to initialize chart
     */
-
-
-    constructor(cfg, div, dataFunc, data) {
+    constructor(cfg, div, data) {
         this._cfg = cfg;
-        this._dataFunc = dataFunc;
         this._updateCount = 0;
         this._htmlElt = div;
+        this._dataTemplate = [];
 
         if (this._cfg.type == 'scatter') {
-            this._dataTemplate = [];
             this._cfg.subplots.forEach(subplot => {
                 const hover = subplot.hover || subplot.name;
                 const unitfmt = subplot.unitfmt;
@@ -83,14 +80,15 @@ export default class Plot {
                 })
             });
         } else if (this._cfg.type == 'heatmap') {
-            this._dataTemplate = {
+            this._dataTemplate.push({
                 x: null,
                 y: this._cfg.heatmap.buckets,
                 z: null,
                 type: 'heatmap',
                 showlegend: false,
+                colorscale: this._cfg.heatmap.colorscale,
                 hovertemplate: this._cfg.heatmap.hover,
-            }
+            });
         }
 
         this._plotlyLayout = {...plotlyLayoutBase, ...this._cfg.layout };
@@ -118,12 +116,10 @@ export default class Plot {
                 }
             }
         } else if (this._cfg.type == 'heatmap') {
-            this._dataTemplate = {
-                x: data.times,
-                z: data[this._cfg.name],
-                type: 'heatmap',
-                hovertemplate: this._cfg.heatmap.hover,
-            }
+            this._dataTemplate[0].x = data.times;
+            this._dataTemplate[0].z = data[this._cfg.name];
+            this._dataTemplate[0].type = 'heatmap';
+            this._dataTemplate[0].hovertemplate = this._cfg.heatmap.hover;
         }
         return this._dataTemplate;
     }
