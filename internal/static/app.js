@@ -50,11 +50,15 @@ const connect = () => {
         if (!initDone) {
             const sizeClasses = extractSizeClasses(allStats);
             const plotdefs = createPlotDefs(sizeClasses);
+            ui.configurePlots(plotdefs);
+
             stats.init(plotdefs, dataRetentionSeconds);
             stats.pushData(new Date(), allStats);
+
+            const data = stats.slice(dataRetentionSeconds);
+            ui.attachPlots(data);
+
             initDone = true;
-            let data = stats.slice(dataRetentionSeconds);
-            ui.createPlots(plotdefs, data);
             return;
         }
 

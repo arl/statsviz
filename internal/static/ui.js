@@ -33,26 +33,36 @@ const GCLines = data => {
     return shapes;
 }
 
+// TODO(arl) this whole file should probabaly be removed, and plots functions be
+// moved into app.js
+
 let plots = [];
 
-const createPlots = (plotdefs, data) => {
+const configurePlots = (plotdefs) => {
+    plotdefs.forEach(plotdef => {
+        plots.push(new Plot(plotdef.config));
+    });
+}
+
+const attachPlots = (data) => {
     let curRow = null;
     let container = $('#plots');
 
-    for (let i = 0; i < plotdefs.length; i++) {
-        const plotdef = plotdefs[i];
+    let i = 0;
+    plots.forEach(plot => {
         if (i % 2 == 0) {
             curRow = $('<div>', { class: 'row' });
             container.append(curRow);
         }
 
         let col = $('<div>', { class: 'col' });
-        let plotDiv = $('<div>', { id: plotdef.config.name });
-        plots.push(new Plot(plotdef.config, plotDiv[0], data));
+        let plotDiv = $('<div>', { id: plot.name() });
 
+        plot.createElement(plotDiv[0], data)
         col.append(plotDiv);
         curRow.append(col);
-    };
+        i++;
+    });
 }
 
 const updatePlots = data => {
@@ -69,4 +79,4 @@ let paused = false;
 const isPaused = () => { return paused; }
 const togglePause = () => { paused = !paused; }
 
-export { isPaused, togglePause, createPlots, updatePlots };
+export { configurePlots, attachPlots, updatePlots, isPaused, togglePause };

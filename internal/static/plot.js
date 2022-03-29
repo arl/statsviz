@@ -57,13 +57,10 @@ export default class Plot {
             },
 
         }
-        - div: HTMLElement is the div html element passed to Plotly.newPlot
-        - data: Object is the actual data, used to initialize chart
     */
-    constructor(cfg, div, data) {
+    constructor(cfg) {
         this._cfg = cfg;
         this._updateCount = 0;
-        this._htmlElt = div;
         this._dataTemplate = [];
 
         if (this._cfg.type == 'scatter') {
@@ -96,12 +93,17 @@ export default class Plot {
 
         this._plotlyConfig = {...plotlyConfigBase }
         this._plotlyConfig.toImageButtonOptions.filename = this._cfg.name
-
-        Plotly.newPlot(this._htmlElt, this.extractData(data), this._plotlyLayout, this._plotlyConfig);
     }
 
     name() {
         return this._cfg.name;
+    }
+
+    // - div: HTMLElement is the div html element passed to Plotly.newPlot
+    // - data: Object is the actual data, used to initialize chart
+    createElement(div, data) {
+        this._htmlElt = div;
+        Plotly.newPlot(this._htmlElt, this.extractData(data), this._plotlyLayout, this._plotlyConfig);
     }
 
     extractData(data) {
