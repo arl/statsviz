@@ -32,15 +32,11 @@ var data = {
 };
 
 // Contain indexed class sizes, this is initialized after reception of the first message.
-var classSizes = new Array();
 const lastGCs = data.lastGCs;
 
-
-const init = (buflen, allStats) => {
+const init = (plotdefs, buflen) => {
     const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
     const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
-
-    const memStats = allStats.Mem;
 
     data.times = new Buffer(buflen, bufcap);
     data.goroutines = new Buffer(buflen, bufcap);
@@ -58,12 +54,9 @@ const init = (buflen, allStats) => {
         data.objects[i] = new Buffer(buflen, bufcap);
     }
 
-    // size classes heatmap
-    for (let i = 0; i < memStats.BySize.length; i++) {
-        classSizes.push(memStats.BySize[i].Size);
-    }
-
-    data.bySize = new Array(classSizes.length);
+    // TODO(arl) temporary until this also becomes dynamically defined.
+    const nbuckets = plotdefs[4].config.heatmap.buckets.length;
+    data.bySize = new Array(nbuckets);
     for (let i = 0; i < data.bySize.length; i++) {
         data.bySize[i] = new Buffer(buflen, bufcap);
     }
@@ -150,7 +143,6 @@ const slice = nitems => {
     // BySizes heatmap data
     let bySizes = new Array(data.bySize.length);
     for (let i = 0; i < data.bySize.length; i++) {
-        const size = data.bySize[i];
         bySizes[i] = data.bySize[i].slice(nitems);
     }
 
@@ -165,4 +157,4 @@ const slice = nitems => {
     }
 }
 
-export { init, lastGCs, classSizes, pushData, length, slice };
+export { init, lastGCs, pushData, length, slice };
