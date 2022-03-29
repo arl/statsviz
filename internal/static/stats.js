@@ -1,34 +1,14 @@
 // stats holds the data and function to modify it.
 import Buffer from "./buffer.js";
 
-const idxHeapAlloc = 0;
-const idxHeapSys = 1;
-const idxHeapIdle = 2;
-const idxHeapInuse = 3;
-const idxHeapNextGC = 4;
-const numSeriesHeap = 5;
-
-const idxMSpanMCacheMSpanInUse = 0;
-const idxMSpanMCacheMSpanSys = 1;
-const idxMSpanMSpanMSCacheInUse = 2;
-const idxMSpanMSpanMSCacheSys = 3;
-const numSeriesMSpanMCache = 4;
-
-const idxObjectsLive = 0;
-const idxObjectsLookups = 1;
-const idxObjectsHeap = 2;
-const numSeriesObjects = 3;
-
 var data = {
     times: null,
-    heap: new Array(numSeriesHeap),
-    mspanMCache: new Array(numSeriesMSpanMCache),
-    objects: new Array(numSeriesObjects),
-    goroutines: null,
-    gcfraction: null,
     // Array of the last relevant GC times
     lastGCs: new Array(),
-    bySize: null,
+
+    // TODO(arl) put plot data in a subproperty, so we can just loop on elements
+    // when pushing (and not have to pass plotDefs to stats.pushData, nor to
+    // stats.slice)
 };
 
 // Contain indexed class sizes, this is initialized after reception of the first message.
@@ -39,27 +19,26 @@ const init = (plotdefs, buflen) => {
     const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
 
     data.times = new Buffer(buflen, bufcap);
-    data.goroutines = new Buffer(buflen, bufcap);
-    data.gcfraction = new Buffer(buflen, bufcap);
 
-    for (let i = 0; i < numSeriesHeap; i++) {
-        data.heap[i] = new Buffer(buflen, bufcap);
-    }
-
-    for (let i = 0; i < numSeriesMSpanMCache; i++) {
-        data.mspanMCache[i] = new Buffer(buflen, bufcap);
-    }
-
-    for (let i = 0; i < numSeriesObjects; i++) {
-        data.objects[i] = new Buffer(buflen, bufcap);
-    }
-
-    // TODO(arl) temporary until this also becomes dynamically defined.
-    const nbuckets = plotdefs[4].config.heatmap.buckets.length;
-    data.bySize = new Array(nbuckets);
-    for (let i = 0; i < data.bySize.length; i++) {
-        data.bySize[i] = new Buffer(buflen, bufcap);
-    }
+    plotdefs.forEach(plotdef => {
+        let ndim;
+        switch (plotdef.type) {
+            case 'scatter':
+                ndim = plotdef.subplots.length;
+                break;
+            case 'heatmap':
+                ndim = plotdef.heatmap.buckets.length;
+                break;
+            default:
+                console.error(`[statsviz]: unknown plot type "${plotdef.type}"`);
+                return;
+        }
+        const arr = new Array(ndim);
+        for (let i = 0; i < ndim; i++) {
+            arr[i] = new Buffer(buflen, bufcap)
+        }
+        data[plotdef.name] = arr;
+    });
 };
 
 const updateLastGC = memStats => {
@@ -82,33 +61,26 @@ const updateLastGC = memStats => {
     }
 }
 
-const pushData = (ts, allStats) => {
+const pushData = (plotdefs, ts, allStats) => {
     data.times.push(ts); // timestamp
 
     const memStats = allStats.Mem;
 
-    data.gcfraction.push(memStats.GCCPUFraction);
-    data.goroutines.push(allStats.NumGoroutine);
-
-    data.heap[idxHeapAlloc].push(memStats.HeapAlloc);
-    data.heap[idxHeapSys].push(memStats.HeapSys);
-    data.heap[idxHeapIdle].push(memStats.HeapIdle);
-    data.heap[idxHeapInuse].push(memStats.HeapInuse);
-    data.heap[idxHeapNextGC].push(memStats.NextGC);
-
-    data.mspanMCache[idxMSpanMCacheMSpanInUse].push(memStats.MSpanInuse);
-    data.mspanMCache[idxMSpanMCacheMSpanSys].push(memStats.MSpanSys);
-    data.mspanMCache[idxMSpanMSpanMSCacheInUse].push(memStats.MCacheInuse);
-    data.mspanMCache[idxMSpanMSpanMSCacheSys].push(memStats.MCacheSys);
-
-    data.objects[idxObjectsLive].push(memStats.Mallocs - memStats.Frees);
-    data.objects[idxObjectsLookups].push(memStats.Lookups);
-    data.objects[idxObjectsHeap].push(memStats.HeapObjects);
-
-    for (let i = 0; i < memStats.BySize.length; i++) {
-        const size = memStats.BySize[i];
-        data.bySize[i].push(size.Mallocs - size.Frees);
-    }
+    plotdefs.forEach(plotdef => {
+        const name = plotdef.name;
+        switch (plotdef.type) {
+            case 'scatter':
+                for (let i = 0; i < data[name].length; i++) {
+                    data[name][i].push(plotdef.subplots[i].datapath(allStats));
+                };
+                break;
+            case 'heatmap':
+                for (let i = 0; i < data[name].length; i++) {
+                    data[name][i].push(plotdef.heatmap.datapath(allStats, i));
+                };
+                break;
+        };
+    });
 
     updateLastGC(memStats);
 }
@@ -117,44 +89,19 @@ const length = () => {
     return data.times.length();
 }
 
-const slice = nitems => {
-    const times = data.times.slice(nitems);
-    const gcfraction = data.gcfraction.slice(nitems);
-    const goroutines = data.goroutines.slice(nitems);
+const slice = (plotdefs, nitems) => {
+    let sliced = {
+        times: data.times.slice(nitems),
+    };
 
-    // Heap plot data
-    let heap = new Array(numSeriesHeap);
-    for (let i = 0; i < numSeriesHeap; i++) {
-        heap[i] = data.heap[i].slice(nitems);
-    }
-
-    // MSpan/MCache plot data
-    let mspanMCache = new Array(numSeriesMSpanMCache);
-    for (let i = 0; i < numSeriesMSpanMCache; i++) {
-        mspanMCache[i] = data.mspanMCache[i].slice(nitems);
-    }
-
-    // Objects plot data
-    let objects = new Array(numSeriesObjects);
-    for (let i = 0; i < numSeriesObjects; i++) {
-        objects[i] = data.objects[i].slice(nitems);
-    }
-
-    // BySizes heatmap data
-    let bySizes = new Array(data.bySize.length);
-    for (let i = 0; i < data.bySize.length; i++) {
-        bySizes[i] = data.bySize[i].slice(nitems);
-    }
-
-    return {
-        times: times,
-        gcfraction: gcfraction,
-        goroutines: goroutines,
-        heap: heap,
-        mspanMCache: mspanMCache,
-        objects: objects,
-        bySizes: bySizes,
-    }
+    plotdefs.forEach(plotdef => {
+        const name = plotdef.name;
+        sliced[name] = new Array(data[name].length);
+        for (let i = 0; i < data[name].length; i++) {
+            sliced[name][i] = data[name][i].slice(nitems);
+        }
+    });
+    return sliced;
 }
 
 export { init, lastGCs, pushData, length, slice };

@@ -108,14 +108,9 @@ export default class Plot {
 
     extractData(data) {
         if (this._cfg.type == 'scatter') {
-            if (this._dataTemplate.length == 1) {
-                this._dataTemplate[0].x = data.times;
-                this._dataTemplate[0].y = data[this._cfg.name];
-            } else {
-                for (let i = 0; i < this._dataTemplate.length; i++) {
-                    this._dataTemplate[i].x = data.times;
-                    this._dataTemplate[i].y = data[this._cfg.name][i];
-                }
+            for (let i = 0; i < this._dataTemplate.length; i++) {
+                this._dataTemplate[i].x = data.times;
+                this._dataTemplate[i].y = data[this._cfg.name][i];
             }
         } else if (this._cfg.type == 'heatmap') {
             this._dataTemplate[0].x = data.times;

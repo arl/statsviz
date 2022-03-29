@@ -40,7 +40,7 @@ let plots = [];
 
 const configurePlots = (plotdefs) => {
     plotdefs.forEach(plotdef => {
-        plots.push(new Plot(plotdef.config));
+        plots.push(new Plot(plotdef));
     });
 }
 

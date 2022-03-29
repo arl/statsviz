@@ -44,29 +44,30 @@ const connect = () => {
         ws.close();
     };
 
-    var initDone = false;
+    let initDone = false;
+    let plotdefs = null;
     ws.onmessage = event => {
         let allStats = JSON.parse(event.data)
         if (!initDone) {
             const sizeClasses = extractSizeClasses(allStats);
-            const plotdefs = createPlotDefs(sizeClasses);
+            plotdefs = createPlotDefs(sizeClasses);
             ui.configurePlots(plotdefs);
 
             stats.init(plotdefs, dataRetentionSeconds);
-            stats.pushData(new Date(), allStats);
+            stats.pushData(plotdefs, new Date(), allStats);
 
-            const data = stats.slice(dataRetentionSeconds);
+            const data = stats.slice(plotdefs, dataRetentionSeconds);
             ui.attachPlots(data);
 
             initDone = true;
             return;
         }
 
-        stats.pushData(new Date(), allStats);
+        stats.pushData(plotdefs, new Date(), allStats);
         if (ui.isPaused()) {
             return
         }
-        let data = stats.slice(dataRetentionSeconds);
+        let data = stats.slice(plotdefs, dataRetentionSeconds);
         ui.updatePlots(data);
     }
 }
@@ -77,8 +78,8 @@ connect();
 // TODO(arl) -> this should be defined in Go in the init message.
 const extractSizeClasses = (allStats) => {
     const sizeClasses = new Array(allStats.Mem.BySize.length);
-    for (let i = 0; i < allStats.Mem.BySize.length; i++) {
-        sizeClasses.push(allStats.Mem.BySize[i].Size);
+    for (let i = 0; i < sizeClasses.length; i++) {
+        sizeClasses[i] = allStats.Mem.BySize[i].Size;
     }
     return sizeClasses;
 }
@@ -93,144 +94,151 @@ const colorscale = [
 
 const createPlotDefs = (sizeClasses) => {
     return [{
-        config: {
-            name: "heap",
-            title: 'Heap',
-            type: 'scatter',
-            updateFreq: 0,
-            hasHorsEvents: true,
-            layout: {
-                yaxis: {
-                    title: 'bytes',
-                    ticksuffix: 'B',
-                },
+        name: "heap",
+        title: 'Heap',
+        type: 'scatter',
+        updateFreq: 0,
+        hasHorsEvents: true,
+        layout: {
+            yaxis: {
+                title: 'bytes',
+                ticksuffix: 'B',
             },
-            subplots: [{
-                'name': 'heap alloc',
-                'unitfmt': '%{y:.4s}B',
-            }, {
-                'name': 'heap sys',
-                'unitfmt': '%{y:.4s}B',
-            }, {
-                'name': 'heap idle',
-                'unitfmt': '%{y:.4s}B',
-            }, {
-                'name': 'heap in-use',
-                'unitfmt': '%{y:.4s}B',
-            }, {
-                'name': 'heap next gc',
-                'unitfmt': '%{y:.4s}B',
-            }, ],
         },
+        subplots: [{
+            name: 'heap alloc',
+            unitfmt: '%{y:.4s}B',
+            datapath: (raw) => { return raw.Mem.HeapAlloc; },
+        }, {
+            name: 'heap sys',
+            unitfmt: '%{y:.4s}B',
+            datapath: (raw) => { return raw.Mem.HeapSys; },
+        }, {
+            name: 'heap idle',
+            unitfmt: '%{y:.4s}B',
+            datapath: (raw) => { return raw.Mem.HeapIdle; },
+        }, {
+            name: 'heap in-use',
+            unitfmt: '%{y:.4s}B',
+            datapath: (raw) => { return raw.Mem.HeapInuse; },
+        }, {
+            name: 'heap next gc',
+            unitfmt: '%{y:.4s}B',
+            datapath: (raw) => { return raw.Mem.NextGC; },
+        }, ],
     }, {
-        config: {
-            name: "objects",
-            title: 'Objects',
-            type: 'scatter',
-            updateFreq: 0,
-            hasHorsEvents: true,
-            layout: {
-                yaxis: {
-                    title: 'objects',
-                },
+        name: "objects",
+        title: 'Objects',
+        type: 'scatter',
+        updateFreq: 0,
+        hasHorsEvents: true,
+        layout: {
+            yaxis: {
+                title: 'objects',
             },
-            subplots: [{
-                'name': 'live',
-                'hover': 'live objects',
-                'unitfmt': '%{y}',
-            }, {
-                'name': 'lookups',
-                'hover': 'pointer lookups',
-                'unitfmt': '%{y}',
-            }, {
-                'name': 'heap',
-                'hover': 'heap objects',
-                'unitfmt': '%{y}',
-            }, ],
         },
+        subplots: [{
+            name: 'live',
+            hover: 'live objects',
+            unitfmt: '%{y}',
+            datapath: (raw) => { return raw.Mem.Mallocs - raw.Mem.Freed; },
+        }, {
+            name: 'lookups',
+            hover: 'pointer lookups',
+            unitfmt: '%{y}',
+            datapath: (raw) => { return raw.Mem.Lookups; },
+        }, {
+            name: 'heap',
+            hover: 'heap objects',
+            unitfmt: '%{y}',
+            datapath: (raw) => { return raw.Mem.HeapObjects; },
+        }, ],
     }, {
-        config: {
-            name: 'mspanMCache',
-            title: 'MSpan/MCache',
-            type: 'scatter',
-            updateFreq: 0,
-            hasHorsEvents: true,
-            layout: {
-                yaxis: {
-                    title: 'bytes',
-                    ticksuffix: 'B',
-                },
+        name: 'mspanMCache',
+        title: 'MSpan/MCache',
+        type: 'scatter',
+        updateFreq: 0,
+        hasHorsEvents: true,
+        layout: {
+            yaxis: {
+                title: 'bytes',
+                ticksuffix: 'B',
             },
-            subplots: [{
-                'name': 'mspan in-use',
-                'unitfmt': '%{y:.4s}B',
-            }, {
-                'name': 'mspan sys',
-                'unitfmt': '%{y:.4s}B',
-            }, {
-                'name': 'mcache in-use',
-                'unitfmt': '%{y:.4s}B',
-            }, {
-                'name': 'mcache sys',
-                'unitfmt': '%{y:.4s}B',
-            }, ],
         },
+        subplots: [{
+            name: 'mspan in-use',
+            unitfmt: '%{y:.4s}B',
+            datapath: (raw) => { return raw.Mem.MSpanInuse; },
+        }, {
+            name: 'mspan sys',
+            unitfmt: '%{y:.4s}B',
+            datapath: (raw) => { return raw.Mem.MSpanSys; },
+        }, {
+            name: 'mcache in-use',
+            unitfmt: '%{y:.4s}B',
+            datapath: (raw) => { return raw.Mem.MCacheInuse; },
+        }, {
+            name: 'mcache sys',
+            unitfmt: '%{y:.4s}B',
+            datapath: (raw) => { return raw.Mem.MCacheSys; },
+        }, ],
     }, {
-        config: {
+        name: 'goroutines',
+        title: 'Goroutines',
+        type: 'scatter',
+        updateFreq: 0,
+        hasHorsEvents: false,
+        layout: {
+            yaxis: {
+                title: 'goroutines',
+            },
+        },
+        subplots: [{
             name: 'goroutines',
-            title: 'Goroutines',
-            type: 'scatter',
-            updateFreq: 0,
-            hasHorsEvents: false,
-            layout: {
-                yaxis: {
-                    title: 'goroutines',
-                },
-            },
-            subplots: [{
-                'name': 'goroutines',
-                'unitfmt': '%{y}',
-            }],
-        },
+            unitfmt: '%{y}',
+            datapath: (raw) => { return raw.NumGoroutine; },
+        }],
     }, {
-        config: {
-            name: 'bySizes',
-            title: 'Size Classes',
-            type: 'heatmap',
-            updateFreq: 5,
-            hasHorsEvents: false,
-            layout: {
-                yaxis: {
-                    title: 'size classes',
-                },
+        name: 'bySizes',
+        title: 'Size Classes',
+        type: 'heatmap',
+        updateFreq: 5,
+        hasHorsEvents: false,
+        layout: {
+            yaxis: {
+                title: 'size classes',
             },
-            heatmap: {
-                // TODO(arl) refine this, we should not pass all of that but probably have 
-                // one hover and one unit for each of the 2 dimensions.
-                hover: '<br><b>size class</b>: %{y:} B' +
-                    '<br><b>objects</b>: %{z}<br>',
-                colorscale: colorscale,
-                buckets: sizeClasses,
+        },
+        heatmap: {
+            // TODO(arl) refine this, we should not pass all of that but probably have 
+            // one hover and one unit for each of the 2 dimensions.
+            hover: '<br><b>size class</b>: %{y:} B' +
+                '<br><b>objects</b>: %{z}<br>',
+            colorscale: colorscale,
+            buckets: sizeClasses,
+            datapath: (raw, i) => {
+                // TODO(arl) must receive an already computed array
+                const size = raw.Mem.BySize[i];
+                return size.Mallocs - size.Frees;
             },
         },
     }, {
-        config: {
-            name: "gcfraction",
-            title: 'GC CPU fraction',
-            type: 'scatter',
-            updateFreq: 0,
-            hasHorsEvents: false,
-            layout: {
-                yaxis: {
-                    title: 'gc/cpu (%)',
-                    tickformat: ',.5%',
-                },
+        name: "gcfraction",
+        title: 'GC CPU fraction',
+        type: 'scatter',
+        updateFreq: 0,
+        hasHorsEvents: false,
+        layout: {
+            yaxis: {
+                title: 'gc/cpu (%)',
+                tickformat: ',.5%',
             },
-            subplots: [{
-                'name': 'gc/cpu',
-                'hover': 'gc/cpu fraction',
-                'unitfmt': '%{y:,.4%}',
-            }],
         },
+        subplots: [{
+            name: 'gc/cpu',
+            hover: 'gc/cpu fraction',
+            unitfmt: '%{y:,.4%}',
+            datapath: (raw) => { return raw.Mem.GCCPUFraction; },
+        }],
     }, ];
 }
