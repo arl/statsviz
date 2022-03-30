@@ -207,6 +207,9 @@ const createPlotDefs = (sizeClasses) => {
         layout: {
             yaxis: {
                 title: 'size classes',
+                // TODO(arl) try also with log2 (not supported but we could recreate the ticks ourselves).
+                // see https://github.com/plotly/plotly.js/issues/4147#issuecomment-524378823
+                // type: 'log', 
             },
         },
         heatmap: {

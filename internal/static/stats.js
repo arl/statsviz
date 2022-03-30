@@ -11,7 +11,6 @@ var data = {
     // stats.slice)
 };
 
-// Contain indexed class sizes, this is initialized after reception of the first message.
 const lastGCs = data.lastGCs;
 
 const init = (plotdefs, buflen) => {

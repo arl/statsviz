@@ -69,19 +69,19 @@ export default class Plot {
                 const unitfmt = subplot.unitfmt;
 
                 this._dataTemplate.push({
+                    type: 'scatter',
                     x: null,
                     y: null,
-                    type: 'scatter',
                     name: subplot.name,
                     hovertemplate: `<b>${unitfmt}</b>`,
                 })
             });
         } else if (this._cfg.type == 'heatmap') {
             this._dataTemplate.push({
+                type: 'heatmap',
                 x: null,
                 y: this._cfg.heatmap.buckets,
                 z: null,
-                type: 'heatmap',
                 showlegend: false,
                 colorscale: this._cfg.heatmap.colorscale,
                 hovertemplate: this._cfg.heatmap.hover,
@@ -115,8 +115,6 @@ export default class Plot {
         } else if (this._cfg.type == 'heatmap') {
             this._dataTemplate[0].x = data.times;
             this._dataTemplate[0].z = data[this._cfg.name];
-            this._dataTemplate[0].type = 'heatmap';
-            this._dataTemplate[0].hovertemplate = this._cfg.heatmap.hover;
         }
         return this._dataTemplate;
     }
