@@ -40,26 +40,6 @@ const init = (plotdefs, buflen) => {
     });
 };
 
-const updateLastGC = memStats => {
-    const nanoToSeconds = 1000 * 1000 * 1000;
-    let t = Math.floor(memStats.LastGC / nanoToSeconds);
-    let lastGC = new Date(t * 1000);
-    if (data.lastGCs.length == 0) {
-        data.lastGCs.push(lastGC);
-        return;
-    }
-    if (lastGC.getTime() != data.lastGCs[data.lastGCs.length - 1].getTime()) {
-        data.lastGCs.push(lastGC);
-        // We've added a GC timestamp, check if we can cut the front. We
-        // don't need to keep track data.lastGCs[0] if it happened before
-        // the oldest timestamp we're showing. 
-        let mints = data.times._buf[0];
-        if (data.lastGCs[0] < mints) {
-            data.lastGCs.splice(0, 1);
-        }
-    }
-}
-
 const pushData = (plotdefs, ts, allStats) => {
     data.times.push(ts); // timestamp
 
@@ -84,8 +64,24 @@ const pushData = (plotdefs, ts, allStats) => {
     updateLastGC(memStats);
 }
 
-const length = () => {
-    return data.times.length();
+const updateLastGC = memStats => {
+    const nanoToSeconds = 1000 * 1000 * 1000;
+    let t = Math.floor(memStats.LastGC / nanoToSeconds);
+    let lastGC = new Date(t * 1000);
+    if (data.lastGCs.length == 0) {
+        data.lastGCs.push(lastGC);
+        return;
+    }
+    if (lastGC.getTime() != data.lastGCs[data.lastGCs.length - 1].getTime()) {
+        data.lastGCs.push(lastGC);
+        // We've added a GC timestamp, check if we can cut the front. We
+        // don't need to keep track data.lastGCs[0] if it happened before
+        // the oldest timestamp we're showing. 
+        let mints = data.times._buf[0];
+        if (data.lastGCs[0] < mints) {
+            data.lastGCs.splice(0, 1);
+        }
+    }
 }
 
 const slice = (plotdefs, nitems) => {
@@ -103,4 +99,4 @@ const slice = (plotdefs, nitems) => {
     return sliced;
 }
 
-export { init, lastGCs, pushData, length, slice };
+export { init, lastGCs, pushData, slice };
