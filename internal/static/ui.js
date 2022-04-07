@@ -8,7 +8,6 @@ const GCLines = data => {
     const maxts = data.times[data.times.length - 1];
 
     const shapes = [];
-
     for (let i = 0, n = gcs.length; i < n; i++) {
         let d = gcs[i];
         // Clamp GC times which are out of bounds
@@ -35,34 +34,34 @@ const GCLines = data => {
 
 // TODO(arl) this whole file should probabaly be removed, and plots functions be
 // moved into app.js
-
 let plots = [];
 
 const configurePlots = (plotdefs) => {
+    plots = [];
     plotdefs.forEach(plotdef => {
         plots.push(new Plot(plotdef));
     });
 }
 
 const attachPlots = (data) => {
-    let curRow = null;
-    let container = $('#plots');
+    let row = null;
+    let plotsDiv = $('#plots');
+    plotsDiv.empty()
 
-    let i = 0;
-    plots.forEach(plot => {
+    for (let i = 0; i < plots.length; i++) {
+        const plot = plots[i];
         if (i % 2 == 0) {
-            curRow = $('<div>', { class: 'row' });
-            container.append(curRow);
+            row = $('<div>', { class: 'row' });
+            plotsDiv.append(row);
         }
 
         let col = $('<div>', { class: 'col' });
-        let plotDiv = $('<div>', { id: plot.name() });
+        let div = $('<div>', { id: plot.name() });
 
-        plot.createElement(plotDiv[0], data)
-        col.append(plotDiv);
-        curRow.append(col);
-        i++;
-    });
+        plot.createElement(div[0], data)
+        col.append(div);
+        row.append(col);
+    }
 }
 
 const updatePlots = data => {
