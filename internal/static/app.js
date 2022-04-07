@@ -26,8 +26,9 @@ const clamp = (val, min, max) => {
 /* WebSocket connection handling */
 
 const connect = () => {
-    let ws = new WebSocket(buildWebsocketURI());
-    console.info("Attempting websocket connection to statsviz server...");
+    const uri = buildWebsocketURI();
+    let ws = new WebSocket(uri);
+    console.info(`Attempting websocket connection to server at ${uri}`);
 
     ws.onopen = () => {
         console.info("Successfully connected");
@@ -35,12 +36,13 @@ const connect = () => {
     };
 
     ws.onclose = event => {
-        console.info("Closed websocket connection: ", event);
+        console.error(`Closed websocket connection: code ${event.code}`);
         setTimeout(connect, clamp(timeout += timeout, 250, 5000));
     };
 
-    ws.onerror = error => {
-        console.error("Websocket error: ", error);
+    // ws.onerror = ws.close;
+    ws.onerror = err => {
+        console.error(`Websocket error, closing connection.`);
         ws.close();
     };
 
