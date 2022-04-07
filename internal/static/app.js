@@ -1,9 +1,6 @@
 import * as stats from './stats.js';
-import * as ui from './ui.js';
+import Plot from "./plot.js";
 
-const $ = id => {
-    return document.getElementById(id);
-}
 
 const buildWebsocketURI = () => {
     var loc = window.location,
@@ -53,30 +50,110 @@ const connect = () => {
         if (!initDone) {
             const sizeClasses = extractSizeClasses(allStats);
             plotdefs = createPlotDefs(sizeClasses);
-            ui.configurePlots(plotdefs);
+            configurePlots(plotdefs);
 
             stats.init(plotdefs, dataRetentionSeconds);
             stats.pushData(new Date(), allStats);
 
             const data = stats.slice(dataRetentionSeconds);
-            ui.attachPlots(data);
+            attachPlots(data);
 
             initDone = true;
             return;
         }
 
         stats.pushData(new Date(), allStats);
-        if (ui.isPaused()) {
+        if (isPaused()) {
             return
         }
         let data = stats.slice(dataRetentionSeconds);
-        ui.updatePlots(data);
+        updatePlots(data);
     }
 }
 
 connect();
 
-// TODO(arl) -> this should be defined in Go in the init message.
+/* plots management */
+
+// TODO(arl) not used for now
+let paused = false;
+const isPaused = () => { return paused; }
+const togglePause = () => { paused = !paused; }
+
+let plots = [];
+const configurePlots = (plotdefs) => {
+    plots = [];
+    plotdefs.forEach(plotdef => {
+        plots.push(new Plot(plotdef));
+    });
+}
+
+const attachPlots = (data) => {
+    let row = null;
+    let plotsDiv = $('#plots');
+    plotsDiv.empty()
+
+    for (let i = 0; i < plots.length; i++) {
+        const plot = plots[i];
+        if (i % 2 == 0) {
+            row = $('<div>', { class: 'row' });
+            plotsDiv.append(row);
+        }
+
+        let col = $('<div>', { class: 'col' });
+        let div = $('<div>', { id: plot.name() });
+
+        plot.createElement(div[0], data)
+        col.append(div);
+        row.append(col);
+    }
+}
+
+const updatePlots = data => {
+    let gcLines = GCLines(data);
+
+    plots.forEach(plot => {
+        if (!plot.hidden) {
+            plot.update(data, gcLines);
+        }
+    });
+}
+
+const GCLines = data => {
+    const gcs = stats.lastGCs;
+    const mints = data.times[0];
+    const maxts = data.times[data.times.length - 1];
+
+    const shapes = [];
+    for (let i = 0, n = gcs.length; i < n; i++) {
+        let d = gcs[i];
+        // Clamp GC times which are out of bounds
+        if (d < mints || d > maxts) {
+            continue;
+        }
+
+        shapes.push({
+            type: 'line',
+            x0: d,
+            x1: d,
+            yref: 'paper',
+            y0: 0,
+            y1: 1,
+            line: {
+                color: 'rgb(55, 128, 191)',
+                width: 1,
+                dash: 'longdashdot',
+            }
+        })
+    }
+    return shapes;
+}
+
+/* plots definition
+ * 
+ * (TODO(arl) -> will be defined in Go and read in the 'init' ws message
+ */
+
 const extractSizeClasses = (allStats) => {
     const sizeClasses = new Array(allStats.Mem.BySize.length);
     for (let i = 0; i < sizeClasses.length; i++) {
