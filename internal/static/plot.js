@@ -110,11 +110,11 @@ export default class Plot {
         if (this._cfg.type == 'scatter') {
             for (let i = 0; i < this._dataTemplate.length; i++) {
                 this._dataTemplate[i].x = data.times;
-                this._dataTemplate[i].y = data[this._cfg.name][i];
+                this._dataTemplate[i].y = data.series.get(this._cfg.name)[i];
             }
         } else if (this._cfg.type == 'heatmap') {
             this._dataTemplate[0].x = data.times;
-            this._dataTemplate[0].z = data[this._cfg.name];
+            this._dataTemplate[0].z = data.series.get(this._cfg.name);
         }
         return this._dataTemplate;
     }

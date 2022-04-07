@@ -5,10 +5,8 @@ var data = {
     times: null,
     // Array of the last relevant GC times
     lastGCs: new Array(),
-
-    // TODO(arl) put plot data in a subproperty, so we can just loop on elements
-    // when pushing (and not have to pass plotDefs to stats.pushData, nor to
-    // stats.slice)
+    // Where we'll store objects {data: Array(), type: string, datafunc: => )
+    series: new Map(),
 };
 
 const lastGCs = data.lastGCs;
@@ -18,7 +16,7 @@ const init = (plotdefs, buflen) => {
     const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
 
     data.times = new Buffer(buflen, bufcap);
-
+    data.series.clear();
     plotdefs.forEach(plotdef => {
         let ndim;
         switch (plotdef.type) {
@@ -31,35 +29,46 @@ const init = (plotdefs, buflen) => {
             default:
                 console.error(`[statsviz]: unknown plot type "${plotdef.type}"`);
                 return;
+        };
+
+        const serie = {
+            data: new Array(ndim),
+            type: plotdef.type,
+            datafunc: new Array(ndim),
         }
-        const arr = new Array(ndim);
+        if (serie.type == 'heatmap') {
+            serie.datafunc = plotdef.heatmap.datapath;
+        }
+
         for (let i = 0; i < ndim; i++) {
-            arr[i] = new Buffer(buflen, bufcap)
+            serie.data[i] = new Buffer(buflen, bufcap);
+            if (serie.type == 'scatter') {
+                serie.datafunc[i] = plotdef.subplots[i].datapath;
+            }
         }
-        data[plotdef.name] = arr;
+
+        data.series.set(plotdef.name, serie);
     });
 };
 
-const pushData = (plotdefs, ts, allStats) => {
+const pushData = (ts, allStats) => {
+    const memStats = allStats.Mem;
     data.times.push(ts); // timestamp
 
-    const memStats = allStats.Mem;
-
-    plotdefs.forEach(plotdef => {
-        const name = plotdef.name;
-        switch (plotdef.type) {
+    for (const [name, serie] of data.series) {
+        switch (serie.type) {
             case 'scatter':
-                for (let i = 0; i < data[name].length; i++) {
-                    data[name][i].push(plotdef.subplots[i].datapath(allStats));
+                for (let i = 0; i < serie.data.length; i++) {
+                    serie.data[i].push(serie.datafunc[i](allStats));
                 };
                 break;
             case 'heatmap':
-                for (let i = 0; i < data[name].length; i++) {
-                    data[name][i].push(plotdef.heatmap.datapath(allStats, i));
+                for (let i = 0; i < serie.data.length; i++) {
+                    serie.data[i].push(serie.datafunc(allStats, i));
                 };
                 break;
         };
-    });
+    }
 
     updateLastGC(memStats);
 }
@@ -84,18 +93,19 @@ const updateLastGC = memStats => {
     }
 }
 
-const slice = (plotdefs, nitems) => {
+const slice = (nitems) => {
     let sliced = {
         times: data.times.slice(nitems),
+        series: new Map(),
     };
 
-    plotdefs.forEach(plotdef => {
-        const name = plotdef.name;
-        sliced[name] = new Array(data[name].length);
-        for (let i = 0; i < data[name].length; i++) {
-            sliced[name][i] = data[name][i].slice(nitems);
+    for (const [name, serie] of data.series) {
+        const arr = new Array(serie.data.length);
+        for (let i = 0; i < serie.data.length; i++) {
+            arr[i] = serie.data[i].slice(nitems);
         }
-    });
+        sliced.series.set(name, arr);
+    }
     return sliced;
 }
 

@@ -56,26 +56,25 @@ const connect = () => {
             ui.configurePlots(plotdefs);
 
             stats.init(plotdefs, dataRetentionSeconds);
-            stats.pushData(plotdefs, new Date(), allStats);
+            stats.pushData(new Date(), allStats);
 
-            const data = stats.slice(plotdefs, dataRetentionSeconds);
+            const data = stats.slice(dataRetentionSeconds);
             ui.attachPlots(data);
 
             initDone = true;
             return;
         }
 
-        stats.pushData(plotdefs, new Date(), allStats);
+        stats.pushData(new Date(), allStats);
         if (ui.isPaused()) {
             return
         }
-        let data = stats.slice(plotdefs, dataRetentionSeconds);
+        let data = stats.slice(dataRetentionSeconds);
         ui.updatePlots(data);
     }
 }
 
 connect();
-
 
 // TODO(arl) -> this should be defined in Go in the init message.
 const extractSizeClasses = (allStats) => {
