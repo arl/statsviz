@@ -37,7 +37,6 @@ const connect = () => {
         setTimeout(connect, clamp(timeout += timeout, 250, 5000));
     };
 
-    // ws.onerror = ws.close;
     ws.onerror = err => {
         console.error(`Websocket error, closing connection.`);
         ws.close();
@@ -79,7 +78,6 @@ connect();
 let paused = false;
 const isPaused = () => { return paused; }
 const togglePause = () => { paused = !paused; }
-
 let plots = [];
 const configurePlots = (plotdefs) => {
     plots = [];
