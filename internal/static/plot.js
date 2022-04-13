@@ -99,11 +99,9 @@ export default class Plot {
         return this._cfg.name;
     }
 
-    // - div: HTMLElement is the div html element passed to Plotly.newPlot
-    // - data: Object is the actual data, used to initialize chart
-    createElement(div, data) {
+    createElement(div) {
         this._htmlElt = div;
-        Plotly.newPlot(this._htmlElt, this.extractData(data), this._plotlyLayout, this._plotlyConfig);
+        Plotly.newPlot(this._htmlElt, null, this._plotlyLayout, this._plotlyConfig);
     }
 
     extractData(data) {

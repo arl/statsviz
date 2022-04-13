@@ -52,10 +52,8 @@ const connect = () => {
             configurePlots(plotdefs);
 
             stats.init(plotdefs, dataRetentionSeconds);
-            stats.pushData(new Date(), allStats);
 
-            const data = stats.slice(dataRetentionSeconds);
-            attachPlots(data);
+            attachPlots();
 
             initDone = true;
             return;
@@ -65,8 +63,7 @@ const connect = () => {
         if (isPaused()) {
             return
         }
-        let data = stats.slice(dataRetentionSeconds);
-        updatePlots(data);
+        updatePlots(stats.slice(dataRetentionSeconds));
     }
 }
 
@@ -79,6 +76,7 @@ let paused = false;
 const isPaused = () => { return paused; }
 const togglePause = () => { paused = !paused; }
 let plots = [];
+
 const configurePlots = (plotdefs) => {
     plots = [];
     plotdefs.forEach(plotdef => {
@@ -86,7 +84,7 @@ const configurePlots = (plotdefs) => {
     });
 }
 
-const attachPlots = (data) => {
+const attachPlots = () => {
     let row = null;
     let plotsDiv = $('#plots');
     plotsDiv.empty()
@@ -101,7 +99,7 @@ const attachPlots = (data) => {
         let col = $('<div>', { class: 'col' });
         let div = $('<div>', { id: plot.name() });
 
-        plot.createElement(div[0], data)
+        plot.createElement(div[0])
         col.append(div);
         row.append(col);
     }
