@@ -1,23 +1,19 @@
 // stats holds the data and function to modify it.
 import Buffer from "./buffer.js";
 
-var data = {
+var series = {
     times: null,
-    // Array of the last relevant GC times
-    lastGCs: new Array(),
-    // Where we'll store objects {data: Array(), type: string, datafunc: => )
-    series: new Map(),
+    eventsData: new Map(),
+    plotData: new Map(),
 };
-
-const lastGCs = data.lastGCs;
 
 const init = (plotdefs, buflen) => {
     const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
     const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
 
-    data.times = new Buffer(buflen, bufcap);
-    data.series.clear();
-    plotdefs.forEach(plotdef => {
+    series.times = new Buffer(buflen, bufcap);
+    series.plotData.clear();
+    plotdefs.series.forEach(plotdef => {
         let ndim;
         switch (plotdef.type) {
             case 'scatter':
@@ -31,82 +27,69 @@ const init = (plotdefs, buflen) => {
                 return;
         };
 
-        const serie = {
-            data: new Array(ndim),
-            type: plotdef.type,
-            datafunc: new Array(ndim),
-        }
-        if (serie.type == 'heatmap') {
-            serie.datafunc = plotdef.heatmap.datapath;
-        }
-
+        let data = new Array(ndim);
         for (let i = 0; i < ndim; i++) {
-            serie.data[i] = new Buffer(buflen, bufcap);
-            if (serie.type == 'scatter') {
-                serie.datafunc[i] = plotdef.subplots[i].datapath;
-            }
+            data[i] = new Buffer(buflen, bufcap);
         }
-
-        data.series.set(plotdef.name, serie);
+        series.plotData.set(plotdef.name, data);
     });
-};
 
-const pushData = (ts, allStats) => {
-    const memStats = allStats.Mem;
-    data.times.push(ts); // timestamp
-
-    for (const [name, serie] of data.series) {
-        switch (serie.type) {
-            case 'scatter':
-                for (let i = 0; i < serie.data.length; i++) {
-                    serie.data[i].push(serie.datafunc[i](allStats));
-                };
-                break;
-            case 'heatmap':
-                for (let i = 0; i < serie.data.length; i++) {
-                    serie.data[i].push(serie.datafunc(allStats, i));
-                };
-                break;
-        };
-    }
-
-    updateLastGC(memStats);
+    plotdefs.events.forEach(event => {
+        series.eventsData.set(event, new Array());
+    });
 }
 
-const updateLastGC = memStats => {
-    const nanoToSeconds = 1000 * 1000 * 1000;
-    let t = Math.floor(memStats.LastGC / nanoToSeconds);
-    let lastGC = new Date(t * 1000);
-    if (data.lastGCs.length == 0) {
-        data.lastGCs.push(lastGC);
-        return;
+const pushData = (ts, data) => {
+    series.times.push(ts); // timestamp
+
+    // Update time series.
+    for (const [name, plotData] of series.plotData) {
+        const curdata = data[name];
+        for (let i = 0; i < curdata.length; i++) {
+            plotData[i].push(curdata[i]);
+        }
     }
-    if (lastGC.getTime() != data.lastGCs[data.lastGCs.length - 1].getTime()) {
-        data.lastGCs.push(lastGC);
-        // We've added a GC timestamp, check if we can cut the front. We
-        // don't need to keep track data.lastGCs[0] if it happened before
-        // the oldest timestamp we're showing. 
-        let mints = data.times._buf[0];
-        if (data.lastGCs[0] < mints) {
-            data.lastGCs.splice(0, 1);
+
+    for (const [name, event] of series.eventsData) {
+        const eventTs = data[name];
+
+        // TODO(arl) : conversion must be done in Go. Data must come in with the
+        // right resolution/format already.
+        const nanoToSeconds = 1000 * 1000 * 1000;
+        const t = Math.floor(eventTs / nanoToSeconds);
+        let ts = new Date(t * 1000);
+        if (event.length == 0) {
+            event.push(ts);
+            return;
+        }
+        if (ts.getTime() != event[event.length - 1].getTime()) {
+            event.push(ts);
+            // We've added a new timestamp, check if we can cut the front. We
+            // don't need to keep track of event[0] if it happened before
+            // the oldest timestamp we're showing. 
+            let mints = series.times._buf[0];
+            if (event[0] < mints) {
+                event.splice(0, 1);
+            }
         }
     }
 }
 
 const slice = (nitems) => {
     let sliced = {
-        times: data.times.slice(nitems),
+        times: series.times.slice(nitems),
         series: new Map(),
+        events: series.eventsData,
     };
 
-    for (const [name, serie] of data.series) {
-        const arr = new Array(serie.data.length);
-        for (let i = 0; i < serie.data.length; i++) {
-            arr[i] = serie.data[i].slice(nitems);
+    for (const [name, plotData] of series.plotData) {
+        const arr = new Array(plotData.length);
+        for (let i = 0; i < plotData.length; i++) {
+            arr[i] = plotData[i].slice(nitems);
         }
         sliced.series.set(name, arr);
     }
     return sliced;
 }
 
-export { init, lastGCs, pushData, slice };
+export { init, pushData, slice };

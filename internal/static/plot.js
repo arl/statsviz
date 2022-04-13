@@ -29,15 +29,15 @@ export default class Plot {
         and becomes the only reference to plotly the external world will need.
         - cfg is an object expecting the following fields to be present:
         {
-            name: String         // plot 'internal' identifier
-                                 // TODO(arl): also temporarily used as key in data
-            title: String        // displayed plot title
-            type: String         // 'scatter' or 'heatmap'
-            updateFreq: Integer  // freq of update:
-                                 //  - 1: update each time we receive new metrics
-                                 //  - 2: update half the time, etc.
-            hasHorzEvents: bool  // show events as horizontal bars on this chart
-            layout: Object       // Plotly-specific: gets merged over 'plotlyLayoutBase'
+            name: String            // plot 'internal' identifier
+                                    // TODO(arl): also temporarily used as key in data
+            title: String           // displayed plot title
+            type: String            // 'scatter' or 'heatmap'
+            updateFreq: Integer     // freq of update:
+                                    //  - 1: update each time we receive new metrics
+                                    //  - 2: update half the time, etc.
+            horzEvents: string|''   // show an 'event' serie as horizontal lines
+            layout: Object          // Plotly-specific: gets merged over 'plotlyLayoutBase'
 
             // If type = 'scatter':
             subplots: [
@@ -117,11 +117,11 @@ export default class Plot {
         return this._dataTemplate;
     }
 
-    update(data, horzEvents) {
+    update(data, shapes) {
         this._updateCount++;
         if (this._cfg.updateFreq == 0 || (this._updateCount % this._cfg.updateFreq == 0)) {
-            if (this._cfg.hasHorzEvents === true) {
-                this._plotlyLayout.shapes = horzEvents;
+            if (this._cfg.horzEvents != '') {
+                this._plotlyLayout.shapes = shapes.get(this._cfg.horzEvents);
             }
             Plotly.react(this._htmlElt, this.extractData(data), this._plotlyLayout, this._plotlyConfig);
         }

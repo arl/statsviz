@@ -46,7 +46,9 @@ const connect = () => {
     let plotdefs = null;
     ws.onmessage = event => {
         let allStats = JSON.parse(event.data)
+
         if (!initDone) {
+            // TODO: size classes should be defined in the 'init' message.
             const sizeClasses = extractSizeClasses(allStats);
             plotdefs = createPlotDefs(sizeClasses);
             configurePlots(plotdefs);
@@ -59,11 +61,12 @@ const connect = () => {
             return;
         }
 
-        stats.pushData(new Date(), allStats);
+        const converted = convertData(allStats)
+        stats.pushData(new Date(), converted);
         if (isPaused()) {
             return
         }
-        updatePlots(stats.slice(dataRetentionSeconds));
+        updatePlots(stats.slice(dataRetentionSeconds), plotdefs.events);
     }
 }
 
@@ -79,7 +82,7 @@ let plots = [];
 
 const configurePlots = (plotdefs) => {
     plots = [];
-    plotdefs.forEach(plotdef => {
+    plotdefs.series.forEach(plotdef => {
         plots.push(new Plot(plotdef));
     });
 }
@@ -105,24 +108,30 @@ const attachPlots = () => {
     }
 }
 
-const updatePlots = data => {
-    let gcLines = GCLines(data);
+const updatePlots = (data) => {
+    // Create shapes.
+    let shapes = new Map();
+
+    for (const [eventName, eventSerie] of data.events) {
+        shapes.set(eventName, createEventShape(data, eventSerie));
+    }
 
     plots.forEach(plot => {
         if (!plot.hidden) {
-            plot.update(data, gcLines);
+            plot.update(data, shapes);
         }
     });
 }
 
-const GCLines = data => {
-    const gcs = stats.lastGCs;
+const createEventShape = (data, eventSerie) => {
+    // TODO(arl): do we really need to pass 'data' to extract mints and maxtx?
+    // aren't event serie already clamped to the visible time range?
     const mints = data.times[0];
     const maxts = data.times[data.times.length - 1];
 
     const shapes = [];
-    for (let i = 0, n = gcs.length; i < n; i++) {
-        let d = gcs[i];
+    for (let i = 0, n = eventSerie.length; i < n; i++) {
+        let d = eventSerie[i];
         // Clamp GC times which are out of bounds
         if (d < mints || d > maxts) {
             continue;
@@ -166,156 +175,182 @@ const colorscale = [
     [1, 'rgb(227,26,28,0.5)']
 ];
 
+const convertData = (raw) => {
+
+    let bySizes = new Array(raw.Mem.BySize.length);
+    for (let i = 0; i < raw.Mem.BySize.length; i++) {
+        const size = raw.Mem.BySize[i];
+        bySizes[i] = size.Mallocs - size.Frees;
+    }
+
+    return {
+        'heap': [
+            raw.Mem.HeapAlloc,
+            raw.Mem.HeapSys,
+            raw.Mem.HeapIdle,
+            raw.Mem.HeapInuse,
+            raw.Mem.NextGC,
+        ],
+        'objects': [
+            raw.Mem.Mallocs - raw.Mem.Freed,
+            raw.Mem.Lookups,
+            raw.Mem.HeapObjects,
+        ],
+        'mspanMCache': [
+            raw.Mem.MSpanInuse,
+            raw.Mem.MSpanSys,
+            raw.Mem.MCacheInuse,
+            raw.Mem.MCacheSys,
+        ],
+        'goroutines': [
+            raw.NumGoroutine,
+        ],
+        'bySizes': bySizes,
+        'gcfraction': [
+            raw.Mem.GCCPUFraction,
+        ],
+        // Event serie, used for vertical lines on plots (via plotly 'shapes').
+        // This get automatically deduplicated in javascript.
+        'lastgc': [
+            raw.Mem.LastGC,
+        ],
+    };
+}
+
 const createPlotDefs = (sizeClasses) => {
-    return [{
-        name: "heap",
-        title: 'Heap',
-        type: 'scatter',
-        updateFreq: 0,
-        hasHorsEvents: true,
-        layout: {
-            yaxis: {
-                title: 'bytes',
-                ticksuffix: 'B',
+    return {
+        "events": ["lastgc"],
+        "series": [{
+            name: "heap",
+            title: 'Heap',
+            type: 'scatter',
+            updateFreq: 0,
+            horzEvents: 'lastgc',
+            layout: {
+                yaxis: {
+                    title: 'bytes',
+                    ticksuffix: 'B',
+                },
             },
-        },
-        subplots: [{
-            name: 'heap alloc',
-            unitfmt: '%{y:.4s}B',
-            datapath: (raw) => { return raw.Mem.HeapAlloc; },
+            subplots: [{
+                name: 'heap alloc',
+                unitfmt: '%{y:.4s}B',
+            }, {
+                name: 'heap sys',
+                unitfmt: '%{y:.4s}B',
+            }, {
+                name: 'heap idle',
+                unitfmt: '%{y:.4s}B',
+            }, {
+                name: 'heap in-use',
+                unitfmt: '%{y:.4s}B',
+            }, {
+                name: 'heap next gc',
+                unitfmt: '%{y:.4s}B',
+            }, ],
         }, {
-            name: 'heap sys',
-            unitfmt: '%{y:.4s}B',
-            datapath: (raw) => { return raw.Mem.HeapSys; },
-        }, {
-            name: 'heap idle',
-            unitfmt: '%{y:.4s}B',
-            datapath: (raw) => { return raw.Mem.HeapIdle; },
-        }, {
-            name: 'heap in-use',
-            unitfmt: '%{y:.4s}B',
-            datapath: (raw) => { return raw.Mem.HeapInuse; },
-        }, {
-            name: 'heap next gc',
-            unitfmt: '%{y:.4s}B',
-            datapath: (raw) => { return raw.Mem.NextGC; },
-        }, ],
-    }, {
-        name: "objects",
-        title: 'Objects',
-        type: 'scatter',
-        updateFreq: 0,
-        hasHorsEvents: true,
-        layout: {
-            yaxis: {
-                title: 'objects',
+            name: "objects",
+            title: 'Objects',
+            type: 'scatter',
+            updateFreq: 0,
+            horzEvents: 'lastgc',
+            layout: {
+                yaxis: {
+                    title: 'objects',
+                },
             },
-        },
-        subplots: [{
-            name: 'live',
-            hover: 'live objects',
-            unitfmt: '%{y}',
-            datapath: (raw) => { return raw.Mem.Mallocs - raw.Mem.Freed; },
+            subplots: [{
+                name: 'live',
+                hover: 'live objects',
+                unitfmt: '%{y}',
+            }, {
+                name: 'lookups',
+                hover: 'pointer lookups',
+                unitfmt: '%{y}',
+            }, {
+                name: 'heap',
+                hover: 'heap objects',
+                unitfmt: '%{y}',
+            }, ],
         }, {
-            name: 'lookups',
-            hover: 'pointer lookups',
-            unitfmt: '%{y}',
-            datapath: (raw) => { return raw.Mem.Lookups; },
-        }, {
-            name: 'heap',
-            hover: 'heap objects',
-            unitfmt: '%{y}',
-            datapath: (raw) => { return raw.Mem.HeapObjects; },
-        }, ],
-    }, {
-        name: 'mspanMCache',
-        title: 'MSpan/MCache',
-        type: 'scatter',
-        updateFreq: 0,
-        hasHorsEvents: true,
-        layout: {
-            yaxis: {
-                title: 'bytes',
-                ticksuffix: 'B',
+            name: 'mspanMCache',
+            title: 'MSpan/MCache',
+            type: 'scatter',
+            updateFreq: 0,
+            horzEvents: 'lastgc',
+            layout: {
+                yaxis: {
+                    title: 'bytes',
+                    ticksuffix: 'B',
+                },
             },
-        },
-        subplots: [{
-            name: 'mspan in-use',
-            unitfmt: '%{y:.4s}B',
-            datapath: (raw) => { return raw.Mem.MSpanInuse; },
+            subplots: [{
+                name: 'mspan in-use',
+                unitfmt: '%{y:.4s}B',
+            }, {
+                name: 'mspan sys',
+                unitfmt: '%{y:.4s}B',
+            }, {
+                name: 'mcache in-use',
+                unitfmt: '%{y:.4s}B',
+            }, {
+                name: 'mcache sys',
+                unitfmt: '%{y:.4s}B',
+            }, ],
         }, {
-            name: 'mspan sys',
-            unitfmt: '%{y:.4s}B',
-            datapath: (raw) => { return raw.Mem.MSpanSys; },
-        }, {
-            name: 'mcache in-use',
-            unitfmt: '%{y:.4s}B',
-            datapath: (raw) => { return raw.Mem.MCacheInuse; },
-        }, {
-            name: 'mcache sys',
-            unitfmt: '%{y:.4s}B',
-            datapath: (raw) => { return raw.Mem.MCacheSys; },
-        }, ],
-    }, {
-        name: 'goroutines',
-        title: 'Goroutines',
-        type: 'scatter',
-        updateFreq: 0,
-        hasHorsEvents: false,
-        layout: {
-            yaxis: {
-                title: 'goroutines',
-            },
-        },
-        subplots: [{
             name: 'goroutines',
-            unitfmt: '%{y}',
-            datapath: (raw) => { return raw.NumGoroutine; },
-        }],
-    }, {
-        name: 'bySizes',
-        title: 'Size Classes',
-        type: 'heatmap',
-        updateFreq: 5,
-        hasHorsEvents: false,
-        layout: {
-            yaxis: {
-                title: 'size classes',
-                // TODO(arl) try also with log2 (not supported but we could recreate the ticks ourselves).
-                // see https://github.com/plotly/plotly.js/issues/4147#issuecomment-524378823
-                // type: 'log', 
+            title: 'Goroutines',
+            type: 'scatter',
+            updateFreq: 0,
+            horzEvents: '',
+            layout: {
+                yaxis: {
+                    title: 'goroutines',
+                },
             },
-        },
-        heatmap: {
-            // TODO(arl) refine this, we should not pass all of that but probably have 
-            // one hover and one unit for each of the 2 dimensions.
-            hover: '<br><b>size class</b>: %{y:} B' +
-                '<br><b>objects</b>: %{z}<br>',
-            colorscale: colorscale,
-            buckets: sizeClasses,
-            datapath: (raw, i) => {
-                // TODO(arl) must receive an already computed array
-                const size = raw.Mem.BySize[i];
-                return size.Mallocs - size.Frees;
+            subplots: [{
+                name: 'goroutines',
+                unitfmt: '%{y}',
+            }],
+        }, {
+            name: 'bySizes',
+            title: 'Size Classes',
+            type: 'heatmap',
+            updateFreq: 5,
+            horzEvents: '',
+            layout: {
+                yaxis: {
+                    title: 'size classes',
+                    // TODO(arl) try also with log2 (not supported but we could recreate the ticks ourselves).
+                    // see https://github.com/plotly/plotly.js/issues/4147#issuecomment-524378823
+                    // type: 'log', 
+                },
             },
-        },
-    }, {
-        name: "gcfraction",
-        title: 'GC CPU fraction',
-        type: 'scatter',
-        updateFreq: 0,
-        hasHorsEvents: false,
-        layout: {
-            yaxis: {
-                title: 'gc/cpu (%)',
-                tickformat: ',.5%',
+            heatmap: {
+                // TODO(arl) refine this, we should not pass all of that but probably have 
+                // one hover and one unit for each of the 2 dimensions.
+                hover: '<br><b>size class</b>: %{y:} B' +
+                    '<br><b>objects</b>: %{z}<br>',
+                colorscale: colorscale,
+                buckets: sizeClasses,
             },
-        },
-        subplots: [{
-            name: 'gc/cpu',
-            hover: 'gc/cpu fraction',
-            unitfmt: '%{y:,.4%}',
-            datapath: (raw) => { return raw.Mem.GCCPUFraction; },
-        }],
-    }, ];
+        }, {
+            name: "gcfraction",
+            title: 'GC CPU fraction',
+            type: 'scatter',
+            updateFreq: 0,
+            horzEvents: '',
+            layout: {
+                yaxis: {
+                    title: 'gc/cpu (%)',
+                    tickformat: ',.5%',
+                },
+            },
+            subplots: [{
+                name: 'gc/cpu',
+                hover: 'gc/cpu fraction',
+                unitfmt: '%{y:,.4%}',
+            }],
+        }, ]
+    };
 }
