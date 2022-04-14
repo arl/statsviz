@@ -100,15 +100,16 @@ export default class Plot {
         Plotly.newPlot(this._htmlElt, null, this._plotlyLayout, this._plotlyConfig);
     }
 
-    extractData(data) {
+    _extractData(data) {
+        const serie = data.series.get(this._cfg.name);
         if (this._cfg.type == 'scatter') {
             for (let i = 0; i < this._dataTemplate.length; i++) {
                 this._dataTemplate[i].x = data.times;
-                this._dataTemplate[i].y = data.series.get(this._cfg.name)[i];
+                this._dataTemplate[i].y = serie[i];
             }
         } else if (this._cfg.type == 'heatmap') {
             this._dataTemplate[0].x = data.times;
-            this._dataTemplate[0].z = data.series.get(this._cfg.name);
+            this._dataTemplate[0].z = serie;
         }
         return this._dataTemplate;
     }
@@ -119,7 +120,7 @@ export default class Plot {
             if (this._cfg.horzEvents != '') {
                 this._plotlyLayout.shapes = shapes.get(this._cfg.horzEvents);
             }
-            Plotly.react(this._htmlElt, this.extractData(data), this._plotlyLayout, this._plotlyConfig);
+            Plotly.react(this._htmlElt, this._extractData(data), this._plotlyLayout, this._plotlyConfig);
         }
     }
 };
