@@ -100,7 +100,7 @@ const attachPlots = () => {
         }
 
         let col = $('<div>', { class: 'col' });
-        let div = $('<div>', { id: plot.name() });
+        let div = $('<div>');
 
         plot.createElement(div[0])
         col.append(div);

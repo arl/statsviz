@@ -95,10 +95,6 @@ export default class Plot {
         this._plotlyConfig.toImageButtonOptions.filename = this._cfg.name
     }
 
-    name() {
-        return this._cfg.name;
-    }
-
     createElement(div) {
         this._htmlElt = div;
         Plotly.newPlot(this._htmlElt, null, this._plotlyLayout, this._plotlyConfig);
