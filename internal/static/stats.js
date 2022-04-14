@@ -52,18 +52,12 @@ const pushData = (ts, data) => {
 
     for (const [name, event] of series.eventsData) {
         const eventTs = data[name];
-
-        // TODO(arl) : conversion must be done in Go. Data must come in with the
-        // right resolution/format already.
-        const nanoToSeconds = 1000 * 1000 * 1000;
-        const t = Math.floor(eventTs / nanoToSeconds);
-        let ts = new Date(t * 1000);
         if (event.length == 0) {
-            event.push(ts);
+            event.push(eventTs);
             return;
         }
-        if (ts.getTime() != event[event.length - 1].getTime()) {
-            event.push(ts);
+        if (eventTs.getTime() != event[event.length - 1].getTime()) {
+            event.push(eventTs);
             // We've added a new timestamp, check if we can cut the front. We
             // don't need to keep track of event[0] if it happened before
             // the oldest timestamp we're showing. 

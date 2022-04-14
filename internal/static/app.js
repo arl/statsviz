@@ -183,6 +183,7 @@ const convertData = (raw) => {
         bySizes[i] = size.Mallocs - size.Frees;
     }
 
+    const NANO_TO_SECONDS = 1000 * 1000 * 1000;
     return {
         'heap': [
             raw.Mem.HeapAlloc,
@@ -211,9 +212,9 @@ const convertData = (raw) => {
         ],
         // Event serie, used for vertical lines on plots (via plotly 'shapes').
         // This get automatically deduplicated in javascript.
-        'lastgc': [
-            raw.Mem.LastGC,
-        ],
+        'lastgc': new Date(Math.floor(raw.Mem.LastGC / NANO_TO_SECONDS) * 1000),
+        // TODO(arl) : conversion must be done in Go. Data must come in with the
+        // right resolution/format already.
     };
 }
 
