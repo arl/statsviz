@@ -56,8 +56,7 @@ const connect = () => {
             return;
         }
 
-        const converted = convertData(allStats)
-        stats.pushData(new Date(), converted);
+        stats.pushData(new Date(), allStats);
         if (isPaused()) {
             return
         }
@@ -161,7 +160,6 @@ const colorscale = [
 ];
 
 const convertData = (raw) => {
-
     let bySizes = new Array(raw.Mem.BySize.length);
     for (let i = 0; i < raw.Mem.BySize.length; i++) {
         const size = raw.Mem.BySize[i];

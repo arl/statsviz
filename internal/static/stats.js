@@ -51,11 +51,14 @@ const pushData = (ts, data) => {
     }
 
     for (const [name, event] of series.eventsData) {
-        const eventTs = data[name];
         if (event.length == 0) {
-            event.push(eventTs);
+            if (data[name].length != 0) {
+                const eventTs = new Date(Math.floor(data[name][0]));
+                event.push(eventTs);
+            }
             return;
         }
+        const eventTs = new Date(Math.floor(data[name][0]));
         if (eventTs.getTime() != event[event.length - 1].getTime()) {
             event.push(eventTs);
             // We've added a new timestamp, check if we can cut the front. We

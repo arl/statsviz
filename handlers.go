@@ -2,8 +2,7 @@ package statsviz
 
 import (
 	"bytes"
-	_ "embed"
-	"html/template"
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
@@ -28,23 +27,20 @@ func IndexAtRoot(root string) http.HandlerFunc {
 	return http.StripPrefix(prefix, hijack(assetsFS)).ServeHTTP
 }
 
-var (
-	//go:embed plotsdef.tpl
-	plotsdef    string
-	plotsdefTpl = template.Must(template.New("plotsdef").Parse(plotsdef))
-)
-
-// hijack returns a handler that forward all requests to that do not target
+// hijack returns a handler that forward all requests that do not target
 // plotsdef.js. Requests targeting plotsdef.js respond with the generated plots
 // definition.
 func hijack(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "plotsdef.js" {
-			buf := bytes.Buffer{}
-			if err := plotsdefTpl.Execute(&buf, nil); err != nil {
-				panic("template execute :" + err.Error())
+			buf := &bytes.Buffer{}
+			buf.WriteString("export default ")
+			enc := json.NewEncoder(buf)
+			enc.SetIndent("", "  ")
+			if err := enc.Encode(plotsDef); err != nil {
+				panic("error encoding plots definition: " + err.Error())
 			}
-
+			buf.WriteString(";")
 			w.Header().Add("Content-Length", strconv.Itoa(buf.Len()))
 			w.Header().Add("Content-Type", "text/javascript; charset=utf-8")
 			buf.WriteTo(w)
