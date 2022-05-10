@@ -1,6 +1,6 @@
 import * as stats from './stats.js';
 import Plot from "./plot.js";
-
+import PlotsDef from './plotsdef.js';
 
 const buildWebsocketURI = () => {
     var loc = window.location,
@@ -43,17 +43,12 @@ const connect = () => {
     };
 
     let initDone = false;
-    let plotdefs = null;
     ws.onmessage = event => {
         let allStats = JSON.parse(event.data)
 
         if (!initDone) {
-            // TODO: size classes should be defined in the 'init' message.
-            const sizeClasses = extractSizeClasses(allStats);
-            plotdefs = createPlotDefs(sizeClasses);
-            configurePlots(plotdefs);
-
-            stats.init(plotdefs, dataRetentionSeconds);
+            configurePlots(PlotsDef);
+            stats.init(PlotsDef, dataRetentionSeconds);
 
             attachPlots();
 
@@ -66,7 +61,7 @@ const connect = () => {
         if (isPaused()) {
             return
         }
-        updatePlots(stats.slice(dataRetentionSeconds), plotdefs.events);
+        updatePlots(stats.slice(dataRetentionSeconds), PlotsDef.events);
     }
 }
 
@@ -155,17 +150,7 @@ const createEventShape = (data, eventSerie) => {
 }
 
 /* plots definition
- * 
- * (TODO(arl) -> will be defined in Go and read in the 'init' ws message
  */
-
-const extractSizeClasses = (allStats) => {
-    const sizeClasses = new Array(allStats.Mem.BySize.length);
-    for (let i = 0; i < sizeClasses.length; i++) {
-        sizeClasses[i] = allStats.Mem.BySize[i].Size;
-    }
-    return sizeClasses;
-}
 
 const colorscale = [
     [0, 'rgb(166,206,227, 0.5)'],
