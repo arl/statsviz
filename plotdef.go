@@ -122,8 +122,6 @@ func (b *plotsDefBuilder) close() PlotsDefinition {
 	return def
 }
 
-// CONTINUER ICI
-
 type Axis struct {
 	Title string
 	Unit  Unit
