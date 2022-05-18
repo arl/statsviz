@@ -66,14 +66,14 @@ type (
 	}
 
 	Color struct {
-		Max   float64
+		Value float64
 		Color color.RGBA
 	}
 )
 
 func (c Color) MarshalJSON() ([]byte, error) {
 	str := fmt.Sprintf(`[%f,"rgb(%d,%d,%d,%f)"]`,
-		c.Max, c.Color.R, c.Color.G, c.Color.B, float64(c.Color.A)/255)
+		c.Value, c.Color.R, c.Color.G, c.Color.B, float64(c.Color.A)/255)
 	return []byte(str), nil
 }
 
@@ -138,154 +138,194 @@ var (
 	Bytes = Unit{TickSuffix: "B", UnitFmt: "%{y:.4s}B"}
 )
 
-var plotsDef = PlotsDefinition{
-	Events: []string{"lastgc"},
-	Series: []interface{}{
-		ScatterPlot{
-			Name:       "heap",
-			Title:      "Heap",
-			Type:       "scatter",
-			UpdateFreq: 0,
-			HorzEvents: "lastgc",
-			Layout: ScatterPlotLayout{
-				Yaxis: ScatterPlotLayoutYAxis{
-					Title:      "bytes",
-					TickSuffix: "B",
-				},
-			},
-			Subplots: []ScatterPlotSubplot{
-				{
-					Name:    "heap alloc",
-					Hover:   "heap alloc",
-					Unitfmt: "%{y:.4s}B",
-				},
-				{
-					Name:    "heap sys",
-					Hover:   "heap sys",
-					Unitfmt: "%{y:.4s}B",
-				},
-				{
-					Name:    "heap idle",
-					Hover:   "heap idle",
-					Unitfmt: "%{y:.4s}B",
-				},
-				{
-					Name:    "heap in-use",
-					Hover:   "heap in-use",
-					Unitfmt: "%{y:.4s}B",
-				},
-				{
-					Name:    "heap next gc",
-					Hover:   "heap next gc",
-					Unitfmt: "%{y:.4s}B",
-				},
+func plotsDef() PlotsDefinition {
+	sizeClassesHeatmap := HeatmapPlot{
+		Name:       "sizeclasses",
+		Title:      "Size Classes",
+		Type:       "heatmap",
+		UpdateFreq: 5,
+		HorzEvents: "",
+		Layout: HeatmapPlotLayout{
+			Yaxis: HeatmapPlotLayoutYAxis{
+				Title: "size classes",
+				// TODO(arl) try also with log2 (not supported but we could recreate the ticks ourselves).
+				// see https://github.com/plotly/plotly.js/issues/4147#issuecomment-524378823
+				// type: 'log',
 			},
 		},
-		ScatterPlot{
-			Name:       "objects",
-			Title:      "Objects",
-			Type:       "scatter",
-			UpdateFreq: 0,
-			HorzEvents: "lastgc",
-			Layout: ScatterPlotLayout{
-				Yaxis: ScatterPlotLayoutYAxis{
-					Title: "objects",
-				},
-			},
-			Subplots: []ScatterPlotSubplot{
-				{
-					Name:    "live",
-					Hover:   "live objects",
-					Unitfmt: "%{y}",
-				},
-				{
-					Name:    "lookups",
-					Hover:   "pointer lookups",
-					Unitfmt: "%{y}",
-				},
-				{
-					Name:    "heap",
-					Hover:   "heap objects",
-					Unitfmt: "%{y}",
-				},
+		Heatmap: Heatmap{
+			// TODO(arl) refine this, we should not pass all of that but
+			// probably have one hover and one unit for each of the 2 dimensions.
+			Hover: "<br><b>size class</b>: %{y:} B" +
+				"<br><b>objects</b>: %{z}<br>",
+			Colorscale: []Color{
+				{Value: 0, Color: color.RGBA{166, 206, 227, 0}},
+				{Value: 0.05, Color: color.RGBA{31, 120, 180, 0}},
+				{Value: 0.2, Color: color.RGBA{178, 223, 138, 0}},
+				{Value: 0.5, Color: color.RGBA{51, 160, 44, 0}},
+				{Value: 1, Color: color.RGBA{227, 26, 28, 0}},
 			},
 		},
-		ScatterPlot{
-			Name:       "mspan-mcache",
-			Title:      "MSpan/MCache",
-			Type:       "scatter",
-			UpdateFreq: 0,
-			HorzEvents: "lastgc",
-			Layout: ScatterPlotLayout{
-				Yaxis: ScatterPlotLayoutYAxis{
-					Title:      "bytes",
-					TickSuffix: "B",
-				},
-			},
-			Subplots: []ScatterPlotSubplot{
-				{
-					Name:    "mspan in-use",
-					Hover:   "mspan in-use",
-					Unitfmt: "%{y:.4s}B",
-				},
-				{
-					Name:    "mspan sys",
-					Hover:   "mspan sys",
-					Unitfmt: "%{y:.4s}B",
-				},
-				{
-					Name:    "mcache in-use",
-					Hover:   "mcache in-use",
-					Unitfmt: "%{y:.4s}B",
-				},
-				{
-					Name:    "mcache sys",
-					Hover:   "mcache sys",
-					Unitfmt: "%{y:.4s}B",
-				},
-			},
-		},
-		ScatterPlot{
-			Name:       "goroutines",
-			Title:      "Goroutines",
-			Type:       "scatter",
-			UpdateFreq: 0,
-			HorzEvents: "lastgc",
-			Layout: ScatterPlotLayout{
-				Yaxis: ScatterPlotLayoutYAxis{
-					Title: "goroutines",
-				},
-			},
-			Subplots: []ScatterPlotSubplot{
-				{
-					Name:    "goroutines",
-					Unitfmt: "%{y}",
-				},
-			},
-		},
-		/* TODO: Heatmap */
+	}
 
-		ScatterPlot{
-			Name:       "gcfraction",
-			Title:      "GC/CPU fraction",
-			Type:       "scatter",
-			UpdateFreq: 0,
-			HorzEvents: "lastgc",
-			Layout: ScatterPlotLayout{
-				Yaxis: ScatterPlotLayoutYAxis{
-					Title:      "gc/cpu (%)",
-					TickFormat: ",.5%",
+	// Call runtime.MemStats once to get size classes buckets.
+	var stats runtime.MemStats
+	runtime.ReadMemStats(&stats)
+
+	for _, b := range stats.BySize {
+		sizeClassesHeatmap.Heatmap.Buckets = append(sizeClassesHeatmap.Heatmap.Buckets, float64(b.Size))
+	}
+
+	pd := PlotsDefinition{
+		Events: []string{"lastgc"},
+		Series: []interface{}{
+			ScatterPlot{
+				Name:       "heap",
+				Title:      "Heap",
+				Type:       "scatter",
+				UpdateFreq: 0,
+				HorzEvents: "lastgc",
+				Layout: ScatterPlotLayout{
+					Yaxis: ScatterPlotLayoutYAxis{
+						Title:      "bytes",
+						TickSuffix: "B",
+					},
+				},
+				Subplots: []ScatterPlotSubplot{
+					{
+						Name:    "heap alloc",
+						Hover:   "heap alloc",
+						Unitfmt: "%{y:.4s}B",
+					},
+					{
+						Name:    "heap sys",
+						Hover:   "heap sys",
+						Unitfmt: "%{y:.4s}B",
+					},
+					{
+						Name:    "heap idle",
+						Hover:   "heap idle",
+						Unitfmt: "%{y:.4s}B",
+					},
+					{
+						Name:    "heap in-use",
+						Hover:   "heap in-use",
+						Unitfmt: "%{y:.4s}B",
+					},
+					{
+						Name:    "heap next gc",
+						Hover:   "heap next gc",
+						Unitfmt: "%{y:.4s}B",
+					},
 				},
 			},
-			Subplots: []ScatterPlotSubplot{
-				{
-					Name:    "gc/cpu",
-					Hover:   "gc/cpu fraction",
-					Unitfmt: "%{y:,.4%}",
+			ScatterPlot{
+				Name:       "objects",
+				Title:      "Objects",
+				Type:       "scatter",
+				UpdateFreq: 0,
+				HorzEvents: "lastgc",
+				Layout: ScatterPlotLayout{
+					Yaxis: ScatterPlotLayoutYAxis{
+						Title: "objects",
+					},
+				},
+				Subplots: []ScatterPlotSubplot{
+					{
+						Name:    "live",
+						Hover:   "live objects",
+						Unitfmt: "%{y}",
+					},
+					{
+						Name:    "lookups",
+						Hover:   "pointer lookups",
+						Unitfmt: "%{y}",
+					},
+					{
+						Name:    "heap",
+						Hover:   "heap objects",
+						Unitfmt: "%{y}",
+					},
+				},
+			},
+			ScatterPlot{
+				Name:       "mspan-mcache",
+				Title:      "MSpan/MCache",
+				Type:       "scatter",
+				UpdateFreq: 0,
+				HorzEvents: "lastgc",
+				Layout: ScatterPlotLayout{
+					Yaxis: ScatterPlotLayoutYAxis{
+						Title:      "bytes",
+						TickSuffix: "B",
+					},
+				},
+				Subplots: []ScatterPlotSubplot{
+					{
+						Name:    "mspan in-use",
+						Hover:   "mspan in-use",
+						Unitfmt: "%{y:.4s}B",
+					},
+					{
+						Name:    "mspan sys",
+						Hover:   "mspan sys",
+						Unitfmt: "%{y:.4s}B",
+					},
+					{
+						Name:    "mcache in-use",
+						Hover:   "mcache in-use",
+						Unitfmt: "%{y:.4s}B",
+					},
+					{
+						Name:    "mcache sys",
+						Hover:   "mcache sys",
+						Unitfmt: "%{y:.4s}B",
+					},
+				},
+			},
+			ScatterPlot{
+				Name:       "goroutines",
+				Title:      "Goroutines",
+				Type:       "scatter",
+				UpdateFreq: 0,
+				HorzEvents: "lastgc",
+				Layout: ScatterPlotLayout{
+					Yaxis: ScatterPlotLayoutYAxis{
+						Title: "goroutines",
+					},
+				},
+				Subplots: []ScatterPlotSubplot{
+					{
+						Name:    "goroutines",
+						Unitfmt: "%{y}",
+					},
+				},
+			},
+			sizeClassesHeatmap,
+			ScatterPlot{
+				Name:       "gcfraction",
+				Title:      "GC/CPU fraction",
+				Type:       "scatter",
+				UpdateFreq: 0,
+				HorzEvents: "lastgc",
+				Layout: ScatterPlotLayout{
+					Yaxis: ScatterPlotLayoutYAxis{
+						Title:      "gc/cpu (%)",
+						TickFormat: ",.5%",
+					},
+				},
+				Subplots: []ScatterPlotSubplot{
+					{
+						Name:    "gc/cpu",
+						Hover:   "gc/cpu fraction",
+						Unitfmt: "%{y:,.4%}",
+					},
 				},
 			},
 		},
-	},
+	}
+
+	return pd
 }
 
 func plotsValues() map[string]interface{} {
@@ -300,5 +340,11 @@ func plotsValues() map[string]interface{} {
 	m["goroutines"] = []int{numgs}
 	m["gcfraction"] = []float64{stats.GCCPUFraction}
 	m["lastgc"] = []uint64{stats.LastGC / 1_000_000} // Javascript datetime is in ms
+
+	sizeClasses := make([]uint64, len(stats.BySize))
+	for i := 0; i < len(stats.BySize); i++ {
+		sizeClasses[i] = stats.BySize[i].Mallocs - stats.BySize[i].Frees
+	}
+	m["sizeclasses"] = sizeClasses
 	return m
 }

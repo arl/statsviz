@@ -37,7 +37,7 @@ func hijack(h http.Handler) http.HandlerFunc {
 			buf.WriteString("export default ")
 			enc := json.NewEncoder(buf)
 			enc.SetIndent("", "  ")
-			if err := enc.Encode(plotsDef); err != nil {
+			if err := enc.Encode(plotsDef()); err != nil {
 				panic("error encoding plots definition: " + err.Error())
 			}
 			buf.WriteString(";")
