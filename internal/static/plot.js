@@ -106,6 +106,8 @@ export default class Plot {
             for (let i = 0; i < this._dataTemplate.length; i++) {
                 this._dataTemplate[i].x = data.times;
                 this._dataTemplate[i].y = serie[i];
+                this._dataTemplate[i].stackgroup = this._cfg.subplots[i].stackgroup;
+                this._dataTemplate[i].hoveron = this._cfg.subplots[i].hoveron;
             }
         } else if (this._cfg.type == 'heatmap') {
             this._dataTemplate[0].x = data.times;

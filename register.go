@@ -67,6 +67,7 @@ type server struct {
 }
 
 func (s *server) register() {
+	populateSamples()
 	s.mux.Handle(s.root+"/", IndexAtRoot(s.root))
 	s.mux.HandleFunc(s.root+"/ws", NewWsHandler(s.freq))
 }

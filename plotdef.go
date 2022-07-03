@@ -3,11 +3,10 @@ package statsviz
 import (
 	"fmt"
 	"image/color"
-	"runtime"
 )
 
-// Those are the JSON structures and should be placed under
-// internal so as to not be part of the public API.
+// TODO(arl): those are the JSON structures and should be placed under internal
+// so as to not be part of the public API.
 
 type (
 	PlotsDefinition struct {
@@ -26,9 +25,11 @@ type (
 	}
 
 	ScatterPlotSubplot struct {
-		Name    string `json:"name"`
-		Hover   string `json:"hover"`
-		Unitfmt string `json:"unitfmt"`
+		Name       string `json:"name"`
+		Hover      string `json:"hover"`
+		Unitfmt    string `json:"unitfmt"`
+		StackGroup string `json:"stackgroup"`
+		HoverOn    string `json:"hoveron"`
 	}
 
 	ScatterPlot struct {
@@ -56,7 +57,9 @@ type (
 	}
 
 	HeatmapPlotLayoutYAxis struct {
-		Title string `json:"title"`
+		Title string  `json:"title"`
+		Type  string  `json:"type"`
+		DTick float64 `json:"dtick"`
 	}
 
 	Heatmap struct {
@@ -69,6 +72,16 @@ type (
 		Value float64
 		Color color.RGBA
 	}
+
+	Axis struct {
+		Title string
+		Unit  Unit
+	}
+
+	Unit struct {
+		TickSuffix string
+		UnitFmt    string
+	}
 )
 
 func (c Color) MarshalJSON() ([]byte, error) {
@@ -77,272 +90,47 @@ func (c Color) MarshalJSON() ([]byte, error) {
 	return []byte(str), nil
 }
 
-// TODO(arl) rename
-type plotsDefBuilder struct {
-	series []interface{}
+var Bytes = Unit{TickSuffix: "B", UnitFmt: "%{y:.4s}B"}
+
+// https://mdigi.tools/color-shades/
+var blueShades = []Color{
+	{Value: 0.0, Color: color.RGBA{0xea, 0xf8, 0xfd, 1}},
+	{Value: 0.1, Color: color.RGBA{0xbf, 0xeb, 0xfa, 1}},
+	{Value: 0.2, Color: color.RGBA{0x94, 0xdd, 0xf6, 1}},
+	{Value: 0.3, Color: color.RGBA{0x69, 0xd0, 0xf2, 1}},
+	{Value: 0.4, Color: color.RGBA{0x3f, 0xc2, 0xef, 1}},
+	{Value: 0.5, Color: color.RGBA{0x14, 0xb5, 0xeb, 1}},
+	{Value: 0.6, Color: color.RGBA{0x10, 0x94, 0xc0, 1}},
+	{Value: 0.7, Color: color.RGBA{0x0d, 0x73, 0x96, 1}},
+	{Value: 0.8, Color: color.RGBA{0x09, 0x52, 0x6b, 1}},
+	{Value: 0.9, Color: color.RGBA{0x05, 0x31, 0x40, 1}},
+	{Value: 1.0, Color: color.RGBA{0x02, 0x10, 0x15, 1}},
 }
 
-// TODO(arl) should probably transofrm this function so that
-// it just takes fields and not the whole ScatterPlot
-func (b *plotsDefBuilder) addScatter(scatter ScatterPlot) {
-	b.series = append(b.series, scatter)
+var pinkShades = []Color{
+	{Value: 0.0, Color: color.RGBA{0xfe, 0xe7, 0xf3, 1}},
+	{Value: 0.1, Color: color.RGBA{0xfc, 0xb6, 0xdc, 1}},
+	{Value: 0.2, Color: color.RGBA{0xf9, 0x85, 0xc5, 1}},
+	{Value: 0.3, Color: color.RGBA{0xf7, 0x55, 0xae, 1}},
+	{Value: 0.4, Color: color.RGBA{0xf5, 0x24, 0x96, 1}},
+	{Value: 0.5, Color: color.RGBA{0xdb, 0x0a, 0x7d, 1}},
+	{Value: 0.6, Color: color.RGBA{0xaa, 0x08, 0x61, 1}},
+	{Value: 0.7, Color: color.RGBA{0x7a, 0x06, 0x45, 1}},
+	{Value: 0.8, Color: color.RGBA{0x49, 0x03, 0x2a, 1}},
+	{Value: 0.9, Color: color.RGBA{0x18, 0x01, 0x0e, 1}},
+	{Value: 1.0, Color: color.RGBA{0x00, 0x00, 0x00, 1}},
 }
 
-func (b *plotsDefBuilder) addHeatmap(heatmap HeatmapPlot) {
-	b.series = append(b.series, heatmap)
-}
-
-func (b *plotsDefBuilder) close() PlotsDefinition {
-	def := PlotsDefinition{
-		Series: []interface{}{},
-		Events: []string{},
-	}
-	horzEvents := make(map[string]struct{})
-
-	for i := range b.series {
-		def.Series = append(def.Series, b.series[i])
-		switch val := b.series[i].(type) {
-		case ScatterPlot:
-			horzEvents[val.HorzEvents] = struct{}{}
-			val.Type = "scatter"
-			b.series[i] = val
-		case HeatmapPlot:
-			horzEvents[val.HorzEvents] = struct{}{}
-			val.Type = "heatmap"
-			b.series[i] = val
-		}
-	}
-
-	for e := range horzEvents {
-		if e != "" {
-			def.Events = append(def.Events, e)
-		}
-	}
-
-	return def
-}
-
-type Axis struct {
-	Title string
-	Unit  Unit
-}
-
-type Unit struct {
-	TickSuffix string
-	UnitFmt    string
-}
-
-var (
-	Bytes = Unit{TickSuffix: "B", UnitFmt: "%{y:.4s}B"}
-)
-
-func plotsDef() PlotsDefinition {
-	sizeClassesHeatmap := HeatmapPlot{
-		Name:       "sizeclasses",
-		Title:      "Size Classes",
-		Type:       "heatmap",
-		UpdateFreq: 5,
-		HorzEvents: "",
-		Layout: HeatmapPlotLayout{
-			Yaxis: HeatmapPlotLayoutYAxis{
-				Title: "size classes",
-				// TODO(arl) try also with log2 (not supported but we could recreate the ticks ourselves).
-				// see https://github.com/plotly/plotly.js/issues/4147#issuecomment-524378823
-				// type: 'log',
-			},
-		},
-		Heatmap: Heatmap{
-			// TODO(arl) refine this, we should not pass all of that but
-			// probably have one hover and one unit for each of the 2 dimensions.
-			Hover: "<br><b>size class</b>: %{y:} B" +
-				"<br><b>objects</b>: %{z}<br>",
-			Colorscale: []Color{
-				{Value: 0, Color: color.RGBA{166, 206, 227, 0}},
-				{Value: 0.05, Color: color.RGBA{31, 120, 180, 0}},
-				{Value: 0.2, Color: color.RGBA{178, 223, 138, 0}},
-				{Value: 0.5, Color: color.RGBA{51, 160, 44, 0}},
-				{Value: 1, Color: color.RGBA{227, 26, 28, 0}},
-			},
-		},
-	}
-
-	// Call runtime.MemStats once to get size classes buckets.
-	var stats runtime.MemStats
-	runtime.ReadMemStats(&stats)
-
-	for _, b := range stats.BySize {
-		sizeClassesHeatmap.Heatmap.Buckets = append(sizeClassesHeatmap.Heatmap.Buckets, float64(b.Size))
-	}
-
-	pd := PlotsDefinition{
-		Events: []string{"lastgc"},
-		Series: []interface{}{
-			ScatterPlot{
-				Name:       "heap",
-				Title:      "Heap",
-				Type:       "scatter",
-				UpdateFreq: 0,
-				HorzEvents: "lastgc",
-				Layout: ScatterPlotLayout{
-					Yaxis: ScatterPlotLayoutYAxis{
-						Title:      "bytes",
-						TickSuffix: "B",
-					},
-				},
-				Subplots: []ScatterPlotSubplot{
-					{
-						Name:    "heap alloc",
-						Hover:   "heap alloc",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "heap sys",
-						Hover:   "heap sys",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "heap idle",
-						Hover:   "heap idle",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "heap in-use",
-						Hover:   "heap in-use",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "heap next gc",
-						Hover:   "heap next gc",
-						Unitfmt: "%{y:.4s}B",
-					},
-				},
-			},
-			ScatterPlot{
-				Name:       "objects",
-				Title:      "Objects",
-				Type:       "scatter",
-				UpdateFreq: 0,
-				HorzEvents: "lastgc",
-				Layout: ScatterPlotLayout{
-					Yaxis: ScatterPlotLayoutYAxis{
-						Title: "objects",
-					},
-				},
-				Subplots: []ScatterPlotSubplot{
-					{
-						Name:    "live",
-						Hover:   "live objects",
-						Unitfmt: "%{y}",
-					},
-					{
-						Name:    "lookups",
-						Hover:   "pointer lookups",
-						Unitfmt: "%{y}",
-					},
-					{
-						Name:    "heap",
-						Hover:   "heap objects",
-						Unitfmt: "%{y}",
-					},
-				},
-			},
-			ScatterPlot{
-				Name:       "mspan-mcache",
-				Title:      "MSpan/MCache",
-				Type:       "scatter",
-				UpdateFreq: 0,
-				HorzEvents: "lastgc",
-				Layout: ScatterPlotLayout{
-					Yaxis: ScatterPlotLayoutYAxis{
-						Title:      "bytes",
-						TickSuffix: "B",
-					},
-				},
-				Subplots: []ScatterPlotSubplot{
-					{
-						Name:    "mspan in-use",
-						Hover:   "mspan in-use",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "mspan sys",
-						Hover:   "mspan sys",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "mcache in-use",
-						Hover:   "mcache in-use",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "mcache sys",
-						Hover:   "mcache sys",
-						Unitfmt: "%{y:.4s}B",
-					},
-				},
-			},
-			ScatterPlot{
-				Name:       "goroutines",
-				Title:      "Goroutines",
-				Type:       "scatter",
-				UpdateFreq: 0,
-				HorzEvents: "lastgc",
-				Layout: ScatterPlotLayout{
-					Yaxis: ScatterPlotLayoutYAxis{
-						Title: "goroutines",
-					},
-				},
-				Subplots: []ScatterPlotSubplot{
-					{
-						Name:    "goroutines",
-						Unitfmt: "%{y}",
-					},
-				},
-			},
-			sizeClassesHeatmap,
-			ScatterPlot{
-				Name:       "gcfraction",
-				Title:      "GC/CPU fraction",
-				Type:       "scatter",
-				UpdateFreq: 0,
-				HorzEvents: "lastgc",
-				Layout: ScatterPlotLayout{
-					Yaxis: ScatterPlotLayoutYAxis{
-						Title:      "gc/cpu (%)",
-						TickFormat: ",.5%",
-					},
-				},
-				Subplots: []ScatterPlotSubplot{
-					{
-						Name:    "gc/cpu",
-						Hover:   "gc/cpu fraction",
-						Unitfmt: "%{y:,.4%}",
-					},
-				},
-			},
-		},
-	}
-
-	return pd
-}
-
-func plotsValues() map[string]interface{} {
-	stats := runtime.MemStats{}
-	runtime.ReadMemStats(&stats)
-	numgs := runtime.NumGoroutine()
-
-	m := make(map[string]interface{})
-	m["heap"] = []uint64{stats.HeapAlloc, stats.HeapSys, stats.HeapIdle, stats.HeapInuse, stats.NextGC}
-	m["objects"] = []uint64{stats.Alloc - stats.Frees, stats.Lookups, stats.HeapObjects}
-	m["mspan-mcache"] = []uint64{stats.MSpanInuse, stats.MSpanSys, stats.MCacheInuse, stats.MCacheSys}
-	m["goroutines"] = []int{numgs}
-	m["gcfraction"] = []float64{stats.GCCPUFraction}
-	m["lastgc"] = []uint64{stats.LastGC / 1_000_000} // Javascript datetime is in ms
-
-	sizeClasses := make([]uint64, len(stats.BySize))
-	for i := 0; i < len(stats.BySize); i++ {
-		sizeClasses[i] = stats.BySize[i].Mallocs - stats.BySize[i].Frees
-	}
-	m["sizeclasses"] = sizeClasses
-	return m
+var greenShades = []Color{
+	{Value: 0.0, Color: color.RGBA{0xed, 0xf7, 0xf2, 0}},
+	{Value: 0.1, Color: color.RGBA{0xc9, 0xe8, 0xd7, 0}},
+	{Value: 0.2, Color: color.RGBA{0xa5, 0xd9, 0xbc, 0}},
+	{Value: 0.3, Color: color.RGBA{0x81, 0xca, 0xa2, 0}},
+	{Value: 0.4, Color: color.RGBA{0x5e, 0xbb, 0x87, 0}},
+	{Value: 0.5, Color: color.RGBA{0x44, 0xa1, 0x6e, 0}},
+	{Value: 0.6, Color: color.RGBA{0x35, 0x7e, 0x55, 0}},
+	{Value: 0.7, Color: color.RGBA{0x26, 0x5a, 0x3d, 0}},
+	{Value: 0.8, Color: color.RGBA{0x17, 0x36, 0x25, 0}},
+	{Value: 0.9, Color: color.RGBA{0x08, 0x12, 0x0c, 0}},
+	{Value: 1.0, Color: color.RGBA{0x00, 0x00, 0x00, 0}},
 }

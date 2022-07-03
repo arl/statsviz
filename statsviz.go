@@ -1,6 +1,7 @@
 package statsviz
 
 import (
+	"runtime/metrics"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -12,7 +13,8 @@ func sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	defer tick.Stop()
 
 	for range tick.C {
-		if err := conn.WriteJSON(plotsValues()); err != nil {
+		metrics.Read(samples)
+		if err := conn.WriteJSON(plotsValues(samples)); err != nil {
 			return err
 		}
 	}
