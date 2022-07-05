@@ -123,6 +123,7 @@ func downsampleBuckets(h *metrics.Float64Histogram, factor int) []float64 {
 
 	if math.IsInf(ret[len(ret)-1], 1) {
 		ret[len(ret)-1] = ret[len(ret)-2] - ret[len(ret)-3] + ret[len(ret)-2]
+		// TODO(arl): handle the case where the number of buckets is not enough?
 	}
 
 	return ret
@@ -158,8 +159,11 @@ var (
 )
 
 func plotsDef() PlotsDefinition {
+
 	// Sample the metric once
 	metrics.Read(samples)
+
+	// TODO(arl) rename metrics so that they match that of the new package (example: nextGC -> Gc heap goal)
 
 	// Perform a sanity check on the number of buckets on the 'allocs' and
 	// 'frees' size classes histograms. Statsviz plots a single histogram based
@@ -186,6 +190,8 @@ func plotsDef() PlotsDefinition {
 	pd := PlotsDefinition{
 		Events: []string{"lastgc"},
 		Series: []interface{}{
+
+			// TODO(arl) rework (take example on grafana) so that some metrics are added to others, visually.
 			ScatterPlot{
 				Name:       "heap",
 				Title:      "Heap",
@@ -341,15 +347,17 @@ func plotsDef() PlotsDefinition {
 				Layout: HeatmapPlotLayout{
 					Yaxis: HeatmapPlotLayoutYAxis{
 						Title: "size classes",
-						Type:  "log",
-						DTick: 0.301029995664,
 					},
 				},
 				Heatmap: Heatmap{
-					Hover: "<br><b>size class</b>: %{y:} B" +
-						"<br><b>objects</b>: %{z}<br>",
 					Colorscale: blueShades,
-					Buckets:    sizeClassesBuckets,
+					Buckets:    floatseq(len(sizeClassesBuckets)),
+					CustomData: sizeClassesBuckets,
+					Hover: HeapmapHover{
+						YName: "size classes",
+						YUnit: "bytes",
+						ZName: "objects",
+					},
 				},
 			},
 			HeatmapPlot{
@@ -361,15 +369,17 @@ func plotsDef() PlotsDefinition {
 				Layout: HeatmapPlotLayout{
 					Yaxis: HeatmapPlotLayoutYAxis{
 						Title: "pauses",
-						Type:  "log",
-						DTick: 0.698970004336,
 					},
 				},
 				Heatmap: Heatmap{
-					Hover: "<br><b>pause duration</b>: %{y:S} s" +
-						"<br><b>count</b>: %{z}<br>",
 					Colorscale: pinkShades,
-					Buckets:    gcpausesBuckets,
+					Buckets:    floatseq(len(gcpausesBuckets)),
+					CustomData: gcpausesBuckets,
+					Hover: HeapmapHover{
+						YName: "pause duration",
+						YUnit: "duration",
+						ZName: "pauses",
+					},
 				},
 			},
 			HeatmapPlot{
@@ -381,15 +391,17 @@ func plotsDef() PlotsDefinition {
 				Layout: HeatmapPlotLayout{
 					Yaxis: HeatmapPlotLayoutYAxis{
 						Title: "sched-latencies",
-						Type:  "log",
-						DTick: 0.698970004336,
 					},
 				},
 				Heatmap: Heatmap{
-					Hover: "<br><b>time spent in runnable state</b>: %{y:S} s" +
-						"<br><b>goroutines</b>: %{z}<br>",
 					Colorscale: greenShades,
-					Buckets:    schedlatBuckets,
+					Buckets:    floatseq(len(schedlatBuckets)),
+					CustomData: schedlatBuckets,
+					Hover: HeapmapHover{
+						YName: "'runnable' time",
+						YUnit: "duration",
+						ZName: "goroutines",
+					},
 				},
 			},
 		},
@@ -468,4 +480,12 @@ func plotsValues(samples []metrics.Sample) map[string]interface{} {
 	schedlat := samples[metricsSchedLatencies].Value.Float64Histogram()
 	m["sched-latencies"] = downsampleCounts(schedlat, schedlatFactor)
 	return m
+}
+
+func floatseq(n int) []float64 {
+	seq := make([]float64, n)
+	for i := 0; i < n; i++ {
+		seq[i] = float64(i)
+	}
+	return seq
 }

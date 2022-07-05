@@ -51,7 +51,11 @@ export default class Plot {
             // If type = 'heatmap':
             heatmap:
             {
-                hover: 'TO REFINE (see TODO)',
+                hover: {
+                    yunit: String // Y unit
+                    yname: String // label for the y value in hover tooltip
+                    zname: String // label for the z value in hover tooltip
+                },
                 colorscale: [ [Number: 'color'] ] // heatmap colorscale palette, numbers go from 0 to 1
                 buckets: classSizes,              // heatmap list of buckets
             },
@@ -84,7 +88,7 @@ export default class Plot {
                 z: null,
                 showlegend: false,
                 colorscale: this._cfg.heatmap.colorscale,
-                hovertemplate: this._cfg.heatmap.hover,
+                custom_data: this._cfg.heatmap.custom_data,
             });
         }
 
@@ -95,9 +99,43 @@ export default class Plot {
         this._plotlyConfig.toImageButtonOptions.filename = this._cfg.name
     }
 
-    createElement(div) {
+    createElement(div, idx) {
         this._htmlElt = div;
+        this._plotIdx = idx;
         Plotly.newPlot(this._htmlElt, null, this._plotlyLayout, this._plotlyConfig);
+    }
+
+    // Install callbacks for showing info about the rectangle area under the cursor.
+    installHover(hoverinfo) {
+        const options = {
+            arrow: true,
+            followCursor: true,
+            popperOptions: {
+                placement: "auto"
+            },
+            interactive: true,
+            trigger: "manual",
+            allowHTML: true
+        };
+        const instance = tippy(document.body, options);
+        if (this._cfg.type == 'heatmap') {
+            const hover = this._cfg.heatmap.hover;
+            const formatYUnit = formatFunction(hover.yunit);
+            this._htmlElt.on('plotly_hover', function(data) {
+                    var infotext = data.points.map(function(d) {
+                        const yval = formatYUnit(d.data.custom_data[d.y]);
+                        return `${hover.yname}: <b>${yval}<b/><br/>${hover.zname}: <b>${d.z}</b>`;
+                    });
+
+                    let info = document.createElement('div');
+                    info.innerHTML = infotext;
+                    instance.setContent(info);
+                    instance.show();
+                })
+                .on('plotly_unhover', function(data) {
+                    instance.hide();
+                });
+        }
     }
 
     _extractData(data) {
@@ -112,6 +150,7 @@ export default class Plot {
         } else if (this._cfg.type == 'heatmap') {
             this._dataTemplate[0].x = data.times;
             this._dataTemplate[0].z = serie;
+            this._dataTemplate[0].hoverinfo = 'none';
         }
         return this._dataTemplate;
     }
@@ -125,4 +164,44 @@ export default class Plot {
             Plotly.react(this._htmlElt, this._extractData(data), this._plotlyLayout, this._plotlyConfig);
         }
     }
+};
+
+const durUnits = ['w', 'd', 'h', 'm', 's', 'ms', 'µs', 'ns'];
+const durVals = [6048e11, 864e11, 36e11, 6e10, 1e9, 1e6, 1e3, 1];
+
+// Formats a time duration provided in second.
+const formatDuration = sec => {
+    let ns = sec * 1e9;
+    for (let i = 0; i < durUnits.length; i++) {
+        let inc = ns / durVals[i];
+
+        if (inc < 1) continue;
+        return Math.round(inc) + durUnits[i];
+    }
+    return res.trim();
+};
+
+const bytesUnits = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB'];
+
+// Formats a size in bytes.
+const formatBytes = bytes => {
+    let i = 0;
+    while (bytes > 1000) {
+        bytes /= 1000;
+        i++;
+    }
+    const res = Math.trunc(bytes);
+    return `${res}${bytesUnits[i]}`;
+};
+
+// Returns a format function based on the provided unit.
+const formatFunction = unit => {
+    switch (unit) {
+        case 'duration':
+            return formatDuration;
+        case 'bytes':
+            return formatBytes;
+    }
+    // Default formatting
+    return (y) => { `${y} ${hover.yunit}` };
 };

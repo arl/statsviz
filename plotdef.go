@@ -63,9 +63,16 @@ type (
 	}
 
 	Heatmap struct {
-		Hover      string    `json:"hover"`
-		Colorscale []Color   `json:"colorscale"`
-		Buckets    []float64 `json:"buckets"`
+		Colorscale []Color      `json:"colorscale"`
+		Buckets    []float64    `json:"buckets"`
+		CustomData []float64    `json:"custom_data"`
+		Hover      HeapmapHover `json:"hover"`
+	}
+
+	HeapmapHover struct {
+		YName string `json:"yname"`
+		YUnit string `json:"yunit"` // 'duration', 'bytes' or custom
+		ZName string `json:"zname"`
 	}
 
 	Color struct {
