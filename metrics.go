@@ -190,11 +190,9 @@ func plotsDef() PlotsDefinition {
 	pd := PlotsDefinition{
 		Events: []string{"lastgc"},
 		Series: []interface{}{
-
-			// TODO(arl) rework (take example on grafana) so that some metrics are added to others, visually.
 			ScatterPlot{
-				Name:       "heap",
-				Title:      "Heap",
+				Name:       "heap-global",
+				Title:      "Heap (global)",
 				Type:       "scatter",
 				HorzEvents: "lastgc",
 				Layout: ScatterPlotLayout{
@@ -205,63 +203,86 @@ func plotsDef() PlotsDefinition {
 				},
 				Subplots: []ScatterPlotSubplot{
 					{
-						Name:    "heap alloc",
-						Hover:   "heap alloc",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
 						Name:       "heap in-use",
 						Hover:      "heap in-use",
 						Unitfmt:    "%{y:.4s}B",
+						HoverOn:    "points+fills",
 						StackGroup: "one",
 					},
+					{
+						Name:       "heap free",
+						Hover:      "heap free",
+						Unitfmt:    "%{y:.4s}B",
+						HoverOn:    "points+fills",
+						StackGroup: "one",
+					},
+					{
+						Name:       "heap released",
+						Hover:      "heap released",
+						Unitfmt:    "%{y:.4s}B",
+						HoverOn:    "points+fills",
+						StackGroup: "one",
+					},
+				},
+			},
+
+			ScatterPlot{
+				Name:       "heap-details",
+				Title:      "Heap (details)",
+				Type:       "scatter",
+				HorzEvents: "lastgc",
+				Layout: ScatterPlotLayout{
+					Yaxis: ScatterPlotLayoutYAxis{
+						Title:      "bytes",
+						TickSuffix: "B",
+					},
+				},
+				Subplots: []ScatterPlotSubplot{
 					{
 						Name:    "heap sys",
 						Hover:   "heap sys",
 						Unitfmt: "%{y:.4s}B",
 					},
 					{
-						Name:       "heap idle",
-						Hover:      "heap idle",
-						Unitfmt:    "%{y:.4s}B",
-						StackGroup: "one",
-					},
-					{
-						Name:    "stack space",
-						Hover:   "stack space",
+						Name:    "heap objects",
+						Hover:   "heap objects",
 						Unitfmt: "%{y:.4s}B",
 					},
 					{
-						Name:    "gc heap size target",
-						Hover:   "gc heap size target",
+						Name:    "heap stacks",
+						Hover:   "heap stacks",
+						Unitfmt: "%{y:.4s}B",
+					},
+					{
+						Name:    "heap goal",
+						Hover:   "heap goal",
 						Unitfmt: "%{y:.4s}B",
 					},
 				},
 			},
 
-			/*new plot*/
 			ScatterPlot{
-				Name:       "alloc",
-				Title:      "Allocated bytes",
+				Name:       "live bytes",
+				Title:      "Live Bytes in Heap",
 				Type:       "scatter",
 				HorzEvents: "lastgc",
 				Layout: ScatterPlotLayout{
 					Yaxis: ScatterPlotLayoutYAxis{
-						Title: "alloc",
+						Title: "bytes",
 					},
 				},
 				Subplots: []ScatterPlotSubplot{
 					{
-						Name:    "alloc bytes",
-						Hover:   "alloc bytes",
+						Name:    "live bytes",
+						Hover:   "live bytes",
 						Unitfmt: "%{y}",
 					},
 				},
 			},
 
 			ScatterPlot{
-				Name:       "objects",
-				Title:      "Objects",
+				Name:       "live objects",
+				Title:      "Live Objects in Heap",
 				Type:       "scatter",
 				HorzEvents: "lastgc",
 				Layout: ScatterPlotLayout{
@@ -271,18 +292,8 @@ func plotsDef() PlotsDefinition {
 				},
 				Subplots: []ScatterPlotSubplot{
 					{
-						Name:    "live",
+						Name:    "live objects",
 						Hover:   "live objects",
-						Unitfmt: "%{y}",
-					},
-					{
-						Name:    "lookups",
-						Hover:   "pointer lookups",
-						Unitfmt: "%{y}",
-					},
-					{
-						Name:    "heap",
-						Hover:   "heap objects",
 						Unitfmt: "%{y}",
 					},
 				},
@@ -413,37 +424,39 @@ func plotsDef() PlotsDefinition {
 func plotsValues(samples []metrics.Sample) map[string]interface{} {
 	m := make(map[string]interface{})
 
-	heapAlloc := samples[metricsMemoryClassesHeapObjects].Value.Uint64()
-	heapInUse := heapAlloc + samples[metricsMemoryClassesHeapUnusedBytes].Value.Uint64()
-	heapReleased := samples[metricsMemoryClassesHeapReleasedBytes].Value.Uint64()
+	heapObjects := samples[metricsMemoryClassesHeapObjects].Value.Uint64()
+	heapUnused := samples[metricsMemoryClassesHeapUnusedBytes].Value.Uint64()
+	heapInUse := heapObjects + heapUnused
+
 	heapFree := samples[metricsMemoryClassesHeapFreeBytes].Value.Uint64()
+	heapReleased := samples[metricsMemoryClassesHeapReleasedBytes].Value.Uint64()
+
+	m["heap-global"] = []uint64{
+		heapInUse,
+		heapFree,
+		heapReleased,
+	}
+
 	heapIdle := heapReleased + heapFree
+	heapSys := heapInUse + heapIdle
 	heapStacks := samples[metricsMemoryClassesHeapStackBytes].Value.Uint64()
 	nextGC := samples[metricsGCHeapGoalBytes].Value.Uint64()
-	heapSys := heapInUse + heapIdle
 
-	m["heap"] = []uint64{
-		heapAlloc,
-		heapInUse,
+	m["heap-details"] = []uint64{
 		heapSys,
-		heapIdle,
+		heapObjects,
 		heapStacks,
 		nextGC,
 	}
 
-	tinyAllocs := samples[metricsGCTinyAllocsObjects].Value.Uint64()
-	mallocs := samples[metricGCHeapAllocsObjects].Value.Uint64() + tinyAllocs
-	frees := samples[metricGCHeapFreesObjects].Value.Uint64() + tinyAllocs
-	heapObjects := samples[metricsGCHeapObjects].Value.Uint64()
-	m["objects"] = []uint64{
-		mallocs - frees,
-		0, // always 0
-		heapObjects,
+	gcHeapObjects := samples[metricsGCHeapObjects].Value.Uint64()
+	m["live objects"] = []uint64{
+		gcHeapObjects,
 	}
 
 	allocBytes := samples[metricGCHeapAllocsBytes].Value.Uint64()
 	freedBytes := samples[metricGCHeapFreesBytes].Value.Uint64()
-	m["alloc"] = []uint64{
+	m["live bytes"] = []uint64{
 		allocBytes - freedBytes,
 	}
 
