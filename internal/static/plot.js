@@ -67,13 +67,13 @@ export default class Plot {
         this._updateCount = 0;
         this._dataTemplate = [];
 
-        if (this._cfg.type == 'scatter') {
+        if (['scatter', 'bar'].includes(this._cfg.type)) {
             this._cfg.subplots.forEach(subplot => {
                 const hover = subplot.hover || subplot.name;
                 const unitfmt = subplot.unitfmt;
 
                 this._dataTemplate.push({
-                    type: 'scatter',
+                    type: this._cfg.type,
                     x: null,
                     y: null,
                     name: subplot.name,
@@ -140,7 +140,7 @@ export default class Plot {
 
     _extractData(data) {
         const serie = data.series.get(this._cfg.name);
-        if (this._cfg.type == 'scatter') {
+        if (['scatter', 'bar'].includes(this._cfg.type)) {
             for (let i = 0; i < this._dataTemplate.length; i++) {
                 this._dataTemplate[i].x = data.times;
                 this._dataTemplate[i].y = serie[i];

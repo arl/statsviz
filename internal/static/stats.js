@@ -16,6 +16,7 @@ const init = (plotdefs, buflen) => {
     plotdefs.series.forEach(plotdef => {
         let ndim;
         switch (plotdef.type) {
+            case 'bar':
             case 'scatter':
                 ndim = plotdef.subplots.length;
                 break;
