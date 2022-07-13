@@ -261,10 +261,11 @@ func plotsDef() PlotsDefinition {
 				},
 			},
 
+			// TODO(arl): change bar colors
 			ScatterPlot{
 				Name:       "live bytes",
 				Title:      "Live Bytes in Heap",
-				Type:       "scatter",
+				Type:       "bar",
 				HorzEvents: "lastgc",
 				Layout: ScatterPlotLayout{
 					Yaxis: ScatterPlotLayoutYAxis{
@@ -275,15 +276,16 @@ func plotsDef() PlotsDefinition {
 					{
 						Name:    "live bytes",
 						Hover:   "live bytes",
-						Unitfmt: "%{y}",
+						Unitfmt: "%{y:.4s}B",
 					},
 				},
 			},
 
+			// TODO(arl): change bar colors
 			ScatterPlot{
 				Name:       "live objects",
 				Title:      "Live Objects in Heap",
-				Type:       "scatter",
+				Type:       "bar",
 				HorzEvents: "lastgc",
 				Layout: ScatterPlotLayout{
 					Yaxis: ScatterPlotLayoutYAxis{
@@ -294,7 +296,7 @@ func plotsDef() PlotsDefinition {
 					{
 						Name:    "live objects",
 						Hover:   "live objects",
-						Unitfmt: "%{y}",
+						Unitfmt: "%{y:.4s}",
 					},
 				},
 			},
