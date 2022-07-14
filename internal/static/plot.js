@@ -14,6 +14,7 @@ const plotlyConfigBase = {
 const plotlyLayoutBase = {
     width: plotWidth,
     height: plotHeight,
+    hovermode: 'x',
     xaxis: {
         title: 'time',
         tickformat: '%H:%M:%S',
