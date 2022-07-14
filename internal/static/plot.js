@@ -12,6 +12,14 @@ const plotlyConfigBase = {
 
 // https://plotly.com/javascript/reference/layout
 const plotlyLayoutBase = {
+    title: {
+        y: 0.85,
+        font: {
+            family: "Overpass",
+            family: "Gravitas One",
+            size: 21,
+        },
+    },
     width: plotWidth,
     height: plotHeight,
     hovermode: 'x',
@@ -93,10 +101,12 @@ export default class Plot {
             });
         }
 
-        this._plotlyLayout = {...plotlyLayoutBase, ...this._cfg.layout };
-        this._plotlyLayout.title = this._cfg.title;
+        var layoutBase = JSON.parse(JSON.stringify(plotlyLayoutBase))
+        this._plotlyLayout = {...layoutBase, ...this._cfg.layout };
+        this._plotlyLayout.title.text = this._cfg.title;
 
-        this._plotlyConfig = {...plotlyConfigBase }
+        var configBase = JSON.parse(JSON.stringify(plotlyConfigBase))
+        this._plotlyConfig = {...configBase }
         this._plotlyConfig.toImageButtonOptions.filename = this._cfg.name
     }
 
