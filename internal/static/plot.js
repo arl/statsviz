@@ -146,6 +146,9 @@ export default class Plot {
                 this._dataTemplate[i].y = serie[i];
                 this._dataTemplate[i].stackgroup = this._cfg.subplots[i].stackgroup;
                 this._dataTemplate[i].hoveron = this._cfg.subplots[i].hoveron;
+                this._dataTemplate[i].marker = {
+                    color: this._cfg.subplots[i].color,
+                };
             }
         } else if (this._cfg.type == 'heatmap') {
             this._dataTemplate[0].x = data.times;

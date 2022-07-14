@@ -261,7 +261,6 @@ func plotsDef() PlotsDefinition {
 				},
 			},
 
-			// TODO(arl): change bar colors
 			ScatterPlot{
 				Name:       "live bytes",
 				Title:      "Live Bytes in Heap",
@@ -277,11 +276,11 @@ func plotsDef() PlotsDefinition {
 						Name:    "live bytes",
 						Hover:   "live bytes",
 						Unitfmt: "%{y:.4s}B",
+						Color:   Color{ColorRGBA{135, 182, 218, 0}},
 					},
 				},
 			},
 
-			// TODO(arl): change bar colors
 			ScatterPlot{
 				Name:       "live objects",
 				Title:      "Live Objects in Heap",
@@ -297,6 +296,7 @@ func plotsDef() PlotsDefinition {
 						Name:    "live objects",
 						Hover:   "live objects",
 						Unitfmt: "%{y:.4s}",
+						Color:   Color{ColorRGBA{255, 195, 128, 0}},
 					},
 				},
 			},

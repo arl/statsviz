@@ -30,6 +30,7 @@ type (
 		Unitfmt    string `json:"unitfmt"`
 		StackGroup string `json:"stackgroup"`
 		HoverOn    string `json:"hoveron"`
+		Color      Color  `json:"color"`
 	}
 
 	ScatterPlot struct {
@@ -63,10 +64,10 @@ type (
 	}
 
 	Heatmap struct {
-		Colorscale []Color      `json:"colorscale"`
-		Buckets    []float64    `json:"buckets"`
-		CustomData []float64    `json:"custom_data"`
-		Hover      HeapmapHover `json:"hover"`
+		Colorscale []WeightedColor `json:"colorscale"`
+		Buckets    []float64       `json:"buckets"`
+		CustomData []float64       `json:"custom_data"`
+		Hover      HeapmapHover    `json:"hover"`
 	}
 
 	HeapmapHover struct {
@@ -75,7 +76,7 @@ type (
 		ZName string `json:"zname"`
 	}
 
-	Color struct {
+	WeightedColor struct {
 		Value float64
 		Color color.RGBA
 	}
@@ -91,7 +92,31 @@ type (
 	}
 )
 
+type Color struct {
+	fmt.Stringer
+}
+
 func (c Color) MarshalJSON() ([]byte, error) {
+	if c.Stringer == nil {
+		return []byte("null"), nil
+	}
+	return []byte(c.String()), nil
+}
+
+type ColorString string
+
+func (c ColorString) String() string {
+	return fmt.Sprintf("%q", string(c))
+}
+
+type ColorRGBA color.RGBA
+
+func (c ColorRGBA) String() string {
+	return fmt.Sprintf(`"rgb(%d,%d,%d,%f)"`,
+		c.R, c.G, c.B, float64(c.A)/255)
+}
+
+func (c WeightedColor) MarshalJSON() ([]byte, error) {
 	str := fmt.Sprintf(`[%f,"rgb(%d,%d,%d,%f)"]`,
 		c.Value, c.Color.R, c.Color.G, c.Color.B, float64(c.Color.A)/255)
 	return []byte(str), nil
@@ -100,7 +125,7 @@ func (c Color) MarshalJSON() ([]byte, error) {
 var Bytes = Unit{TickSuffix: "B", UnitFmt: "%{y:.4s}B"}
 
 // https://mdigi.tools/color-shades/
-var blueShades = []Color{
+var blueShades = []WeightedColor{
 	{Value: 0.0, Color: color.RGBA{0xea, 0xf8, 0xfd, 1}},
 	{Value: 0.1, Color: color.RGBA{0xbf, 0xeb, 0xfa, 1}},
 	{Value: 0.2, Color: color.RGBA{0x94, 0xdd, 0xf6, 1}},
@@ -114,7 +139,7 @@ var blueShades = []Color{
 	{Value: 1.0, Color: color.RGBA{0x02, 0x10, 0x15, 1}},
 }
 
-var pinkShades = []Color{
+var pinkShades = []WeightedColor{
 	{Value: 0.0, Color: color.RGBA{0xfe, 0xe7, 0xf3, 1}},
 	{Value: 0.1, Color: color.RGBA{0xfc, 0xb6, 0xdc, 1}},
 	{Value: 0.2, Color: color.RGBA{0xf9, 0x85, 0xc5, 1}},
@@ -128,7 +153,7 @@ var pinkShades = []Color{
 	{Value: 1.0, Color: color.RGBA{0x00, 0x00, 0x00, 1}},
 }
 
-var greenShades = []Color{
+var greenShades = []WeightedColor{
 	{Value: 0.0, Color: color.RGBA{0xed, 0xf7, 0xf2, 0}},
 	{Value: 0.1, Color: color.RGBA{0xc9, 0xe8, 0xd7, 0}},
 	{Value: 0.2, Color: color.RGBA{0xa5, 0xd9, 0xbc, 0}},
