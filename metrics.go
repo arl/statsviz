@@ -4,6 +4,7 @@ import (
 	"math"
 	"runtime/debug"
 	"runtime/metrics"
+	"sync"
 )
 
 var allDesc []metrics.Description
@@ -155,12 +156,19 @@ func downsampleCounts(h *metrics.Float64Histogram, factor int) []uint64 {
 }
 
 var (
+	once = sync.Once{}
+	pd   *PlotsDefinition
+
 	gcpausesFactor int
 	schedlatFactor int
 )
 
-func plotsDef() PlotsDefinition {
+func plotsdef() *PlotsDefinition {
+	once.Do(createPlotsDef)
+	return pd
+}
 
+func createPlotsDef() {
 	// Sample the metric once
 	metrics.Read(samples)
 
@@ -188,7 +196,7 @@ func plotsDef() PlotsDefinition {
 	schedlatFactor = downsampleFactor(len(schedlat.Buckets), maxBuckets)
 	schedlatBuckets := downsampleBuckets(schedlat, schedlatFactor)
 
-	pd := PlotsDefinition{
+	pd = &PlotsDefinition{
 		Events: []string{"lastgc"},
 		Series: []interface{}{
 			ScatterPlot{
@@ -420,8 +428,6 @@ func plotsDef() PlotsDefinition {
 			},
 		},
 	}
-
-	return pd
 }
 
 func plotsValues(samples []metrics.Sample) map[string]interface{} {
