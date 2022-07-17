@@ -117,7 +117,7 @@ export default class Plot {
     }
 
     // Install callbacks for showing info about the rectangle area under the cursor.
-    installHover(hoverinfo) {
+    installHover() {
         const options = {
             arrow: true,
             followCursor: true,

@@ -95,16 +95,11 @@ const attachPlots = () => {
 
         let col = $('<div>', { class: 'col' });
         let div = $('<div>');
-        let hoverinfo = $('<div>', {
-            id: `hoverinfo-${i}`,
-            style: "margin-left:80px;",
-        });
 
         plot.createElement(div[0], i)
         col.append(div);
-        col.append(hoverinfo);
         row.append(col);
-        plot.installHover(hoverinfo[0]);
+        plot.installHover();
     }
 }
 
