@@ -24,12 +24,15 @@ const plotlyLayoutBase = {
     height: plotHeight,
     hovermode: 'x',
     xaxis: {
-        title: 'time',
         tickformat: '%H:%M:%S',
     },
     yaxis: {
         exponentformat: 'SI',
-    }
+    },
+    showlegend: true,
+    legend: {
+        "orientation": "h"
+    },
 };
 
 export default class Plot {
@@ -114,39 +117,46 @@ export default class Plot {
         this._htmlElt = div;
         this._plotIdx = idx;
         Plotly.newPlot(this._htmlElt, null, this._plotlyLayout, this._plotlyConfig);
+        if (this._cfg.type == 'heatmap') {
+            this._installHeatmapTooltip();
+        }
     }
 
-    // Install callbacks for showing info about the rectangle area under the cursor.
-    installHover() {
+    _installHeatmapTooltip() {
         const options = {
-            arrow: true,
             followCursor: true,
-            popperOptions: {
-                placement: "auto"
-            },
-            interactive: true,
             trigger: "manual",
             allowHTML: true
         };
         const instance = tippy(document.body, options);
-        if (this._cfg.type == 'heatmap') {
-            const hover = this._cfg.heatmap.hover;
-            const formatYUnit = formatFunction(hover.yunit);
-            this._htmlElt.on('plotly_hover', function(data) {
-                    var infotext = data.points.map(function(d) {
-                        const yval = formatYUnit(d.data.custom_data[d.y]);
-                        return `${hover.yname}: <b>${yval}<b/><br/>${hover.zname}: <b>${d.z}</b>`;
-                    });
+        const hover = this._cfg.heatmap.hover;
+        const formatYUnit = formatFunction(hover.yunit);
 
-                    let info = document.createElement('div');
-                    info.innerHTML = infotext;
-                    instance.setContent(info);
-                    instance.show();
-                })
-                .on('plotly_unhover', function(data) {
-                    instance.hide();
-                });
-        }
+        const onHover = (data) => {
+            const pt2txt = (d) => {
+                const y = formatYUnit(d.data.custom_data[d.y]);
+                const z = d.z;
+                return `
+                    <div class="tooltip-table">
+                    <div class="tooltip-row">
+                    <div class="tooltip-label">${hover.yname}</div>
+                    <div class="tooltip-value">${y}</div>
+                    </div>
+                    <div class="tooltip-row">
+                    <div class="tooltip-label">${hover.zname}</div>
+                    <div class="tooltip-value">${z}</div>
+                    </div>
+                    </div> `;
+            }
+            instance.setContent(data.points.map(pt2txt)[0]);
+            instance.show();
+        };
+        const onUnhover = (data) => {
+            instance.hide();
+        };
+
+        this._htmlElt.on('plotly_hover', onHover)
+            .on('plotly_unhover', onUnhover);
     }
 
     _extractData(data) {

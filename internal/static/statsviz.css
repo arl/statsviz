@@ -1,3 +1,20 @@
-.container-fluid {
-    width: 2190px;
-}
+ 
+ .tooltip-table {
+     display: table;
+     width: 100px;
+     border-collapse: collapse;
+ }
+ 
+ .tooltip-row {
+     display: table-row;
+ }
+ 
+ .tooltip-value,
+ .tooltip-label {
+     display: table-cell;
+     padding: 0.3em;
+ }
+ 
+ .tooltip-label {
+     font-weight: bold;
+ }

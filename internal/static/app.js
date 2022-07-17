@@ -99,7 +99,6 @@ const attachPlots = () => {
         plot.createElement(div[0], i)
         col.append(div);
         row.append(col);
-        plot.installHover();
     }
 }
 
