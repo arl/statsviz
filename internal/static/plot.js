@@ -152,17 +152,28 @@ export default class Plot {
 
         const onHover = (data) => {
             const pt2txt = (d) => {
-                const y = formatYUnit(d.data.custom_data[d.y]);
-                const z = d.z;
+                let bucket;
+                if (d.y == 0) {
+                    const yhigh = formatYUnit(d.data.custom_data[d.y]);
+                    bucket = `(-Inf, ${yhigh})`;
+                } else if (d.y == d.data.custom_data.length - 1) {
+                    const ylow = formatYUnit(d.data.custom_data[d.y]);
+                    bucket = `[${ylow}, +Inf)`;
+                } else {
+                    const ylow = formatYUnit(d.data.custom_data[d.y - 1]);
+                    const yhigh = formatYUnit(d.data.custom_data[d.y]);
+                    bucket = `[${ylow}, ${yhigh})`;
+                }
+
                 return `
-                    <div class="tooltip-table">
+                    <div class="tooltip-table tooltip-style">
                     <div class="tooltip-row">
                     <div class="tooltip-label">${hover.yname}</div>
-                    <div class="tooltip-value">${y}</div>
+                    <div class="tooltip-value">${bucket}</div>
                     </div>
                     <div class="tooltip-row">
                     <div class="tooltip-label">${hover.zname}</div>
-                    <div class="tooltip-value">${z}</div>
+                    <div class="tooltip-value">${d.z}</div>
                     </div>
                     </div> `;
             }

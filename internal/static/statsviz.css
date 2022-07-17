@@ -14,8 +14,16 @@
  
  .tooltip-table {
      display: table;
-     width: 100px;
+     width: 160px;
      border-collapse: collapse;
+ }
+ 
+ .tooltip-style {
+     font-family: "Open Sans", verdana, arial, sans-serif;
+     font-size: 12px;
+     fill: rgb(68, 68, 68);
+     fill-opacity: 1;
+     white-space: pre;
  }
  
  .tooltip-row {
