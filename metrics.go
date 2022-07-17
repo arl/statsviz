@@ -121,9 +121,10 @@ func downsampleBuckets(h *metrics.Float64Histogram, factor int) []float64 {
 		ret = append(ret, vals[len(vals)-1])
 	}
 
-	if math.IsInf(ret[len(ret)-1], 1) {
+	if len(ret) > 2 && math.IsInf(ret[len(ret)-1], 1) {
+		// Plotly doesn't accept an Inf bucket bound, so in this case we set the
+		// last bound so that the 2 last buckets had the same size.
 		ret[len(ret)-1] = ret[len(ret)-2] - ret[len(ret)-3] + ret[len(ret)-2]
-		// TODO(arl): handle the case where the number of buckets is not enough?
 	}
 
 	return ret
