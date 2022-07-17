@@ -360,7 +360,7 @@ func plotsDef() PlotsDefinition {
 				HorzEvents: "",
 				Layout: HeatmapPlotLayout{
 					Yaxis: HeatmapPlotLayoutYAxis{
-						Title: "size classes",
+						Title: "size class",
 					},
 				},
 				Heatmap: Heatmap{
@@ -368,7 +368,7 @@ func plotsDef() PlotsDefinition {
 					Buckets:    floatseq(len(sizeClassesBuckets)),
 					CustomData: sizeClassesBuckets,
 					Hover: HeapmapHover{
-						YName: "size classes",
+						YName: "size class",
 						YUnit: "bytes",
 						ZName: "objects",
 					},
@@ -376,13 +376,13 @@ func plotsDef() PlotsDefinition {
 			},
 			HeatmapPlot{
 				Name:       "gcpauses",
-				Title:      "GC Pauses",
+				Title:      "Stop-the-world pause latencies",
 				Type:       "heatmap",
 				UpdateFreq: 5,
 				HorzEvents: "",
 				Layout: HeatmapPlotLayout{
 					Yaxis: HeatmapPlotLayoutYAxis{
-						Title: "pauses",
+						Title: "pause duration",
 					},
 				},
 				Heatmap: Heatmap{
@@ -398,13 +398,13 @@ func plotsDef() PlotsDefinition {
 			},
 			HeatmapPlot{
 				Name:       "sched-latencies",
-				Title:      "Scheduler Latencies",
+				Title:      "Time in scheduler before a goroutine runs",
 				Type:       "heatmap",
 				UpdateFreq: 5,
 				HorzEvents: "",
 				Layout: HeatmapPlotLayout{
 					Yaxis: HeatmapPlotLayoutYAxis{
-						Title: "sched-latencies",
+						Title: "duration",
 					},
 				},
 				Heatmap: Heatmap{
@@ -412,7 +412,7 @@ func plotsDef() PlotsDefinition {
 					Buckets:    floatseq(len(schedlatBuckets)),
 					CustomData: schedlatBuckets,
 					Hover: HeapmapHover{
-						YName: "'runnable' time",
+						YName: "duration",
 						YUnit: "duration",
 						ZName: "goroutines",
 					},
