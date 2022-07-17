@@ -1,5 +1,5 @@
-const plotWidth = 620;
-const plotHeight = 420;
+const plotWidth = 630;
+const plotHeight = 450;
 
 // https://plotly.com/javascript/configuration-options/
 const plotlyConfigBase = {

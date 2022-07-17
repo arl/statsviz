@@ -88,7 +88,7 @@ const attachPlots = () => {
 
     for (let i = 0; i < plots.length; i++) {
         const plot = plots[i];
-        if (i % 2 == 0) {
+        if (i % 3 == 0) {
             row = $('<div>', { class: 'row' });
             plotsDiv.append(row);
         }

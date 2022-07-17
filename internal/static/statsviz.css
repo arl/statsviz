@@ -1,14 +1,3 @@
-html,
-body {
-    height: 100%;
-    margin: 0;
-}
-
-#header {
-    text-align: center;
-}
-
-#container-lg {
-    width: 1220px;
-    margin: 20px auto;
+.container-fluid {
+    width: 2190px;
 }
