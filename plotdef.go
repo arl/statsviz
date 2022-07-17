@@ -21,7 +21,6 @@ type (
 	ScatterPlotLayoutYAxis struct {
 		Title      string `json:"title"`
 		TickSuffix string `json:"ticksuffix"`
-		TickFormat string `json:"tickformat"`
 	}
 
 	ScatterPlotSubplot struct {
@@ -58,9 +57,8 @@ type (
 	}
 
 	HeatmapPlotLayoutYAxis struct {
-		Title string  `json:"title"`
-		Type  string  `json:"type"`
-		DTick float64 `json:"dtick"`
+		Title string `json:"title"`
+		Type  string `json:"type"`
 	}
 
 	Heatmap struct {
