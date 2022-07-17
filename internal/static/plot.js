@@ -35,45 +35,67 @@ const plotlyLayoutBase = {
     },
 };
 
-export default class Plot {
+/*
+    Plot configuration object:
+    {
+      "name": string,                  // internal name
+      "title": string,                 // plot title 
+      "type": 'scatter'|'bar'|'heatmap' 
+      "updateFreq": int,               // datapoints to receive before redrawing the plot. (default: 1)
+      "horzEvents": "lastgc",          // source of horizontal lines (example: 'lastgc')
+      "layout": object,                // (depends on plot type)
+      "subplots": array,               // describe 'traces', only for 'scatter' or 'bar' plots
+      "heatmap": object,               // heatmap details
+     }
 
-    /* Constructs and configures a new Plot object, which wraps a Plotly chart
-        and becomes the only reference to plotly the external world will need.
-        - cfg is an object expecting the following fields to be present:
-        {
-            name: String            // plot 'internal' identifier
-                                    // TODO(arl): also temporarily used as key in data
-            title: String           // displayed plot title
-            type: String            // 'scatter' or 'heatmap'
-            updateFreq: Integer     // freq of update:
-                                    //  - 1: update each time we receive new metrics
-                                    //  - 2: update half the time, etc.
-            horzEvents: string|''   // show an 'event' serie as horizontal lines
-            layout: Object          // Plotly-specific: gets merged over 'plotlyLayoutBase'
-
-            // If type = 'scatter':
-            subplots: [
-                {
-                    name: String    // subplot name
-                    unitfmt: String // unit format string
-                    hover: String   // hover title (optional, defaults to name)
-                },
-            ]
-
-            // If type = 'heatmap':
-            heatmap:
-            {
-                hover: {
-                    yunit: String // Y unit
-                    yname: String // label for the y value in hover tooltip
-                    zname: String // label for the z value in hover tooltip
-                },
-                colorscale: [ [Number: 'color'] ] // heatmap colorscale palette, numbers go from 0 to 1
-                buckets: classSizes,              // heatmap list of buckets
+    Layout for 'scatter' and 'bar' plots:
+    {
+        "yaxis": {
+            "title": {
+                "text": "bytes"      // yaxis title
             },
-
+            "ticksuffix": "B",       // base unit for ticks
         }
-    */
+    },
+
+    Layout" for heatmaps: // TODO(arl) simplify?
+    {
+        "yaxis": {
+            "title": {
+                "text": "size class"
+            }
+    }
+
+    Subplots show the potentially multiple trace objects for 'scatter' and 'bar'
+    plots. Each trace is an object:
+    {
+        "name": string;          // internal name
+        "hover": string,         // plot name (TODO(arl) merge name+hover?)
+        "unitfmt": string,       // d3 format string for tooltip
+        "stackgroup": string,    // stackgroup (if stacked line any)
+        "hoveron": string        // useful for stacked only (TODO(arl): remove from go)
+        "color": colorstring     // plot/trace color
+    }
+
+    Heatmap details object
+    {
+         "colorscale": array      // array of weighted colors,
+         "buckets": array
+         "hover": {
+             "yname": string,     // y axis units
+             "yunit": "bytes",    // y axis name
+             "zname": "objects"   // z axis name 
+         }
+     }
+*/
+
+
+export default class Plot {
+    /**
+     * Construct a new Plot object, wrapping a Plotly chart. See above
+     * documentation for plot configuration.
+     *
+     */
     constructor(cfg) {
         this._cfg = cfg;
         this._updateCount = 0;

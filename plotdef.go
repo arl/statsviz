@@ -58,7 +58,6 @@ type (
 
 	HeatmapPlotLayoutYAxis struct {
 		Title string `json:"title"`
-		Type  string `json:"type"`
 	}
 
 	Heatmap struct {
