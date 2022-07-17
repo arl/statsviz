@@ -25,7 +25,6 @@ type (
 
 	ScatterPlotSubplot struct {
 		Name       string `json:"name"`
-		Hover      string `json:"hover"`
 		Unitfmt    string `json:"unitfmt"`
 		StackGroup string `json:"stackgroup"`
 		HoverOn    string `json:"hoveron"`

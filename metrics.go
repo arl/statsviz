@@ -213,21 +213,18 @@ func createPlotsDef() {
 				Subplots: []ScatterPlotSubplot{
 					{
 						Name:       "heap in-use",
-						Hover:      "heap in-use",
 						Unitfmt:    "%{y:.4s}B",
 						HoverOn:    "points+fills",
 						StackGroup: "one",
 					},
 					{
 						Name:       "heap free",
-						Hover:      "heap free",
 						Unitfmt:    "%{y:.4s}B",
 						HoverOn:    "points+fills",
 						StackGroup: "one",
 					},
 					{
 						Name:       "heap released",
-						Hover:      "heap released",
 						Unitfmt:    "%{y:.4s}B",
 						HoverOn:    "points+fills",
 						StackGroup: "one",
@@ -249,22 +246,18 @@ func createPlotsDef() {
 				Subplots: []ScatterPlotSubplot{
 					{
 						Name:    "heap sys",
-						Hover:   "heap sys",
 						Unitfmt: "%{y:.4s}B",
 					},
 					{
 						Name:    "heap objects",
-						Hover:   "heap objects",
 						Unitfmt: "%{y:.4s}B",
 					},
 					{
 						Name:    "heap stacks",
-						Hover:   "heap stacks",
 						Unitfmt: "%{y:.4s}B",
 					},
 					{
 						Name:    "heap goal",
-						Hover:   "heap goal",
 						Unitfmt: "%{y:.4s}B",
 					},
 				},
@@ -283,7 +276,6 @@ func createPlotsDef() {
 				Subplots: []ScatterPlotSubplot{
 					{
 						Name:    "live bytes",
-						Hover:   "live bytes",
 						Unitfmt: "%{y:.4s}B",
 						Color:   Color{ColorRGBA{135, 182, 218, 0}},
 					},
@@ -303,7 +295,6 @@ func createPlotsDef() {
 				Subplots: []ScatterPlotSubplot{
 					{
 						Name:    "live objects",
-						Hover:   "live objects",
 						Unitfmt: "%{y:.4s}",
 						Color:   Color{ColorRGBA{255, 195, 128, 0}},
 					},
@@ -323,22 +314,18 @@ func createPlotsDef() {
 				Subplots: []ScatterPlotSubplot{
 					{
 						Name:    "mspan in-use",
-						Hover:   "mspan in-use",
 						Unitfmt: "%{y:.4s}B",
 					},
 					{
 						Name:    "mspan sys",
-						Hover:   "mspan sys",
 						Unitfmt: "%{y:.4s}B",
 					},
 					{
 						Name:    "mcache in-use",
-						Hover:   "mcache in-use",
 						Unitfmt: "%{y:.4s}B",
 					},
 					{
 						Name:    "mcache sys",
-						Hover:   "mcache sys",
 						Unitfmt: "%{y:.4s}B",
 					},
 				},

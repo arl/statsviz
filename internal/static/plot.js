@@ -70,7 +70,6 @@ const plotlyLayoutBase = {
     plots. Each trace is an object:
     {
         "name": string;          // internal name
-        "hover": string,         // plot name (TODO(arl) merge name+hover?)
         "unitfmt": string,       // d3 format string for tooltip
         "stackgroup": string,    // stackgroup (if stacked line any)
         "hoveron": string        // useful for stacked only (TODO(arl): remove from go)
@@ -103,15 +102,12 @@ export default class Plot {
 
         if (['scatter', 'bar'].includes(this._cfg.type)) {
             this._cfg.subplots.forEach(subplot => {
-                const hover = subplot.hover || subplot.name;
-                const unitfmt = subplot.unitfmt;
-
                 this._dataTemplate.push({
                     type: this._cfg.type,
                     x: null,
                     y: null,
                     name: subplot.name,
-                    hovertemplate: `<b>${unitfmt}</b>`,
+                    hovertemplate: `<b>${subplot.unitfmt}</b>`,
                 })
             });
         } else if (this._cfg.type == 'heatmap') {
