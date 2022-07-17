@@ -1,3 +1,16 @@
+ html,
+ body {
+     height: 100%;
+     margin: 0;
+ }
+ 
+ #header {
+     text-align: center;
+ }
+ 
+ .container-xxl {
+     width: 2190px;
+ }
  
  .tooltip-table {
      display: table;
