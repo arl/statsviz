@@ -89,7 +89,7 @@ const plotlyLayoutBase = {
 */
 
 
-export default class Plot {
+class Plot {
     /**
      * Construct a new Plot object, wrapping a Plotly chart. See above
      * documentation for plot configuration.
@@ -218,6 +218,30 @@ export default class Plot {
         }
     }
 };
+
+// create horizontal lines shapes for each of the given timestamps.
+const createHorizontalLines = (tss) => {
+    const shapes = [];
+    for (let i = 0, n = tss.length; i < n; i++) {
+        const d = tss[i];
+        shapes.push({
+            type: 'line',
+            x0: d,
+            x1: d,
+            yref: 'paper',
+            y0: 0,
+            y1: 1,
+            line: {
+                color: 'rgb(55, 128, 191)',
+                width: 1,
+                dash: 'longdashdot',
+            }
+        })
+    }
+    return shapes;
+}
+
+export { createHorizontalLines, Plot };
 
 const durUnits = ['w', 'd', 'h', 'm', 's', 'ms', 'µs', 'ns'];
 const durVals = [6048e11, 864e11, 36e11, 6e10, 1e9, 1e6, 1e3, 1];

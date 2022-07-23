@@ -1,5 +1,5 @@
 import * as stats from './stats.js';
-import Plot from "./plot.js";
+import * as plot from "./plot.js";
 import PlotsDef from './plotsdef.js';
 
 const buildWebsocketURI = () => {
@@ -77,7 +77,7 @@ let plots = [];
 const configurePlots = (plotdefs) => {
     plots = [];
     plotdefs.series.forEach(plotdef => {
-        plots.push(new Plot(plotdef));
+        plots.push(new plot.Plot(plotdef));
     });
 }
 
@@ -107,7 +107,7 @@ const updatePlots = (data) => {
     let shapes = new Map();
 
     for (const [eventName, eventSerie] of data.events) {
-        shapes.set(eventName, createEventShape(eventSerie));
+        shapes.set(eventName, plot.createHorizontalLines(eventSerie));
     }
 
     plots.forEach(plot => {
@@ -115,25 +115,4 @@ const updatePlots = (data) => {
             plot.update(data, shapes);
         }
     });
-}
-
-const createEventShape = (eventSerie) => {
-    const shapes = [];
-    for (let i = 0, n = eventSerie.length; i < n; i++) {
-        const d = eventSerie[i];
-        shapes.push({
-            type: 'line',
-            x0: d,
-            x1: d,
-            yref: 'paper',
-            y0: 0,
-            y1: 1,
-            line: {
-                color: 'rgb(55, 128, 191)',
-                width: 1,
-                dash: 'longdashdot',
-            }
-        })
-    }
-    return shapes;
 }
