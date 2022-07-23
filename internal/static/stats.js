@@ -7,6 +7,7 @@ var series = {
     plotData: new Map(),
 };
 
+// initialize time series storage.
 const init = (plotdefs, buflen) => {
     const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
     const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
@@ -40,8 +41,9 @@ const init = (plotdefs, buflen) => {
     });
 }
 
+// push a new datapoint to all time series.
 const pushData = (ts, data) => {
-    series.times.push(ts); // timestamp
+    series.times.push(ts);
 
     // Update time series.
     for (const [name, plotData] of series.plotData) {
@@ -51,6 +53,8 @@ const pushData = (ts, data) => {
         }
     }
 
+    // Update events series, deduplicating event timestamps and trimming the ones
+    // that are oldest with respect to the oldest timestamp we're keeping track of.
     for (const [name, event] of series.eventsData) {
         if (event.length == 0) {
             if (data[name].length != 0) {
@@ -62,9 +66,6 @@ const pushData = (ts, data) => {
         const eventTs = new Date(Math.floor(data[name][0]));
         if (eventTs.getTime() != event[event.length - 1].getTime()) {
             event.push(eventTs);
-            // We've added a new timestamp, check if we can cut the front. We
-            // don't need to keep track of event[0] if it happened before
-            // the oldest timestamp we're showing. 
             let mints = series.times._buf[0];
             if (event[0] < mints) {
                 event.splice(0, 1);
@@ -73,9 +74,10 @@ const pushData = (ts, data) => {
     }
 }
 
-const slice = (nitems) => {
+// slice returns the last n items from all time series.
+const slice = (n) => {
     let sliced = {
-        times: series.times.slice(nitems),
+        times: series.times.slice(n),
         series: new Map(),
         events: series.eventsData,
     };
@@ -83,7 +85,7 @@ const slice = (nitems) => {
     for (const [name, plotData] of series.plotData) {
         const arr = new Array(plotData.length);
         for (let i = 0; i < plotData.length; i++) {
-            arr[i] = plotData[i].slice(nitems);
+            arr[i] = plotData[i].slice(n);
         }
         sliced.series.set(name, arr);
     }

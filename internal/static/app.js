@@ -107,7 +107,7 @@ const updatePlots = (data) => {
     let shapes = new Map();
 
     for (const [eventName, eventSerie] of data.events) {
-        shapes.set(eventName, createEventShape(data, eventSerie));
+        shapes.set(eventName, createEventShape(eventSerie));
     }
 
     plots.forEach(plot => {
@@ -117,20 +117,10 @@ const updatePlots = (data) => {
     });
 }
 
-const createEventShape = (data, eventSerie) => {
-    // TODO(arl): do we really need to pass 'data' to extract mints and maxtx?
-    // aren't event serie already clamped to the visible time range?
-    const mints = data.times[0];
-    const maxts = data.times[data.times.length - 1];
-
+const createEventShape = (eventSerie) => {
     const shapes = [];
     for (let i = 0, n = eventSerie.length; i < n; i++) {
-        let d = eventSerie[i];
-        // Clamp GC times which are out of bounds
-        if (d < mints || d > maxts) {
-            continue;
-        }
-
+        const d = eventSerie[i];
         shapes.push({
             type: 'line',
             x0: d,
