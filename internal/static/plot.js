@@ -25,6 +25,7 @@ const plotlyLayoutBase = {
     hovermode: 'x',
     xaxis: {
         tickformat: '%H:%M:%S',
+        type: "date",
     },
     yaxis: {
         exponentformat: 'SI',
@@ -134,7 +135,8 @@ class Plot {
     createElement(div, idx) {
         this._htmlElt = div;
         this._plotIdx = idx;
-        Plotly.newPlot(this._htmlElt, null, this._plotlyLayout, this._plotlyConfig);
+        // Create plot with dummy data, removing the 'bad time formatting' warning at startup.
+        Plotly.newPlot(this._htmlElt, [{ x: new Date() }], this._plotlyLayout, this._plotlyConfig);
         if (this._cfg.type == 'heatmap') {
             this._installHeatmapTooltip();
         }
