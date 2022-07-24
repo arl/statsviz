@@ -221,7 +221,7 @@ class Plot {
     }
 };
 
-// create horizontal lines shapes for each of the given timestamps.
+// Create horizontal lines shapes for each of the given timestamps.
 const createHorizontalLines = (tss) => {
     const shapes = [];
     for (let i = 0, n = tss.length; i < n; i++) {
