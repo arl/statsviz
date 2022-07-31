@@ -349,14 +349,14 @@ func createPlotsDef() {
 					},
 				},
 			},
-			plot.HeatmapPlot{
+			plot.Heatmap{
 				Name:       "sizeclasses",
 				Title:      "Size Classes",
 				Type:       "heatmap",
 				UpdateFreq: 5,
 				HorzEvents: "",
-				Layout: plot.HeatmapPlotLayout{
-					Yaxis: plot.HeatmapPlotLayoutYAxis{
+				Layout: plot.HeatmapLayout{
+					Yaxis: plot.HeatmapLayoutYAxis{
 						Title: "size class",
 					},
 				},
@@ -369,14 +369,14 @@ func createPlotsDef() {
 					ZName: "objects",
 				},
 			},
-			plot.HeatmapPlot{
+			plot.Heatmap{
 				Name:       "gcpauses",
 				Title:      "Stop-the-world pause latencies",
 				Type:       "heatmap",
 				UpdateFreq: 5,
 				HorzEvents: "",
-				Layout: plot.HeatmapPlotLayout{
-					Yaxis: plot.HeatmapPlotLayoutYAxis{
+				Layout: plot.HeatmapLayout{
+					Yaxis: plot.HeatmapLayoutYAxis{
 						Title: "pause duration",
 					},
 				},
@@ -389,14 +389,14 @@ func createPlotsDef() {
 					ZName: "pauses",
 				},
 			},
-			plot.HeatmapPlot{
+			plot.Heatmap{
 				Name:       "sched-latencies",
 				Title:      "Time in scheduler before a goroutine runs",
 				Type:       "heatmap",
 				UpdateFreq: 5,
 				HorzEvents: "",
-				Layout: plot.HeatmapPlotLayout{
-					Yaxis: plot.HeatmapPlotLayoutYAxis{
+				Layout: plot.HeatmapLayout{
+					Yaxis: plot.HeatmapLayoutYAxis{
 						Title: "duration",
 					},
 				},

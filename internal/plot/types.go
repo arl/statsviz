@@ -2,8 +2,21 @@ package plot
 
 type (
 	Definition struct {
-		Events []string      `json:"events"`
+		// Events are transversal time series, which can be plotted as
+		// horizontal lines on any plots.
+		Events []string `json:"events"`
+		// Series contains the plots we want to show and how we want to show them.
 		Series []interface{} `json:"series"`
+	}
+
+	Scatter struct {
+		Name       string        `json:"name"`
+		Title      string        `json:"title"`
+		Type       string        `json:"type"`
+		UpdateFreq int           `json:"updateFreq"`
+		HorzEvents string        `json:"horzEvents"`
+		Layout     ScatterLayout `json:"layout"`
+		Subplots   []Subplot     `json:"subplots"`
 	}
 
 	ScatterLayout struct {
@@ -23,34 +36,24 @@ type (
 		Color      string `json:"color"`
 	}
 
-	Scatter struct {
-		Name       string        `json:"name"`
-		Title      string        `json:"title"`
-		Type       string        `json:"type"`
-		UpdateFreq int           `json:"updateFreq"`
-		HorzEvents string        `json:"horzEvents"`
-		Layout     ScatterLayout `json:"layout"`
-		Subplots   []Subplot     `json:"subplots"`
+	Heatmap struct {
+		Name       string          `json:"name"`
+		Title      string          `json:"title"`
+		Type       string          `json:"type"`
+		UpdateFreq int             `json:"updateFreq"`
+		HorzEvents string          `json:"horzEvents"`
+		Layout     HeatmapLayout   `json:"layout"`
+		Colorscale []WeightedColor `json:"colorscale"`
+		Buckets    []float64       `json:"buckets"`
+		CustomData []float64       `json:"custom_data"`
+		Hover      HeapmapHover    `json:"hover"`
 	}
 
-	HeatmapPlot struct {
-		Name       string            `json:"name"`
-		Title      string            `json:"title"`
-		Type       string            `json:"type"`
-		UpdateFreq int               `json:"updateFreq"`
-		HorzEvents string            `json:"horzEvents"`
-		Layout     HeatmapPlotLayout `json:"layout"`
-		Colorscale []WeightedColor   `json:"colorscale"`
-		Buckets    []float64         `json:"buckets"`
-		CustomData []float64         `json:"custom_data"`
-		Hover      HeapmapHover      `json:"hover"`
+	HeatmapLayout struct {
+		Yaxis HeatmapLayoutYAxis `json:"yaxis"`
 	}
 
-	HeatmapPlotLayout struct {
-		Yaxis HeatmapPlotLayoutYAxis `json:"yaxis"`
-	}
-
-	HeatmapPlotLayoutYAxis struct {
+	HeatmapLayoutYAxis struct {
 		Title string `json:"title"`
 	}
 
