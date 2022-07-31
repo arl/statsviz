@@ -5,33 +5,13 @@ import (
 	"image/color"
 )
 
+func RGBString(r, g, b uint8) string {
+	return fmt.Sprintf(`"rgb(%d,%d,%d,0)"`, r, g, b)
+}
+
 type WeightedColor struct {
 	Value float64
 	Color color.RGBA
-}
-
-type Color struct {
-	fmt.Stringer
-}
-
-func (c Color) MarshalJSON() ([]byte, error) {
-	if c.Stringer == nil {
-		return []byte("null"), nil
-	}
-	return []byte(c.String()), nil
-}
-
-type ColorString string
-
-func (c ColorString) String() string {
-	return fmt.Sprintf("%q", string(c))
-}
-
-type ColorRGBA color.RGBA
-
-func (c ColorRGBA) String() string {
-	return fmt.Sprintf(`"rgb(%d,%d,%d,%f)"`,
-		c.R, c.G, c.B, float64(c.A)/255)
 }
 
 func (c WeightedColor) MarshalJSON() ([]byte, error) {

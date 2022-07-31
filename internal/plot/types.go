@@ -20,7 +20,7 @@ type (
 		Unitfmt    string `json:"unitfmt"`
 		StackGroup string `json:"stackgroup"`
 		HoverOn    string `json:"hoveron"`
-		Color      Color  `json:"color"`
+		Color      string `json:"color"`
 	}
 
 	Scatter struct {

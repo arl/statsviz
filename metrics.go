@@ -279,7 +279,7 @@ func createPlotsDef() {
 					{
 						Name:    "live bytes",
 						Unitfmt: "%{y:.4s}B",
-						Color:   plot.Color{plot.ColorRGBA{135, 182, 218, 0}},
+						Color:   plot.RGBString(135, 182, 218),
 					},
 				},
 			},
@@ -298,7 +298,7 @@ func createPlotsDef() {
 					{
 						Name:    "live objects",
 						Unitfmt: "%{y:.4s}",
-						Color:   plot.Color{plot.ColorRGBA{255, 195, 128, 0}},
+						Color:   plot.RGBString(255, 195, 128),
 					},
 				},
 			},
