@@ -159,13 +159,13 @@ func downsampleCounts(h *metrics.Float64Histogram, factor int) []uint64 {
 
 var (
 	once = sync.Once{}
-	pd   *plot.PlotsDefinition
+	pd   *plot.Definition
 
 	gcpausesFactor int
 	schedlatFactor int
 )
 
-func plotsdef() *plot.PlotsDefinition {
+func plotsdef() *plot.Definition {
 	once.Do(createPlotsDef)
 	return pd
 }
@@ -198,21 +198,21 @@ func createPlotsDef() {
 	schedlatFactor = downsampleFactor(len(schedlat.Buckets), maxBuckets)
 	schedlatBuckets := downsampleBuckets(schedlat, schedlatFactor)
 
-	pd = &plot.PlotsDefinition{
+	pd = &plot.Definition{
 		Events: []string{"lastgc"},
 		Series: []interface{}{
-			plot.ScatterPlot{
+			plot.Scatter{
 				Name:       "heap-global",
 				Title:      "Heap (global)",
 				Type:       "scatter",
 				HorzEvents: "lastgc",
-				Layout: plot.ScatterPlotLayout{
-					Yaxis: plot.ScatterPlotLayoutYAxis{
+				Layout: plot.ScatterLayout{
+					Yaxis: plot.ScatterLayoutYAxis{
 						Title:      "bytes",
 						TickSuffix: "B",
 					},
 				},
-				Subplots: []plot.ScatterPlotSubplot{
+				Subplots: []plot.Subplot{
 					{
 						Name:       "heap in-use",
 						Unitfmt:    "%{y:.4s}B",
@@ -234,18 +234,18 @@ func createPlotsDef() {
 				},
 			},
 
-			plot.ScatterPlot{
+			plot.Scatter{
 				Name:       "heap-details",
 				Title:      "Heap (details)",
 				Type:       "scatter",
 				HorzEvents: "lastgc",
-				Layout: plot.ScatterPlotLayout{
-					Yaxis: plot.ScatterPlotLayoutYAxis{
+				Layout: plot.ScatterLayout{
+					Yaxis: plot.ScatterLayoutYAxis{
 						Title:      "bytes",
 						TickSuffix: "B",
 					},
 				},
-				Subplots: []plot.ScatterPlotSubplot{
+				Subplots: []plot.Subplot{
 					{
 						Name:    "heap sys",
 						Unitfmt: "%{y:.4s}B",
@@ -265,17 +265,17 @@ func createPlotsDef() {
 				},
 			},
 
-			plot.ScatterPlot{
+			plot.Scatter{
 				Name:       "live bytes",
 				Title:      "Live Bytes in Heap",
 				Type:       "bar",
 				HorzEvents: "lastgc",
-				Layout: plot.ScatterPlotLayout{
-					Yaxis: plot.ScatterPlotLayoutYAxis{
+				Layout: plot.ScatterLayout{
+					Yaxis: plot.ScatterLayoutYAxis{
 						Title: "bytes",
 					},
 				},
-				Subplots: []plot.ScatterPlotSubplot{
+				Subplots: []plot.Subplot{
 					{
 						Name:    "live bytes",
 						Unitfmt: "%{y:.4s}B",
@@ -284,17 +284,17 @@ func createPlotsDef() {
 				},
 			},
 
-			plot.ScatterPlot{
+			plot.Scatter{
 				Name:       "live objects",
 				Title:      "Live Objects in Heap",
 				Type:       "bar",
 				HorzEvents: "lastgc",
-				Layout: plot.ScatterPlotLayout{
-					Yaxis: plot.ScatterPlotLayoutYAxis{
+				Layout: plot.ScatterLayout{
+					Yaxis: plot.ScatterLayoutYAxis{
 						Title: "objects",
 					},
 				},
-				Subplots: []plot.ScatterPlotSubplot{
+				Subplots: []plot.Subplot{
 					{
 						Name:    "live objects",
 						Unitfmt: "%{y:.4s}",
@@ -302,18 +302,18 @@ func createPlotsDef() {
 					},
 				},
 			},
-			plot.ScatterPlot{
+			plot.Scatter{
 				Name:       "mspan-mcache",
 				Title:      "MSpan/MCache",
 				Type:       "scatter",
 				HorzEvents: "lastgc",
-				Layout: plot.ScatterPlotLayout{
-					Yaxis: plot.ScatterPlotLayoutYAxis{
+				Layout: plot.ScatterLayout{
+					Yaxis: plot.ScatterLayoutYAxis{
 						Title:      "bytes",
 						TickSuffix: "B",
 					},
 				},
-				Subplots: []plot.ScatterPlotSubplot{
+				Subplots: []plot.Subplot{
 					{
 						Name:    "mspan in-use",
 						Unitfmt: "%{y:.4s}B",
@@ -332,17 +332,17 @@ func createPlotsDef() {
 					},
 				},
 			},
-			plot.ScatterPlot{
+			plot.Scatter{
 				Name:       "goroutines",
 				Title:      "Goroutines",
 				Type:       "scatter",
 				HorzEvents: "lastgc",
-				Layout: plot.ScatterPlotLayout{
-					Yaxis: plot.ScatterPlotLayoutYAxis{
+				Layout: plot.ScatterLayout{
+					Yaxis: plot.ScatterLayoutYAxis{
 						Title: "goroutines",
 					},
 				},
-				Subplots: []plot.ScatterPlotSubplot{
+				Subplots: []plot.Subplot{
 					{
 						Name:    "goroutines",
 						Unitfmt: "%{y}",
@@ -360,15 +360,13 @@ func createPlotsDef() {
 						Title: "size class",
 					},
 				},
-				Heatmap: plot.Heatmap{
-					Colorscale: plot.BlueShades,
-					Buckets:    floatseq(len(sizeClassesBuckets)),
-					CustomData: sizeClassesBuckets,
-					Hover: plot.HeapmapHover{
-						YName: "size class",
-						YUnit: "bytes",
-						ZName: "objects",
-					},
+				Colorscale: plot.BlueShades,
+				Buckets:    floatseq(len(sizeClassesBuckets)),
+				CustomData: sizeClassesBuckets,
+				Hover: plot.HeapmapHover{
+					YName: "size class",
+					YUnit: "bytes",
+					ZName: "objects",
 				},
 			},
 			plot.HeatmapPlot{
@@ -382,15 +380,13 @@ func createPlotsDef() {
 						Title: "pause duration",
 					},
 				},
-				Heatmap: plot.Heatmap{
-					Colorscale: plot.PinkShades,
-					Buckets:    floatseq(len(gcpausesBuckets)),
-					CustomData: gcpausesBuckets,
-					Hover: plot.HeapmapHover{
-						YName: "pause duration",
-						YUnit: "duration",
-						ZName: "pauses",
-					},
+				Colorscale: plot.PinkShades,
+				Buckets:    floatseq(len(gcpausesBuckets)),
+				CustomData: gcpausesBuckets,
+				Hover: plot.HeapmapHover{
+					YName: "pause duration",
+					YUnit: "duration",
+					ZName: "pauses",
 				},
 			},
 			plot.HeatmapPlot{
@@ -404,15 +400,13 @@ func createPlotsDef() {
 						Title: "duration",
 					},
 				},
-				Heatmap: plot.Heatmap{
-					Colorscale: plot.GreenShades,
-					Buckets:    floatseq(len(schedlatBuckets)),
-					CustomData: schedlatBuckets,
-					Hover: plot.HeapmapHover{
-						YName: "duration",
-						YUnit: "duration",
-						ZName: "goroutines",
-					},
+				Colorscale: plot.GreenShades,
+				Buckets:    floatseq(len(schedlatBuckets)),
+				CustomData: schedlatBuckets,
+				Hover: plot.HeapmapHover{
+					YName: "duration",
+					YUnit: "duration",
+					ZName: "goroutines",
 				},
 			},
 		},

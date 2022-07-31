@@ -115,11 +115,11 @@ class Plot {
             this._dataTemplate.push({
                 type: 'heatmap',
                 x: null,
-                y: this._cfg.heatmap.buckets,
+                y: this._cfg.buckets,
                 z: null,
                 showlegend: false,
-                colorscale: this._cfg.heatmap.colorscale,
-                custom_data: this._cfg.heatmap.custom_data,
+                colorscale: this._cfg.colorscale,
+                custom_data: this._cfg.custom_data,
             });
         }
 
@@ -149,7 +149,7 @@ class Plot {
             allowHTML: true
         };
         const instance = tippy(document.body, options);
-        const hover = this._cfg.heatmap.hover;
+        const hover = this._cfg.hover;
         const formatYUnit = formatFunction(hover.yunit);
 
         const onHover = (data) => {

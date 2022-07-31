@@ -22,7 +22,7 @@ const init = (plotdefs, buflen) => {
                 ndim = plotdef.subplots.length;
                 break;
             case 'heatmap':
-                ndim = plotdef.heatmap.buckets.length;
+                ndim = plotdef.buckets.length;
                 break;
             default:
                 console.error(`[statsviz]: unknown plot type "${plotdef.type}"`);

@@ -1,21 +1,21 @@
 package plot
 
 type (
-	PlotsDefinition struct {
+	Definition struct {
 		Events []string      `json:"events"`
 		Series []interface{} `json:"series"`
 	}
 
-	ScatterPlotLayout struct {
-		Yaxis ScatterPlotLayoutYAxis `json:"yaxis"`
+	ScatterLayout struct {
+		Yaxis ScatterLayoutYAxis `json:"yaxis"`
 	}
 
-	ScatterPlotLayoutYAxis struct {
+	ScatterLayoutYAxis struct {
 		Title      string `json:"title"`
 		TickSuffix string `json:"ticksuffix"`
 	}
 
-	ScatterPlotSubplot struct {
+	Subplot struct {
 		Name       string `json:"name"`
 		Unitfmt    string `json:"unitfmt"`
 		StackGroup string `json:"stackgroup"`
@@ -23,14 +23,14 @@ type (
 		Color      Color  `json:"color"`
 	}
 
-	ScatterPlot struct {
-		Name       string               `json:"name"`
-		Title      string               `json:"title"`
-		Type       string               `json:"type"`
-		UpdateFreq int                  `json:"updateFreq"`
-		HorzEvents string               `json:"horzEvents"`
-		Layout     ScatterPlotLayout    `json:"layout"`
-		Subplots   []ScatterPlotSubplot `json:"subplots"`
+	Scatter struct {
+		Name       string        `json:"name"`
+		Title      string        `json:"title"`
+		Type       string        `json:"type"`
+		UpdateFreq int           `json:"updateFreq"`
+		HorzEvents string        `json:"horzEvents"`
+		Layout     ScatterLayout `json:"layout"`
+		Subplots   []Subplot     `json:"subplots"`
 	}
 
 	HeatmapPlot struct {
@@ -40,7 +40,10 @@ type (
 		UpdateFreq int               `json:"updateFreq"`
 		HorzEvents string            `json:"horzEvents"`
 		Layout     HeatmapPlotLayout `json:"layout"`
-		Heatmap    Heatmap           `json:"heatmap"`
+		Colorscale []WeightedColor   `json:"colorscale"`
+		Buckets    []float64         `json:"buckets"`
+		CustomData []float64         `json:"custom_data"`
+		Hover      HeapmapHover      `json:"hover"`
 	}
 
 	HeatmapPlotLayout struct {
@@ -49,13 +52,6 @@ type (
 
 	HeatmapPlotLayoutYAxis struct {
 		Title string `json:"title"`
-	}
-
-	Heatmap struct {
-		Colorscale []WeightedColor `json:"colorscale"`
-		Buckets    []float64       `json:"buckets"`
-		CustomData []float64       `json:"custom_data"`
-		Hover      HeapmapHover    `json:"hover"`
 	}
 
 	HeapmapHover struct {
