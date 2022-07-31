@@ -170,12 +170,154 @@ func plotsdef() *plot.Definition {
 	return pd
 }
 
-func createPlotsDef() {
-	// Sample the metric once
-	metrics.Read(samples)
+func heapGlobal() plot.Scatter {
+	p := plot.Scatter{
+		Name:       "heap-global",
+		Title:      "Heap (global)",
+		Type:       "scatter",
+		HorzEvents: "lastgc",
+		Subplots: []plot.Subplot{
+			{
+				Name:       "heap in-use",
+				Unitfmt:    "%{y:.4s}B",
+				HoverOn:    "points+fills",
+				StackGroup: "one",
+			},
+			{
+				Name:       "heap free",
+				Unitfmt:    "%{y:.4s}B",
+				HoverOn:    "points+fills",
+				StackGroup: "one",
+			},
+			{
+				Name:       "heap released",
+				Unitfmt:    "%{y:.4s}B",
+				HoverOn:    "points+fills",
+				StackGroup: "one",
+			},
+		},
+	}
+	p.Layout.Yaxis.TickSuffix = "B"
+	p.Layout.Yaxis.Title = "bytes"
+	return p
+}
 
 	// TODO(arl) rename metrics so that they match that of the new package (example: nextGC -> Gc heap goal)
+func heapDetails() plot.Scatter {
+	p := plot.Scatter{
+		Name:       "heap-details",
+		Title:      "Heap (details)",
+		Type:       "scatter",
+		HorzEvents: "lastgc",
+		Subplots: []plot.Subplot{
+			{
+				Name:    "heap sys",
+				Unitfmt: "%{y:.4s}B",
+			},
+			{
+				Name:    "heap objects",
+				Unitfmt: "%{y:.4s}B",
+			},
+			{
+				Name:    "heap stacks",
+				Unitfmt: "%{y:.4s}B",
+			},
+			{
+				Name:    "heap goal",
+				Unitfmt: "%{y:.4s}B",
+			},
+		},
+	}
+	p.Layout.Yaxis.TickSuffix = "B"
+	p.Layout.Yaxis.Title = "bytes"
+	return p
+}
 
+func liveBytes() plot.Scatter {
+	p := plot.Scatter{
+		Name:       "live bytes",
+		Title:      "Live Bytes in Heap",
+		Type:       "bar",
+		HorzEvents: "lastgc",
+		Subplots: []plot.Subplot{
+			{
+				Name:    "live bytes",
+				Unitfmt: "%{y:.4s}B",
+				Color:   plot.RGBString(135, 182, 218),
+			},
+		},
+	}
+	p.Layout.Yaxis.Title = "bytes"
+	return p
+}
+
+func liveObjects() plot.Scatter {
+	p := plot.Scatter{
+		Name:       "live objects",
+		Title:      "Live Objects in Heap",
+		Type:       "bar",
+		HorzEvents: "lastgc",
+		Subplots: []plot.Subplot{
+			{
+				Name:    "live objects",
+				Unitfmt: "%{y:.4s}",
+				Color:   plot.RGBString(255, 195, 128),
+			},
+		},
+	}
+	p.Layout.Yaxis.Title = "objects"
+	return p
+}
+
+func mSpanmCache() plot.Scatter {
+	p := plot.Scatter{
+		Name:       "mspan-mcache",
+		Title:      "MSpan/MCache",
+		Type:       "scatter",
+		HorzEvents: "lastgc",
+		Subplots: []plot.Subplot{
+			{
+				Name:    "mspan in-use",
+				Unitfmt: "%{y:.4s}B",
+			},
+			{
+				Name:    "mspan sys",
+				Unitfmt: "%{y:.4s}B",
+			},
+			{
+				Name:    "mcache in-use",
+				Unitfmt: "%{y:.4s}B",
+			},
+			{
+				Name:    "mcache sys",
+				Unitfmt: "%{y:.4s}B",
+			},
+		},
+	}
+	p.Layout.Yaxis.Title = "objects"
+	p.Layout.Yaxis.TickSuffix = "B"
+	return p
+}
+
+func goroutines() plot.Scatter {
+	p := plot.Scatter{
+		Name:       "goroutines",
+		Title:      "Goroutines",
+		Type:       "scatter",
+		HorzEvents: "lastgc",
+		Subplots: []plot.Subplot{
+			{
+				Name:    "goroutines",
+				Unitfmt: "%{y}",
+			},
+		},
+	}
+
+	p.Layout.Yaxis.Title = "goroutines"
+	return p
+}
+
+func sizeClasses(sampl []metrics.Sample) plot.Heatmap {
 	// Perform a sanity check on the number of buckets on the 'allocs' and
 	// 'frees' size classes histograms. Statsviz plots a single histogram based
 	// on those 2 so we want them to have the same number of buckets, which
@@ -190,225 +332,87 @@ func createPlotsDef() {
 	// need to adapt boundaries to plotly heatmaps.
 	sizeClassesBuckets := downsampleBuckets(allocsBySize, 1)
 
+	p := plot.Heatmap{
+		Name:       "sizeclasses",
+		Title:      "Size Classes",
+		Type:       "heatmap",
+		UpdateFreq: 5,
+		Colorscale: plot.BlueShades,
+		Buckets:    floatseq(len(sizeClassesBuckets)),
+		CustomData: sizeClassesBuckets,
+		Hover: plot.HeapmapHover{
+			YName: "size class",
+			YUnit: "bytes",
+			ZName: "objects",
+		},
+	}
+	p.Layout.Yaxis.Title = "size class"
+	return p
+}
+
+func gcPauses(sampl []metrics.Sample) plot.Heatmap {
 	gcpauses := samples[metricsGCPauses].Value.Float64Histogram()
 	gcpausesFactor = downsampleFactor(len(gcpauses.Buckets), maxBuckets)
 	gcpausesBuckets := downsampleBuckets(gcpauses, gcpausesFactor)
 
+	p := plot.Heatmap{
+		Name:       "gcpauses",
+		Title:      "Stop-the-world pause latencies",
+		Type:       "heatmap",
+		UpdateFreq: 5,
+		Colorscale: plot.PinkShades,
+		Buckets:    floatseq(len(gcpausesBuckets)),
+		CustomData: gcpausesBuckets,
+		Hover: plot.HeapmapHover{
+			YName: "pause duration",
+			YUnit: "duration",
+			ZName: "pauses",
+		},
+	}
+	p.Layout.Yaxis.Title = "pause duration"
+	return p
+}
+
+func schedLat(sampl []metrics.Sample) plot.Heatmap {
 	schedlat := samples[metricsSchedLatencies].Value.Float64Histogram()
 	schedlatFactor = downsampleFactor(len(schedlat.Buckets), maxBuckets)
 	schedlatBuckets := downsampleBuckets(schedlat, schedlatFactor)
 
+	p := plot.Heatmap{
+		Name:       "sched-latencies",
+		Title:      "Time in scheduler before a goroutine runs",
+		Type:       "heatmap",
+		UpdateFreq: 5,
+		Colorscale: plot.GreenShades,
+		Buckets:    floatseq(len(schedlatBuckets)),
+		CustomData: schedlatBuckets,
+		Hover: plot.HeapmapHover{
+			YName: "duration",
+			YUnit: "duration",
+			ZName: "goroutines",
+		},
+	}
+	p.Layout.Yaxis.Title = "duration"
+	return p
+}
+
+func createPlotsDef() {
+	// Sample the metric once
+	metrics.Read(samples)
+
+
 	pd = &plot.Definition{
 		Events: []string{"lastgc"},
 		Series: []interface{}{
-			plot.Scatter{
-				Name:       "heap-global",
-				Title:      "Heap (global)",
-				Type:       "scatter",
-				HorzEvents: "lastgc",
-				Layout: plot.ScatterLayout{
-					Yaxis: plot.ScatterLayoutYAxis{
-						Title:      "bytes",
-						TickSuffix: "B",
-					},
-				},
-				Subplots: []plot.Subplot{
-					{
-						Name:       "heap in-use",
-						Unitfmt:    "%{y:.4s}B",
-						HoverOn:    "points+fills",
-						StackGroup: "one",
-					},
-					{
-						Name:       "heap free",
-						Unitfmt:    "%{y:.4s}B",
-						HoverOn:    "points+fills",
-						StackGroup: "one",
-					},
-					{
-						Name:       "heap released",
-						Unitfmt:    "%{y:.4s}B",
-						HoverOn:    "points+fills",
-						StackGroup: "one",
-					},
-				},
-			},
-
-			plot.Scatter{
-				Name:       "heap-details",
-				Title:      "Heap (details)",
-				Type:       "scatter",
-				HorzEvents: "lastgc",
-				Layout: plot.ScatterLayout{
-					Yaxis: plot.ScatterLayoutYAxis{
-						Title:      "bytes",
-						TickSuffix: "B",
-					},
-				},
-				Subplots: []plot.Subplot{
-					{
-						Name:    "heap sys",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "heap objects",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "heap stacks",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "heap goal",
-						Unitfmt: "%{y:.4s}B",
-					},
-				},
-			},
-
-			plot.Scatter{
-				Name:       "live bytes",
-				Title:      "Live Bytes in Heap",
-				Type:       "bar",
-				HorzEvents: "lastgc",
-				Layout: plot.ScatterLayout{
-					Yaxis: plot.ScatterLayoutYAxis{
-						Title: "bytes",
-					},
-				},
-				Subplots: []plot.Subplot{
-					{
-						Name:    "live bytes",
-						Unitfmt: "%{y:.4s}B",
-						Color:   plot.RGBString(135, 182, 218),
-					},
-				},
-			},
-
-			plot.Scatter{
-				Name:       "live objects",
-				Title:      "Live Objects in Heap",
-				Type:       "bar",
-				HorzEvents: "lastgc",
-				Layout: plot.ScatterLayout{
-					Yaxis: plot.ScatterLayoutYAxis{
-						Title: "objects",
-					},
-				},
-				Subplots: []plot.Subplot{
-					{
-						Name:    "live objects",
-						Unitfmt: "%{y:.4s}",
-						Color:   plot.RGBString(255, 195, 128),
-					},
-				},
-			},
-			plot.Scatter{
-				Name:       "mspan-mcache",
-				Title:      "MSpan/MCache",
-				Type:       "scatter",
-				HorzEvents: "lastgc",
-				Layout: plot.ScatterLayout{
-					Yaxis: plot.ScatterLayoutYAxis{
-						Title:      "bytes",
-						TickSuffix: "B",
-					},
-				},
-				Subplots: []plot.Subplot{
-					{
-						Name:    "mspan in-use",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "mspan sys",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "mcache in-use",
-						Unitfmt: "%{y:.4s}B",
-					},
-					{
-						Name:    "mcache sys",
-						Unitfmt: "%{y:.4s}B",
-					},
-				},
-			},
-			plot.Scatter{
-				Name:       "goroutines",
-				Title:      "Goroutines",
-				Type:       "scatter",
-				HorzEvents: "lastgc",
-				Layout: plot.ScatterLayout{
-					Yaxis: plot.ScatterLayoutYAxis{
-						Title: "goroutines",
-					},
-				},
-				Subplots: []plot.Subplot{
-					{
-						Name:    "goroutines",
-						Unitfmt: "%{y}",
-					},
-				},
-			},
-			plot.Heatmap{
-				Name:       "sizeclasses",
-				Title:      "Size Classes",
-				Type:       "heatmap",
-				UpdateFreq: 5,
-				HorzEvents: "",
-				Layout: plot.HeatmapLayout{
-					Yaxis: plot.HeatmapLayoutYAxis{
-						Title: "size class",
-					},
-				},
-				Colorscale: plot.BlueShades,
-				Buckets:    floatseq(len(sizeClassesBuckets)),
-				CustomData: sizeClassesBuckets,
-				Hover: plot.HeapmapHover{
-					YName: "size class",
-					YUnit: "bytes",
-					ZName: "objects",
-				},
-			},
-			plot.Heatmap{
-				Name:       "gcpauses",
-				Title:      "Stop-the-world pause latencies",
-				Type:       "heatmap",
-				UpdateFreq: 5,
-				HorzEvents: "",
-				Layout: plot.HeatmapLayout{
-					Yaxis: plot.HeatmapLayoutYAxis{
-						Title: "pause duration",
-					},
-				},
-				Colorscale: plot.PinkShades,
-				Buckets:    floatseq(len(gcpausesBuckets)),
-				CustomData: gcpausesBuckets,
-				Hover: plot.HeapmapHover{
-					YName: "pause duration",
-					YUnit: "duration",
-					ZName: "pauses",
-				},
-			},
-			plot.Heatmap{
-				Name:       "sched-latencies",
-				Title:      "Time in scheduler before a goroutine runs",
-				Type:       "heatmap",
-				UpdateFreq: 5,
-				HorzEvents: "",
-				Layout: plot.HeatmapLayout{
-					Yaxis: plot.HeatmapLayoutYAxis{
-						Title: "duration",
-					},
-				},
-				Colorscale: plot.GreenShades,
-				Buckets:    floatseq(len(schedlatBuckets)),
-				CustomData: schedlatBuckets,
-				Hover: plot.HeapmapHover{
-					YName: "duration",
-					YUnit: "duration",
-					ZName: "goroutines",
-				},
-			},
+			heapGlobal(),
+			heapDetails(),
+			liveBytes(),
+			liveObjects(),
+			mSpanmCache(),
+			goroutines(),
+			sizeClasses(samples),
+			gcPauses(samples),
+			schedLat(samples),
 		},
 	}
 }

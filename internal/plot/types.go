@@ -10,22 +10,18 @@ type (
 	}
 
 	Scatter struct {
-		Name       string        `json:"name"`
-		Title      string        `json:"title"`
-		Type       string        `json:"type"`
-		UpdateFreq int           `json:"updateFreq"`
-		HorzEvents string        `json:"horzEvents"`
-		Layout     ScatterLayout `json:"layout"`
-		Subplots   []Subplot     `json:"subplots"`
-	}
-
-	ScatterLayout struct {
-		Yaxis ScatterLayoutYAxis `json:"yaxis"`
-	}
-
-	ScatterLayoutYAxis struct {
+		Name       string `json:"name"`
 		Title      string `json:"title"`
-		TickSuffix string `json:"ticksuffix"`
+		Type       string `json:"type"`
+		UpdateFreq int    `json:"updateFreq"`
+		HorzEvents string `json:"horzEvents"`
+		Layout     struct {
+			Yaxis struct {
+				Title      string `json:"title"`
+				TickSuffix string `json:"ticksuffix"`
+			} `json:"yaxis"`
+		} `json:"layout"`
+		Subplots []Subplot `json:"subplots"`
 	}
 
 	Subplot struct {
@@ -37,24 +33,20 @@ type (
 	}
 
 	Heatmap struct {
-		Name       string          `json:"name"`
-		Title      string          `json:"title"`
-		Type       string          `json:"type"`
-		UpdateFreq int             `json:"updateFreq"`
-		HorzEvents string          `json:"horzEvents"`
-		Layout     HeatmapLayout   `json:"layout"`
+		Name       string `json:"name"`
+		Title      string `json:"title"`
+		Type       string `json:"type"`
+		UpdateFreq int    `json:"updateFreq"`
+		HorzEvents string `json:"horzEvents"`
+		Layout     struct {
+			Yaxis struct {
+				Title string `json:"title"`
+			} `json:"yaxis"`
+		} `json:"layout"`
 		Colorscale []WeightedColor `json:"colorscale"`
 		Buckets    []float64       `json:"buckets"`
 		CustomData []float64       `json:"custom_data"`
 		Hover      HeapmapHover    `json:"hover"`
-	}
-
-	HeatmapLayout struct {
-		Yaxis HeatmapLayoutYAxis `json:"yaxis"`
-	}
-
-	HeatmapLayoutYAxis struct {
-		Title string `json:"title"`
 	}
 
 	HeapmapHover struct {
