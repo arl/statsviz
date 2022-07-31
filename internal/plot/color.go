@@ -1,92 +1,14 @@
-package statsviz
+package plot
 
 import (
 	"fmt"
 	"image/color"
 )
 
-// TODO(arl): those are the JSON structures and should be placed under internal
-// so as to not be part of the public API.
-
-type (
-	PlotsDefinition struct {
-		Events []string      `json:"events"`
-		Series []interface{} `json:"series"`
-	}
-
-	ScatterPlotLayout struct {
-		Yaxis ScatterPlotLayoutYAxis `json:"yaxis"`
-	}
-
-	ScatterPlotLayoutYAxis struct {
-		Title      string `json:"title"`
-		TickSuffix string `json:"ticksuffix"`
-	}
-
-	ScatterPlotSubplot struct {
-		Name       string `json:"name"`
-		Unitfmt    string `json:"unitfmt"`
-		StackGroup string `json:"stackgroup"`
-		HoverOn    string `json:"hoveron"`
-		Color      Color  `json:"color"`
-	}
-
-	ScatterPlot struct {
-		Name       string               `json:"name"`
-		Title      string               `json:"title"`
-		Type       string               `json:"type"`
-		UpdateFreq int                  `json:"updateFreq"`
-		HorzEvents string               `json:"horzEvents"`
-		Layout     ScatterPlotLayout    `json:"layout"`
-		Subplots   []ScatterPlotSubplot `json:"subplots"`
-	}
-
-	HeatmapPlot struct {
-		Name       string            `json:"name"`
-		Title      string            `json:"title"`
-		Type       string            `json:"type"`
-		UpdateFreq int               `json:"updateFreq"`
-		HorzEvents string            `json:"horzEvents"`
-		Layout     HeatmapPlotLayout `json:"layout"`
-		Heatmap    Heatmap           `json:"heatmap"`
-	}
-
-	HeatmapPlotLayout struct {
-		Yaxis HeatmapPlotLayoutYAxis `json:"yaxis"`
-	}
-
-	HeatmapPlotLayoutYAxis struct {
-		Title string `json:"title"`
-	}
-
-	Heatmap struct {
-		Colorscale []WeightedColor `json:"colorscale"`
-		Buckets    []float64       `json:"buckets"`
-		CustomData []float64       `json:"custom_data"`
-		Hover      HeapmapHover    `json:"hover"`
-	}
-
-	HeapmapHover struct {
-		YName string `json:"yname"`
-		YUnit string `json:"yunit"` // 'duration', 'bytes' or custom
-		ZName string `json:"zname"`
-	}
-
-	WeightedColor struct {
-		Value float64
-		Color color.RGBA
-	}
-
-	Axis struct {
-		Title string
-		Unit  Unit
-	}
-
-	Unit struct {
-		TickSuffix string
-		UnitFmt    string
-	}
-)
+type WeightedColor struct {
+	Value float64
+	Color color.RGBA
+}
 
 type Color struct {
 	fmt.Stringer
@@ -118,10 +40,8 @@ func (c WeightedColor) MarshalJSON() ([]byte, error) {
 	return []byte(str), nil
 }
 
-var Bytes = Unit{TickSuffix: "B", UnitFmt: "%{y:.4s}B"}
-
 // https://mdigi.tools/color-shades/
-var blueShades = []WeightedColor{
+var BlueShades = []WeightedColor{
 	{Value: 0.0, Color: color.RGBA{0xea, 0xf8, 0xfd, 1}},
 	{Value: 0.1, Color: color.RGBA{0xbf, 0xeb, 0xfa, 1}},
 	{Value: 0.2, Color: color.RGBA{0x94, 0xdd, 0xf6, 1}},
@@ -135,7 +55,7 @@ var blueShades = []WeightedColor{
 	{Value: 1.0, Color: color.RGBA{0x02, 0x10, 0x15, 1}},
 }
 
-var pinkShades = []WeightedColor{
+var PinkShades = []WeightedColor{
 	{Value: 0.0, Color: color.RGBA{0xfe, 0xe7, 0xf3, 1}},
 	{Value: 0.1, Color: color.RGBA{0xfc, 0xb6, 0xdc, 1}},
 	{Value: 0.2, Color: color.RGBA{0xf9, 0x85, 0xc5, 1}},
@@ -149,7 +69,7 @@ var pinkShades = []WeightedColor{
 	{Value: 1.0, Color: color.RGBA{0x00, 0x00, 0x00, 1}},
 }
 
-var greenShades = []WeightedColor{
+var GreenShades = []WeightedColor{
 	{Value: 0.0, Color: color.RGBA{0xed, 0xf7, 0xf2, 0}},
 	{Value: 0.1, Color: color.RGBA{0xc9, 0xe8, 0xd7, 0}},
 	{Value: 0.2, Color: color.RGBA{0xa5, 0xd9, 0xbc, 0}},
