@@ -1,7 +1,7 @@
 package plot
 
 type (
-	Definition struct {
+	Config struct {
 		// Events are transversal time series, which can be plotted as
 		// horizontal lines on any plots.
 		Events []string `json:"events"`

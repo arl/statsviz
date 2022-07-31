@@ -159,13 +159,13 @@ func downsampleCounts(h *metrics.Float64Histogram, factor int) []uint64 {
 
 var (
 	once = sync.Once{}
-	pd   *plot.Definition
+	pd   *plot.Config
 
 	gcpausesFactor int
 	schedlatFactor int
 )
 
-func plotsdef() *plot.Definition {
+func plotsdef() *plot.Config {
 	once.Do(createPlotsDef)
 	return pd
 }
@@ -401,7 +401,7 @@ func createPlotsDef() {
 	metrics.Read(samples)
 
 
-	pd = &plot.Definition{
+	pd = &plot.Config{
 		Events: []string{"lastgc"},
 		Series: []interface{}{
 			heapGlobal(),
