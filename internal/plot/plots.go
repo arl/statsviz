@@ -559,3 +559,15 @@ func (p *schedlat) values(samples []metrics.Sample) interface{} {
 
 	return downsampleCounts(schedlat, p.histfactor, p.counts[:])
 }
+
+/*
+ * helpers
+ */
+
+func floatseq(n int) []float64 {
+	seq := make([]float64, n)
+	for i := 0; i < n; i++ {
+		seq[i] = float64(i)
+	}
+	return seq
+}

@@ -34,14 +34,6 @@ type plotdef interface {
 	values([]metrics.Sample) interface{}
 }
 
-func floatseq(n int) []float64 {
-	seq := make([]float64, n)
-	for i := 0; i < n; i++ {
-		seq[i] = float64(i)
-	}
-	return seq
-}
-
 var All List
 
 type List struct {
