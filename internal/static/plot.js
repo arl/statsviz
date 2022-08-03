@@ -13,10 +13,9 @@ const plotlyConfigBase = {
 // https://plotly.com/javascript/reference/layout
 const plotlyLayoutBase = {
     title: {
-        y: 0.85,
+        y: 0.88,
         font: {
             family: "Overpass",
-            family: "Gravitas One",
             size: 21,
         },
     },
