@@ -388,7 +388,8 @@ func (p *goroutines) values(samples []metrics.Sample) interface{} {
  */
 
 type sizeClasses struct {
-	enabled bool
+	enabled     bool
+	sizeClasses []uint64
 
 	idxallocs int
 	idxfrees  int
@@ -419,6 +420,9 @@ func (p *sizeClasses) layout(samples []metrics.Sample) interface{} {
 		panic("different number of buckets in allocs and frees size classes histograms!")
 	}
 
+	// Pre-allocate here so we never do it in values.
+	p.sizeClasses = make([]uint64, len(allocsBySize.Counts))
+
 	// No downsampling for the size classes histogram (factor=1) but we still
 	// need to adapt boundaries for plotly heatmaps.
 	buckets := downsampleBuckets(allocsBySize, 1)
@@ -445,11 +449,10 @@ func (p *sizeClasses) values(samples []metrics.Sample) interface{} {
 	allocsBySize := samples[p.idxallocs].Value.Float64Histogram()
 	freesBySize := samples[p.idxfrees].Value.Float64Histogram()
 
-	sizeClasses := make([]uint64, len(allocsBySize.Counts))
-	for i := 0; i < len(sizeClasses); i++ {
-		sizeClasses[i] = allocsBySize.Counts[i] - freesBySize.Counts[i]
+	for i := 0; i < len(p.sizeClasses); i++ {
+		p.sizeClasses[i] = allocsBySize.Counts[i] - freesBySize.Counts[i]
 	}
-	return sizeClasses
+	return p.sizeClasses
 }
 
 /*
