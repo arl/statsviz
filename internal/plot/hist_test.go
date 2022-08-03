@@ -1,4 +1,4 @@
-package statsviz
+package plot
 
 import (
 	"fmt"
