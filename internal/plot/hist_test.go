@@ -122,7 +122,8 @@ func Test_downsample(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			buckets := downsampleBuckets(&tt.hist, tt.factor)
-			counts := downsampleCounts(&tt.hist, tt.factor)
+			counts := make([]uint64, maxBuckets)
+			counts = downsampleCounts(&tt.hist, tt.factor, counts)
 
 			if !reflect.DeepEqual(buckets, tt.wantBuckets) {
 				t.Errorf("downsampleBuckets() = %v, want %v", buckets, tt.wantBuckets)

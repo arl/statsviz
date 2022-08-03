@@ -462,6 +462,7 @@ func (p *sizeClasses) values(samples []metrics.Sample) interface{} {
 type gcpauses struct {
 	enabled    bool
 	histfactor int
+	counts     [maxBuckets]uint64
 
 	idxgcpauses int
 }
@@ -503,7 +504,7 @@ func (p *gcpauses) layout(samples []metrics.Sample) interface{} {
 
 func (p *gcpauses) values(samples []metrics.Sample) interface{} {
 	gcpauses := samples[p.idxgcpauses].Value.Float64Histogram()
-	return downsampleCounts(gcpauses, p.histfactor)
+	return downsampleCounts(gcpauses, p.histfactor, p.counts[:])
 }
 
 /*
@@ -513,6 +514,7 @@ func (p *gcpauses) values(samples []metrics.Sample) interface{} {
 type schedlat struct {
 	enabled    bool
 	histfactor int
+	counts     [maxBuckets]uint64
 
 	idxschedlat int
 }
@@ -554,5 +556,6 @@ func (p *schedlat) layout(samples []metrics.Sample) interface{} {
 
 func (p *schedlat) values(samples []metrics.Sample) interface{} {
 	schedlat := samples[p.idxschedlat].Value.Float64Histogram()
-	return downsampleCounts(schedlat, p.histfactor)
+
+	return downsampleCounts(schedlat, p.histfactor, p.counts[:])
 }

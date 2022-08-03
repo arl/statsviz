@@ -22,7 +22,7 @@ func downsampleFactor(nbuckets, maxbuckets int) int {
 
 // downsampleBuckets downsamples the buckets in the provided histogram, using
 // the given factor. The first bucket is not considered since we're only
-// interested by upper bounds. If the last bucket is +Inf it gets replaced by a
+// interested in upper bounds. If the last bucket is +Inf it gets replaced by a
 // number, based on the 2 previous buckets.
 func downsampleBuckets(h *metrics.Float64Histogram, factor int) []float64 {
 	var ret []float64
@@ -49,20 +49,28 @@ func downsampleBuckets(h *metrics.Float64Histogram, factor int) []float64 {
 	return ret
 }
 
-func downsampleCounts(h *metrics.Float64Histogram, factor int) []uint64 {
-	var ret []uint64
+// downsampleCounts downsamples the counts in the provided histogram, using the
+// given factor. Every 'factor' buckets are merged into one, larger, bucket. If
+// the number of buckets is not divisible by 'factor', then an addtional last
+// bucket will contain the sum of the counts in all relainbing buckets.
+//
+// Note: slice should be a slice of maxBuckets elements, so that it can be
+// reused across calls.
+func downsampleCounts(h *metrics.Float64Histogram, factor int, slice []uint64) []uint64 {
 	vals := h.Counts
 
 	if factor == 1 {
-		ret = make([]uint64, len(vals))
-		copy(ret, vals)
-		return ret
+		copy(slice, vals)
+		slice = slice[:len(vals)]
+		return slice
 	}
+
+	slice = slice[:0]
 
 	var sum uint64
 	for i := 0; i < len(vals); i++ {
 		if i%factor == 0 && i > 1 {
-			ret = append(ret, sum)
+			slice = append(slice, sum)
 			sum = vals[i]
 		} else {
 			sum += vals[i]
@@ -70,5 +78,5 @@ func downsampleCounts(h *metrics.Float64Histogram, factor int) []uint64 {
 	}
 
 	// Whatever sum remains, it goes to the last bucket.
-	return append(ret, sum)
+	return append(slice, sum)
 }
