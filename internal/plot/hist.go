@@ -1,12 +1,9 @@
-package statsviz
+package plot
 
 import (
 	"math"
 	"runtime/metrics"
 )
-
-
-
 
 // maxBuckets is the maximum number of buckets we'll plots in heatmaps.
 // Histograms with more buckets than that are going to be downsampled.

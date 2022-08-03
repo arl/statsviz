@@ -3,6 +3,7 @@ package statsviz
 import (
 	"time"
 
+	"github.com/arl/statsviz/internal/plot"
 	"github.com/gorilla/websocket"
 )
 
@@ -15,10 +16,10 @@ func sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	// (started by a previous process for example) then plotsdef.js won't be
 	// requested. So, call plots.config manually to ensure that the data
 	// structures inside 'plots' are correctly initialized.
-	plots.config()
+	plot.All.Config()
 
 	for range tick.C {
-		if err := conn.WriteJSON(plots.values()); err != nil {
+		if err := conn.WriteJSON(plot.All.Values()); err != nil {
 			return err
 		}
 	}
