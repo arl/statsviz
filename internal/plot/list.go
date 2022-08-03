@@ -27,7 +27,7 @@ func (am *allMetrics) init() {
 	}
 }
 
-type plotdef interface {
+type plot interface {
 	name() string
 	isEnabled() bool
 	layout([]metrics.Sample) interface{}
@@ -37,7 +37,7 @@ type plotdef interface {
 var All List
 
 type List struct {
-	plots []plotdef
+	plots []plot
 
 	once sync.Once
 	cfg  *Config
