@@ -15,11 +15,11 @@ type heapGlobal struct {
 	idxreleased int
 }
 
-func makeHeapGlobalPlot(am *allMetrics) *heapGlobal {
-	idxobj, ok1 := am.idxs["/memory/classes/heap/objects:bytes"]
-	idxunused, ok2 := am.idxs["/memory/classes/heap/unused:bytes"]
-	idxfree, ok3 := am.idxs["/memory/classes/heap/free:bytes"]
-	idxreleased, ok4 := am.idxs["/memory/classes/heap/released:bytes"]
+func makeHeapGlobalPlot(idxs map[string]int) *heapGlobal {
+	idxobj, ok1 := idxs["/memory/classes/heap/objects:bytes"]
+	idxunused, ok2 := idxs["/memory/classes/heap/unused:bytes"]
+	idxfree, ok3 := idxs["/memory/classes/heap/free:bytes"]
+	idxreleased, ok4 := idxs["/memory/classes/heap/released:bytes"]
 
 	return &heapGlobal{
 		enabled:     ok1 && ok2 && ok3 && ok4,
@@ -94,13 +94,13 @@ type heapDetails struct {
 	idxgoal     int
 }
 
-func makeHeapDetailsPlot(am *allMetrics) *heapDetails {
-	idxobj, ok1 := am.idxs["/memory/classes/heap/objects:bytes"]
-	idxunused, ok2 := am.idxs["/memory/classes/heap/unused:bytes"]
-	idxfree, ok3 := am.idxs["/memory/classes/heap/free:bytes"]
-	idxreleased, ok4 := am.idxs["/memory/classes/heap/released:bytes"]
-	idxstacks, ok5 := am.idxs["/memory/classes/heap/stacks:bytes"]
-	idxgoal, ok6 := am.idxs["/gc/heap/goal:bytes"]
+func makeHeapDetailsPlot(idxs map[string]int) *heapDetails {
+	idxobj, ok1 := idxs["/memory/classes/heap/objects:bytes"]
+	idxunused, ok2 := idxs["/memory/classes/heap/unused:bytes"]
+	idxfree, ok3 := idxs["/memory/classes/heap/free:bytes"]
+	idxreleased, ok4 := idxs["/memory/classes/heap/released:bytes"]
+	idxstacks, ok5 := idxs["/memory/classes/heap/stacks:bytes"]
+	idxgoal, ok6 := idxs["/gc/heap/goal:bytes"]
 
 	return &heapDetails{
 		enabled:     ok1 && ok2 && ok3 && ok4 && ok5 && ok6,
@@ -177,8 +177,8 @@ type liveObjects struct {
 	idxobjects int
 }
 
-func makeLiveObjectsPlot(am *allMetrics) *liveObjects {
-	idxobjects, ok := am.idxs["/gc/heap/objects:objects"]
+func makeLiveObjectsPlot(idxs map[string]int) *liveObjects {
+	idxobjects, ok := idxs["/gc/heap/objects:objects"]
 
 	return &liveObjects{
 		enabled:    ok,
@@ -225,9 +225,9 @@ type liveBytes struct {
 	idxfrees  int
 }
 
-func makeLiveBytesPlot(am *allMetrics) *liveBytes {
-	idxallocs, ok1 := am.idxs["/gc/heap/allocs:bytes"]
-	idxfrees, ok2 := am.idxs["/gc/heap/frees:bytes"]
+func makeLiveBytesPlot(idxs map[string]int) *liveBytes {
+	idxallocs, ok1 := idxs["/gc/heap/allocs:bytes"]
+	idxfrees, ok2 := idxs["/gc/heap/frees:bytes"]
 
 	return &liveBytes{
 		enabled:   ok1 && ok2,
@@ -278,11 +278,11 @@ type mspanMcache struct {
 	idxmcacheFree  int
 }
 
-func makeMSpanMCachePlot(am *allMetrics) *mspanMcache {
-	idxmspanInuse, ok1 := am.idxs["/memory/classes/metadata/mspan/inuse:bytes"]
-	idxmspanFree, ok2 := am.idxs["/memory/classes/metadata/mspan/free:bytes"]
-	idxmcacheInuse, ok3 := am.idxs["/memory/classes/metadata/mcache/inuse:bytes"]
-	idxmcacheFree, ok4 := am.idxs["/memory/classes/metadata/mcache/free:bytes"]
+func makeMSpanMCachePlot(idxs map[string]int) *mspanMcache {
+	idxmspanInuse, ok1 := idxs["/memory/classes/metadata/mspan/inuse:bytes"]
+	idxmspanFree, ok2 := idxs["/memory/classes/metadata/mspan/free:bytes"]
+	idxmcacheInuse, ok3 := idxs["/memory/classes/metadata/mcache/inuse:bytes"]
+	idxmcacheFree, ok4 := idxs["/memory/classes/metadata/mcache/free:bytes"]
 
 	return &mspanMcache{
 		enabled:        ok1 && ok2 && ok3 && ok4,
@@ -349,8 +349,8 @@ type goroutines struct {
 	idxgs int
 }
 
-func makeGoroutinesPlot(am *allMetrics) *goroutines {
-	idxgs, ok := am.idxs["/sched/goroutines:goroutines"]
+func makeGoroutinesPlot(idxs map[string]int) *goroutines {
+	idxgs, ok := idxs["/sched/goroutines:goroutines"]
 
 	return &goroutines{
 		enabled: ok,
@@ -395,9 +395,9 @@ type sizeClasses struct {
 	idxfrees  int
 }
 
-func makeSizeClassesPlot(am *allMetrics) *sizeClasses {
-	idxallocs, ok1 := am.idxs["/gc/heap/allocs-by-size:bytes"]
-	idxfrees, ok2 := am.idxs["/gc/heap/frees-by-size:bytes"]
+func makeSizeClassesPlot(idxs map[string]int) *sizeClasses {
+	idxallocs, ok1 := idxs["/gc/heap/allocs-by-size:bytes"]
+	idxfrees, ok2 := idxs["/gc/heap/frees-by-size:bytes"]
 
 	return &sizeClasses{
 		enabled:   ok1 && ok2,
@@ -467,8 +467,8 @@ type gcpauses struct {
 	idxgcpauses int
 }
 
-func makeGCPausesPlot(am *allMetrics) *gcpauses {
-	idxgcpauses, ok := am.idxs["/gc/pauses:seconds"]
+func makeGCPausesPlot(idxs map[string]int) *gcpauses {
+	idxgcpauses, ok := idxs["/gc/pauses:seconds"]
 
 	return &gcpauses{
 		enabled:     ok,
@@ -519,8 +519,8 @@ type schedlat struct {
 	idxschedlat int
 }
 
-func makeSchedLatPlot(am *allMetrics) *schedlat {
-	idxschedlat, ok := am.idxs["/sched/latencies:seconds"]
+func makeSchedLatPlot(idxs map[string]int) *schedlat {
+	idxschedlat, ok := idxs["/sched/latencies:seconds"]
 
 	return &schedlat{
 		enabled:     ok,

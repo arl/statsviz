@@ -9,26 +9,6 @@ import (
 	"sync"
 )
 
-// allMetrics contains the descriptions and samples for all suported metrics (as
-// per metrics.All()).
-type allMetrics struct {
-	idxs  map[string]int // metric name -> index in descs and samples
-	descs []metrics.Description
-
-	mu      sync.Mutex
-	samples []metrics.Sample
-}
-
-func (am *allMetrics) init() {
-	am.idxs = make(map[string]int)
-	am.descs = metrics.All()
-	am.samples = make([]metrics.Sample, len(am.descs))
-	for i := range am.samples {
-		am.samples[i].Name = am.descs[i].Name
-		am.idxs[am.samples[i].Name] = i
-	}
-}
-
 type plot interface {
 	name() string
 	isEnabled() bool
@@ -41,53 +21,69 @@ var All List
 type List struct {
 	plots []plot
 
-	once sync.Once
+	once sync.Once // ensure Config is called once
 	cfg  *Config
 
-	am allMetrics
+	idxs  map[string]int // map metrics name to idx in samples and descs
+	descs []metrics.Description
+
+	mu      sync.Mutex // protects samples in case of concurrent calls to WriteValues
+	samples []metrics.Sample
+}
+
+func (pl *List) initMetrics() {
+	pl.idxs = make(map[string]int)
+	pl.descs = metrics.All()
+	pl.samples = make([]metrics.Sample, len(pl.descs))
+	for i := range pl.samples {
+		pl.samples[i].Name = pl.descs[i].Name
+		pl.idxs[pl.samples[i].Name] = i
+	}
 }
 
 func (pl *List) Config() *Config {
-	pl.once.Do(func() {
-		pl.am.init()
-
-		pl.plots = append(pl.plots, makeHeapGlobalPlot(&pl.am))
-		pl.plots = append(pl.plots, makeHeapDetailsPlot(&pl.am))
-		pl.plots = append(pl.plots, makeLiveObjectsPlot(&pl.am))
-		pl.plots = append(pl.plots, makeLiveBytesPlot(&pl.am))
-		pl.plots = append(pl.plots, makeMSpanMCachePlot(&pl.am))
-		pl.plots = append(pl.plots, makeGoroutinesPlot(&pl.am))
-		pl.plots = append(pl.plots, makeSizeClassesPlot(&pl.am))
-		pl.plots = append(pl.plots, makeGCPausesPlot(&pl.am))
-		pl.plots = append(pl.plots, makeSchedLatPlot(&pl.am))
-
-		metrics.Read(pl.am.samples)
-
-		var layouts []interface{}
-		for _, p := range pl.plots {
-			if p.isEnabled() {
-				layouts = append(layouts, p.layout(pl.am.samples))
-			}
-		}
-
-		pl.cfg = &Config{
-			Events: []string{"lastgc"},
-			Series: layouts,
-		}
-	})
+	pl.once.Do(pl.config)
 	return pl.cfg
 }
 
-func (pl *List) WriteValues(w io.Writer) error {
-	pl.am.mu.Lock()
-	defer pl.am.mu.Unlock()
+func (pl *List) config() {
+	pl.initMetrics()
 
-	metrics.Read(pl.am.samples)
+	pl.plots = append(pl.plots, makeHeapGlobalPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeHeapDetailsPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeLiveObjectsPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeLiveBytesPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeMSpanMCachePlot(pl.idxs))
+	pl.plots = append(pl.plots, makeGoroutinesPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeSizeClassesPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeGCPausesPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeSchedLatPlot(pl.idxs))
+
+	metrics.Read(pl.samples)
+
+	var layouts []interface{}
+	for _, p := range pl.plots {
+		if p.isEnabled() {
+			layouts = append(layouts, p.layout(pl.samples))
+		}
+	}
+
+	pl.cfg = &Config{
+		Events: []string{"lastgc"},
+		Series: layouts,
+	}
+}
+
+func (pl *List) WriteValues(w io.Writer) error {
+	pl.mu.Lock()
+	defer pl.mu.Unlock()
+
+	metrics.Read(pl.samples)
 
 	m := make(map[string]interface{})
 	for _, p := range pl.plots {
 		if p.isEnabled() {
-			m[p.name()] = p.values(pl.am.samples)
+			m[p.name()] = p.values(pl.samples)
 		}
 	}
 
