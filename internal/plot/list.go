@@ -16,8 +16,6 @@ type plot interface {
 	values([]metrics.Sample) interface{}
 }
 
-var All List
-
 type List struct {
 	plots []plot
 

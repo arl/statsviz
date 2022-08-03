@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arl/statsviz/internal/plot"
 	"github.com/arl/statsviz/internal/static"
 
 	"github.com/gorilla/websocket"
@@ -38,7 +37,7 @@ func hijack(h http.Handler) http.HandlerFunc {
 			buf.WriteString("export default ")
 			enc := json.NewEncoder(buf)
 			enc.SetIndent("", "  ")
-			if err := enc.Encode(plot.All.Config()); err != nil {
+			if err := enc.Encode(plots.Config()); err != nil {
 				panic("error encoding plots definition: " + err.Error())
 			}
 			buf.WriteString(";")

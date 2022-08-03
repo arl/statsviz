@@ -7,6 +7,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var plots plot.List
+
 // sendStats indefinitely send runtime statistics on the websocket connection.
 func sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	tick := time.NewTicker(frequency)
@@ -16,14 +18,14 @@ func sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	// (started by a previous process for example) then plotsdef.js won't be
 	// requested. So, call plots.config manually to ensure that the data
 	// structures inside 'plots' are correctly initialized.
-	plot.All.Config()
+	plots.Config()
 
 	for range tick.C {
 		w, err := conn.NextWriter(websocket.TextMessage)
 		if err != nil {
 			return err
 		}
-		if err := plot.All.WriteValues(w); err != nil {
+		if err := plots.WriteValues(w); err != nil {
 			return err
 		}
 		if err := w.Close(); err != nil {
