@@ -1,7 +1,9 @@
 package statsviz
 
 import (
+	"runtime/debug"
 	"runtime/metrics"
+	"sync"
 
 	"github.com/arl/statsviz/internal/plot"
 )
@@ -535,7 +537,7 @@ func (p *schedlat) name() string    { return "sched-latencies" }
 func (p *schedlat) isEnabled() bool { return p.enabled }
 
 func (p *schedlat) layout(samples []metrics.Sample) interface{} {
-	schedlat := samples[metricsSchedLatencies].Value.Float64Histogram()
+	schedlat := samples[p.idxschedlat].Value.Float64Histogram()
 	p.histfactor = downsampleFactor(len(schedlat.Buckets), maxBuckets)
 	buckets := downsampleBuckets(schedlat, p.histfactor)
 
@@ -579,9 +581,9 @@ func (am *allMetrics) init() {
 	am.idxs = make(map[string]int)
 	am.descs = metrics.All()
 	am.samples = make([]metrics.Sample, len(am.descs))
-	for i := range samples {
+	for i := range am.samples {
 		am.samples[i].Name = am.descs[i].Name
-		am.idxs[samples[i].Name] = i
+		am.idxs[am.samples[i].Name] = i
 	}
 }
 
@@ -598,4 +600,65 @@ func floatseq(n int) []float64 {
 		seq[i] = float64(i)
 	}
 	return seq
+}
+
+var plots plotList
+
+type plotList struct {
+	plots []plotdef
+
+	once sync.Once
+	cfg  *plot.Config
+	am   allMetrics
+}
+
+func (pl *plotList) config() *plot.Config {
+	pl.once.Do(func() {
+		pl.am.init()
+
+		pl.plots = append(pl.plots, makeHeapGlobalPlot(&pl.am))
+		pl.plots = append(pl.plots, makeHeapDetailsPlot(&pl.am))
+		pl.plots = append(pl.plots, makeLiveObjectsPlot(&pl.am))
+		pl.plots = append(pl.plots, makeLiveBytesPlot(&pl.am))
+		pl.plots = append(pl.plots, makeMSpanMCachePlot(&pl.am))
+		pl.plots = append(pl.plots, makeGoroutinesPlot(&pl.am))
+		pl.plots = append(pl.plots, makeSizeClassesPlot(&pl.am))
+		pl.plots = append(pl.plots, makeGCPausesPlot(&pl.am))
+		pl.plots = append(pl.plots, makeSchedLatPlot(&pl.am))
+
+		metrics.Read(pl.am.samples)
+
+		var layouts []interface{}
+		for _, p := range pl.plots {
+			if p.isEnabled() {
+				layouts = append(layouts, p.layout(pl.am.samples))
+			}
+		}
+
+		pl.cfg = &plot.Config{
+			Events: []string{"lastgc"},
+			Series: layouts,
+		}
+	})
+	return pl.cfg
+}
+
+func (pl *plotList) values() map[string]interface{} {
+	metrics.Read(pl.am.samples)
+
+	m := make(map[string]interface{})
+	for _, p := range pl.plots {
+		if p.isEnabled() {
+			m[p.name()] = p.values(pl.am.samples)
+		}
+	}
+
+	// lastgc time series is used as source to represent garbage collection
+	// timestamps as vertical bars on certain plots.
+	gcStats := debug.GCStats{}
+	debug.ReadGCStats(&gcStats)
+	// In javascript, timestamps are in ms.
+	lastgc := gcStats.LastGC.UnixMilli()
+	m["lastgc"] = []int64{lastgc}
+	return m
 }

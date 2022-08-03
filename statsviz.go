@@ -1,7 +1,6 @@
 package statsviz
 
 import (
-	"runtime/metrics"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -12,14 +11,14 @@ func sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	tick := time.NewTicker(frequency)
 	defer tick.Stop()
 
-	// The web ui may already be running, started from a previous process, in
-	// which case it won't try to fetch the plot definitions. Nevertheless on
-	// the Go side we need to initialize the plot defs.
-	plotsdef()
+	// If the websocket connection is initiated by an already open web ui
+	// (started by a previous process for example) then plotsdef.js won't be
+	// requested. So, call plots.config manually to ensure that the data
+	// structures inside 'plots' are correctly initialized.
+	plots.config()
 
 	for range tick.C {
-		metrics.Read(samples)
-		if err := conn.WriteJSON(plotsValues(samples)); err != nil {
+		if err := conn.WriteJSON(plots.values()); err != nil {
 			return err
 		}
 	}
