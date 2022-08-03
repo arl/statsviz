@@ -12,8 +12,10 @@ import (
 // allMetrics contains the descriptions and samples for all suported metrics (as
 // per metrics.All()).
 type allMetrics struct {
-	idxs    map[string]int // metric name -> index in descs and samples
-	descs   []metrics.Description
+	idxs  map[string]int // metric name -> index in descs and samples
+	descs []metrics.Description
+
+	mu      sync.Mutex
 	samples []metrics.Sample
 }
 
@@ -42,7 +44,6 @@ type List struct {
 	once sync.Once
 	cfg  *Config
 
-	mu sync.Mutex
 	am allMetrics
 }
 
@@ -78,8 +79,8 @@ func (pl *List) Config() *Config {
 }
 
 func (pl *List) WriteValues(w io.Writer) error {
-	pl.mu.Lock()
-	defer pl.mu.Unlock()
+	pl.am.mu.Lock()
+	defer pl.am.mu.Unlock()
 
 	metrics.Read(pl.am.samples)
 
