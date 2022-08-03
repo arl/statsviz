@@ -19,7 +19,14 @@ func sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	plot.All.Config()
 
 	for range tick.C {
-		if err := conn.WriteJSON(plot.All.Values()); err != nil {
+		w, err := conn.NextWriter(websocket.TextMessage)
+		if err != nil {
+			return err
+		}
+		if err := plot.All.WriteValues(w); err != nil {
+			return err
+		}
+		if err := w.Close(); err != nil {
 			return err
 		}
 	}

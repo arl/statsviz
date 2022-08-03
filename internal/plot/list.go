@@ -1,6 +1,9 @@
 package plot
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"runtime/debug"
 	"runtime/metrics"
 	"sync"
@@ -46,7 +49,9 @@ type List struct {
 
 	once sync.Once
 	cfg  *Config
-	am   allMetrics
+
+	mu sync.Mutex
+	am allMetrics
 }
 
 func (pl *List) Config() *Config {
@@ -80,7 +85,10 @@ func (pl *List) Config() *Config {
 	return pl.cfg
 }
 
-func (pl *List) Values() map[string]interface{} {
+func (pl *List) WriteValues(w io.Writer) error {
+	pl.mu.Lock()
+	defer pl.mu.Unlock()
+
 	metrics.Read(pl.am.samples)
 
 	m := make(map[string]interface{})
@@ -97,5 +105,8 @@ func (pl *List) Values() map[string]interface{} {
 	// In javascript, timestamps are in ms.
 	lastgc := gcStats.LastGC.UnixMilli()
 	m["lastgc"] = []int64{lastgc}
-	return m
+	if err := json.NewEncoder(w).Encode(m); err != nil {
+		return fmt.Errorf("failed to write/convert metrics values to json: %v", err)
+	}
+	return nil
 }

@@ -28,9 +28,9 @@ func IndexAtRoot(root string) http.HandlerFunc {
 	return http.StripPrefix(prefix, hijack(assetsFS)).ServeHTTP
 }
 
-// hijack returns a handler that forward all requests that do not target
-// plotsdef.js. Requests targeting plotsdef.js respond with the generated plots
-// definition.
+// hijack returns a handler that hijacks requests for plotsdef.js, this file is
+// generated dynamically. Other requests are forwarded to h, typically a http
+// file server.
 func hijack(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "plotsdef.js" {
