@@ -42,7 +42,7 @@ const plotlyLayoutBase = {
       "title": string,                 // plot title 
       "type": 'scatter'|'bar'|'heatmap' 
       "updateFreq": int,               // datapoints to receive before redrawing the plot. (default: 1)
-      "horzEvents": "lastgc",          // source of horizontal lines (example: 'lastgc')
+      "events": "lastgc",              // source of vertical lines (example: 'lastgc')
       "layout": object,                // (depends on plot type)
       "subplots": array,               // describe 'traces', only for 'scatter' or 'bar' plots
       "heatmap": object,               // heatmap details
@@ -212,16 +212,16 @@ class Plot {
     update(data, shapes) {
         this._updateCount++;
         if (this._cfg.updateFreq == 0 || (this._updateCount % this._cfg.updateFreq == 0)) {
-            if (this._cfg.horzEvents != '') {
-                this._plotlyLayout.shapes = shapes.get(this._cfg.horzEvents);
+            if (this._cfg.events != '') {
+                this._plotlyLayout.shapes = shapes.get(this._cfg.events);
             }
             Plotly.react(this._htmlElt, this._extractData(data), this._plotlyLayout, this._plotlyConfig);
         }
     }
 };
 
-// Create horizontal lines shapes for each of the given timestamps.
-const createHorizontalLines = (tss) => {
+// Create 'vertical lines' shapes for each of the given timestamps.
+const createVerticalLines = (tss) => {
     const shapes = [];
     for (let i = 0, n = tss.length; i < n; i++) {
         const d = tss[i];
@@ -242,7 +242,7 @@ const createHorizontalLines = (tss) => {
     return shapes;
 }
 
-export { createHorizontalLines, Plot };
+export { createVerticalLines, Plot };
 
 const durUnits = ['w', 'd', 'h', 'm', 's', 'ms', 'µs', 'ns'];
 const durVals = [6048e11, 864e11, 36e11, 6e10, 1e9, 1e6, 1e3, 1];

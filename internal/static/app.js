@@ -99,7 +99,7 @@ const updatePlots = (data) => {
     let shapes = new Map();
 
     for (const [name, serie] of data.events) {
-        shapes.set(name, plot.createHorizontalLines(serie));
+        shapes.set(name, plot.createVerticalLines(serie));
     }
 
     plots.forEach(plot => {

@@ -39,10 +39,10 @@ func (p *heapGlobal) isEnabled() bool { return p.enabled }
 
 func (p *heapGlobal) layout(_ []metrics.Sample) interface{} {
 	s := plot.Scatter{
-		Name:       p.name(),
-		Title:      "Heap (global)",
-		Type:       "scatter",
-		HorzEvents: "lastgc",
+		Name:   p.name(),
+		Title:  "Heap (global)",
+		Type:   "scatter",
+		Events: "lastgc",
 		Subplots: []plot.Subplot{
 			{
 				Name:       "heap in-use",
@@ -122,10 +122,10 @@ func (p *heapDetails) isEnabled() bool { return p.enabled }
 
 func (p *heapDetails) layout(_ []metrics.Sample) interface{} {
 	s := plot.Scatter{
-		Name:       p.name(),
-		Title:      "Heap (details)",
-		Type:       "scatter",
-		HorzEvents: "lastgc",
+		Name:   p.name(),
+		Title:  "Heap (details)",
+		Type:   "scatter",
+		Events: "lastgc",
 		Subplots: []plot.Subplot{
 			{
 				Name:    "heap sys",
@@ -195,10 +195,10 @@ func (p *liveObjects) isEnabled() bool { return p.enabled }
 
 func (p *liveObjects) layout(_ []metrics.Sample) interface{} {
 	s := plot.Scatter{
-		Name:       p.name(),
-		Title:      "Live Objects in Heap",
-		Type:       "bar",
-		HorzEvents: "lastgc",
+		Name:   p.name(),
+		Title:  "Live Objects in Heap",
+		Type:   "bar",
+		Events: "lastgc",
 		Subplots: []plot.Subplot{
 			{
 				Name:    "live objects",
@@ -245,10 +245,10 @@ func (p *liveBytes) isEnabled() bool { return p.enabled }
 
 func (p *liveBytes) layout(_ []metrics.Sample) interface{} {
 	s := plot.Scatter{
-		Name:       p.name(),
-		Title:      "Live Bytes in Heap",
-		Type:       "bar",
-		HorzEvents: "lastgc",
+		Name:   p.name(),
+		Title:  "Live Bytes in Heap",
+		Type:   "bar",
+		Events: "lastgc",
 		Subplots: []plot.Subplot{
 			{
 				Name:    "live bytes",
@@ -302,10 +302,10 @@ func (p *mspanMcache) isEnabled() bool { return p.enabled }
 
 func (p *mspanMcache) layout(_ []metrics.Sample) interface{} {
 	s := plot.Scatter{
-		Name:       p.name(),
-		Title:      "MSpan/MCache",
-		Type:       "scatter",
-		HorzEvents: "lastgc",
+		Name:   p.name(),
+		Title:  "MSpan/MCache",
+		Type:   "scatter",
+		Events: "lastgc",
 		Subplots: []plot.Subplot{
 			{
 				Name:    "mspan in-use",
@@ -367,10 +367,10 @@ func (p *goroutines) isEnabled() bool { return p.enabled }
 
 func (p *goroutines) layout(_ []metrics.Sample) interface{} {
 	s := plot.Scatter{
-		Name:       p.name(),
-		Title:      "Goroutines",
-		Type:       "scatter",
-		HorzEvents: "lastgc",
+		Name:   p.name(),
+		Title:  "Goroutines",
+		Type:   "scatter",
+		Events: "lastgc",
 		Subplots: []plot.Subplot{
 			{
 				Name:    "goroutines",

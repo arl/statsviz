@@ -2,11 +2,13 @@ package plot
 
 type (
 	Config struct {
-		// Events are transversal time series, which can be plotted as
-		// horizontal lines on any plots.
-		Events []string `json:"events"`
 		// Series contains the plots we want to show and how we want to show them.
 		Series []interface{} `json:"series"`
+		// Events contains a list of 'events time series' names. Series with
+		// these names must be sent alongside other series. An event time series
+		// is just made of timestamps with no associated value, each of which
+		// gets plotted as a vertical line over another plot.
+		Events []string `json:"events"`
 	}
 
 	Scatter struct {
@@ -14,7 +16,7 @@ type (
 		Title      string `json:"title"`
 		Type       string `json:"type"`
 		UpdateFreq int    `json:"updateFreq"`
-		HorzEvents string `json:"horzEvents"`
+		Events     string `json:"events"`
 		Layout     struct {
 			Yaxis struct {
 				Title      string `json:"title"`
@@ -37,7 +39,7 @@ type (
 		Title      string `json:"title"`
 		Type       string `json:"type"`
 		UpdateFreq int    `json:"updateFreq"`
-		HorzEvents string `json:"horzEvents"`
+		Events     string `json:"events"`
 		Layout     struct {
 			Yaxis struct {
 				Title string `json:"title"`
