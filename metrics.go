@@ -158,11 +158,10 @@ func downsampleCounts(h *metrics.Float64Histogram, factor int) []uint64 {
 }
 
 var (
-	once = sync.Once{}
-	pd   *plot.Config
-
-	gcpausesFactor int
-	schedlatFactor int
+	once  = sync.Once{}
+	pd    *plot.Config
+	am    allMetrics
+	plots []plotdef
 )
 
 func plotsdef() *plot.Config {
@@ -170,331 +169,49 @@ func plotsdef() *plot.Config {
 	return pd
 }
 
-func heapGlobal() plot.Scatter {
-	p := plot.Scatter{
-		Name:       "heap-global",
-		Title:      "Heap (global)",
-		Type:       "scatter",
-		HorzEvents: "lastgc",
-		Subplots: []plot.Subplot{
-			{
-				Name:       "heap in-use",
-				Unitfmt:    "%{y:.4s}B",
-				HoverOn:    "points+fills",
-				StackGroup: "one",
-			},
-			{
-				Name:       "heap free",
-				Unitfmt:    "%{y:.4s}B",
-				HoverOn:    "points+fills",
-				StackGroup: "one",
-			},
-			{
-				Name:       "heap released",
-				Unitfmt:    "%{y:.4s}B",
-				HoverOn:    "points+fills",
-				StackGroup: "one",
-			},
-		},
-	}
-	p.Layout.Yaxis.TickSuffix = "B"
-	p.Layout.Yaxis.Title = "bytes"
-	return p
-}
-
-	// TODO(arl) rename metrics so that they match that of the new package (example: nextGC -> Gc heap goal)
-func heapDetails() plot.Scatter {
-	p := plot.Scatter{
-		Name:       "heap-details",
-		Title:      "Heap (details)",
-		Type:       "scatter",
-		HorzEvents: "lastgc",
-		Subplots: []plot.Subplot{
-			{
-				Name:    "heap sys",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "heap objects",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "heap stacks",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "heap goal",
-				Unitfmt: "%{y:.4s}B",
-			},
-		},
-	}
-	p.Layout.Yaxis.TickSuffix = "B"
-	p.Layout.Yaxis.Title = "bytes"
-	return p
-}
-
-func liveBytes() plot.Scatter {
-	p := plot.Scatter{
-		Name:       "live bytes",
-		Title:      "Live Bytes in Heap",
-		Type:       "bar",
-		HorzEvents: "lastgc",
-		Subplots: []plot.Subplot{
-			{
-				Name:    "live bytes",
-				Unitfmt: "%{y:.4s}B",
-				Color:   plot.RGBString(135, 182, 218),
-			},
-		},
-	}
-	p.Layout.Yaxis.Title = "bytes"
-	return p
-}
-
-func liveObjects() plot.Scatter {
-	p := plot.Scatter{
-		Name:       "live objects",
-		Title:      "Live Objects in Heap",
-		Type:       "bar",
-		HorzEvents: "lastgc",
-		Subplots: []plot.Subplot{
-			{
-				Name:    "live objects",
-				Unitfmt: "%{y:.4s}",
-				Color:   plot.RGBString(255, 195, 128),
-			},
-		},
-	}
-	p.Layout.Yaxis.Title = "objects"
-	return p
-}
-
-func mSpanmCache() plot.Scatter {
-	p := plot.Scatter{
-		Name:       "mspan-mcache",
-		Title:      "MSpan/MCache",
-		Type:       "scatter",
-		HorzEvents: "lastgc",
-		Subplots: []plot.Subplot{
-			{
-				Name:    "mspan in-use",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "mspan sys",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "mcache in-use",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "mcache sys",
-				Unitfmt: "%{y:.4s}B",
-			},
-		},
-	}
-	p.Layout.Yaxis.Title = "objects"
-	p.Layout.Yaxis.TickSuffix = "B"
-	return p
-}
-
-func goroutines() plot.Scatter {
-	p := plot.Scatter{
-		Name:       "goroutines",
-		Title:      "Goroutines",
-		Type:       "scatter",
-		HorzEvents: "lastgc",
-		Subplots: []plot.Subplot{
-			{
-				Name:    "goroutines",
-				Unitfmt: "%{y}",
-			},
-		},
-	}
-
-	p.Layout.Yaxis.Title = "goroutines"
-	return p
-}
-
-func sizeClasses(sampl []metrics.Sample) plot.Heatmap {
-	// Perform a sanity check on the number of buckets on the 'allocs' and
-	// 'frees' size classes histograms. Statsviz plots a single histogram based
-	// on those 2 so we want them to have the same number of buckets, which
-	// should be true.
-	allocsBySize := samples[metricGCHeapAllocsBySize].Value.Float64Histogram()
-	freesBySize := samples[metricGCHeapFreesBySize].Value.Float64Histogram()
-	if len(allocsBySize.Buckets) != len(freesBySize.Buckets) {
-		panic("different number of buckets in allocs and frees size classes histograms!")
-	}
-
-	// No downsampling for the size classes histogram (factor=1) but we still
-	// need to adapt boundaries to plotly heatmaps.
-	sizeClassesBuckets := downsampleBuckets(allocsBySize, 1)
-
-	p := plot.Heatmap{
-		Name:       "sizeclasses",
-		Title:      "Size Classes",
-		Type:       "heatmap",
-		UpdateFreq: 5,
-		Colorscale: plot.BlueShades,
-		Buckets:    floatseq(len(sizeClassesBuckets)),
-		CustomData: sizeClassesBuckets,
-		Hover: plot.HeapmapHover{
-			YName: "size class",
-			YUnit: "bytes",
-			ZName: "objects",
-		},
-	}
-	p.Layout.Yaxis.Title = "size class"
-	return p
-}
-
-func gcPauses(sampl []metrics.Sample) plot.Heatmap {
-	gcpauses := samples[metricsGCPauses].Value.Float64Histogram()
-	gcpausesFactor = downsampleFactor(len(gcpauses.Buckets), maxBuckets)
-	gcpausesBuckets := downsampleBuckets(gcpauses, gcpausesFactor)
-
-	p := plot.Heatmap{
-		Name:       "gcpauses",
-		Title:      "Stop-the-world pause latencies",
-		Type:       "heatmap",
-		UpdateFreq: 5,
-		Colorscale: plot.PinkShades,
-		Buckets:    floatseq(len(gcpausesBuckets)),
-		CustomData: gcpausesBuckets,
-		Hover: plot.HeapmapHover{
-			YName: "pause duration",
-			YUnit: "duration",
-			ZName: "pauses",
-		},
-	}
-	p.Layout.Yaxis.Title = "pause duration"
-	return p
-}
-
-func schedLat(sampl []metrics.Sample) plot.Heatmap {
-	schedlat := samples[metricsSchedLatencies].Value.Float64Histogram()
-	schedlatFactor = downsampleFactor(len(schedlat.Buckets), maxBuckets)
-	schedlatBuckets := downsampleBuckets(schedlat, schedlatFactor)
-
-	p := plot.Heatmap{
-		Name:       "sched-latencies",
-		Title:      "Time in scheduler before a goroutine runs",
-		Type:       "heatmap",
-		UpdateFreq: 5,
-		Colorscale: plot.GreenShades,
-		Buckets:    floatseq(len(schedlatBuckets)),
-		CustomData: schedlatBuckets,
-		Hover: plot.HeapmapHover{
-			YName: "duration",
-			YUnit: "duration",
-			ZName: "goroutines",
-		},
-	}
-	p.Layout.Yaxis.Title = "duration"
-	return p
-}
-
 func createPlotsDef() {
-	// Sample the metric once
-	metrics.Read(samples)
+	am.init()
 
+	plots = append(plots, makeHeapGlobalPlot(&am))
+	plots = append(plots, makeHeapDetailsPlot(&am))
+	plots = append(plots, makeLiveObjectsPlot(&am))
+	plots = append(plots, makeLiveBytesPlot(&am))
+	plots = append(plots, makeMSpanMCachePlot(&am))
+	plots = append(plots, makeGoroutinesPlot(&am))
+	plots = append(plots, makeSizeClassesPlot(&am))
+	plots = append(plots, makeGCPausesPlot(&am))
+	plots = append(plots, makeSchedLatPlot(&am))
+
+	metrics.Read(am.samples)
+
+	var layouts []interface{}
+	for _, p := range plots {
+		if p.isEnabled() {
+			layouts = append(layouts, p.layout(am.samples))
+		}
+	}
 
 	pd = &plot.Config{
 		Events: []string{"lastgc"},
-		Series: []interface{}{
-			heapGlobal(),
-			heapDetails(),
-			liveBytes(),
-			liveObjects(),
-			mSpanmCache(),
-			goroutines(),
-			sizeClasses(samples),
-			gcPauses(samples),
-			schedLat(samples),
-		},
+		Series: layouts,
 	}
 }
 
 func plotsValues(samples []metrics.Sample) map[string]interface{} {
 	m := make(map[string]interface{})
 
-	heapObjects := samples[metricsMemoryClassesHeapObjects].Value.Uint64()
-	heapUnused := samples[metricsMemoryClassesHeapUnusedBytes].Value.Uint64()
-	heapInUse := heapObjects + heapUnused
-
-	heapFree := samples[metricsMemoryClassesHeapFreeBytes].Value.Uint64()
-	heapReleased := samples[metricsMemoryClassesHeapReleasedBytes].Value.Uint64()
-
-	m["heap-global"] = []uint64{
-		heapInUse,
-		heapFree,
-		heapReleased,
+	for _, p := range plots {
+		if p.isEnabled() {
+			m[p.name()] = p.values(samples)
+		}
 	}
 
-	heapIdle := heapReleased + heapFree
-	heapSys := heapInUse + heapIdle
-	heapStacks := samples[metricsMemoryClassesHeapStackBytes].Value.Uint64()
-	nextGC := samples[metricsGCHeapGoalBytes].Value.Uint64()
-
-	m["heap-details"] = []uint64{
-		heapSys,
-		heapObjects,
-		heapStacks,
-		nextGC,
-	}
-
-	gcHeapObjects := samples[metricsGCHeapObjects].Value.Uint64()
-	m["live objects"] = []uint64{
-		gcHeapObjects,
-	}
-
-	allocBytes := samples[metricGCHeapAllocsBytes].Value.Uint64()
-	freedBytes := samples[metricGCHeapFreesBytes].Value.Uint64()
-	m["live bytes"] = []uint64{
-		allocBytes - freedBytes,
-	}
-
-	mspanInUse := samples[metricsMemoryClassesMetadataMSpanInUse].Value.Uint64()
-	mspanSys := samples[metricsMemoryClassesMetadataMSpanFree].Value.Uint64()
-	mcacheInUse := samples[metricsMemoryClassesMetadataMCacheInUse].Value.Uint64()
-	mcacheSys := samples[metricsMemoryClassesMetadataMCacheFree].Value.Uint64()
-	m["mspan-mcache"] = []uint64{
-		mspanInUse,
-		mspanSys,
-		mcacheInUse,
-		mcacheSys,
-	}
-
-	m["goroutines"] = []uint64{samples[metricsSchedGoroutines].Value.Uint64()}
-
-	// Now we take lastGC from GCstats
+	// lastgc time series is used as source to represent garbage collection
+	// timestamps as vertical bars on certain plots.
 	gcStats := debug.GCStats{}
 	debug.ReadGCStats(&gcStats)
-	// Javascript datetime is in ms
-	m["lastgc"] = []int64{gcStats.LastGC.UnixMilli()}
-
-	allocsBySize := samples[metricGCHeapAllocsBySize].Value.Float64Histogram()
-	freesBySize := samples[metricGCHeapFreesBySize].Value.Float64Histogram()
-	sizeClasses := make([]uint64, len(allocsBySize.Counts))
-	for i := 0; i < len(sizeClasses); i++ {
-		sizeClasses[i] = allocsBySize.Counts[i] - freesBySize.Counts[i]
-	}
-	m["sizeclasses"] = sizeClasses
-
-	gcpauses := samples[metricsGCPauses].Value.Float64Histogram()
-	m["gcpauses"] = downsampleCounts(gcpauses, gcpausesFactor)
-
-	schedlat := samples[metricsSchedLatencies].Value.Float64Histogram()
-	m["sched-latencies"] = downsampleCounts(schedlat, schedlatFactor)
+	// In javascript, timestamps are in ms.
+	lastgc := gcStats.LastGC.UnixMilli()
+	m["lastgc"] = []int64{lastgc}
 	return m
-}
-
-func floatseq(n int) []float64 {
-	seq := make([]float64, n)
-	for i := 0; i < n; i++ {
-		seq[i] = float64(i)
-	}
-	return seq
 }
