@@ -31,8 +31,8 @@ func testIndex(t *testing.T, f http.Handler, url string) {
 		t.Errorf("header[Content-Type] %s, want %s", resp.Header.Get("Content-Type"), "text/html; charset=utf-8")
 	}
 
-	if !strings.Contains(string(body), "goroutines") {
-		t.Errorf("body doesn't contain %q", "goroutines")
+	if !strings.Contains(string(body), `id="plots"`) {
+		t.Errorf("body doesn't contain %q", `id="plots"`)
 	}
 }
 
