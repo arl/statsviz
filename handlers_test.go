@@ -1,7 +1,6 @@
 package statsviz
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -51,6 +50,8 @@ func TestIndexAtRoot(t *testing.T) {
 	testIndex(t, IndexAtRoot("/test/"), "http://example.com/test/")
 }
 
+// TODO(arl): we need to add a test for hijack (plotsdef.js)
+
 func testWs(t *testing.T, f http.Handler, URL string) {
 	t.Helper()
 
@@ -77,16 +78,26 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 	}
 	defer ws.Close()
 
-	// Wait for 2 messages and check that the payload is what we expect.
+	// Check the content of 2 consecutive payloads.
 	for i := 0; i < 2; i++ {
-		_, p, err := ws.ReadMessage()
-		if err != nil {
-			t.Fatalf("%v", err)
+
+		// Verifies that we've received 1 time series (goroutines) and one
+		// heatmap (sizeClasses).
+		var data struct {
+			Goroutines  []uint64 `json:"goroutines"`
+			SizeClasses []uint64 `json:"sizeClasses"`
+		}
+		if err := ws.ReadJSON(&data); err != nil {
+			t.Fatalf("failed reading json from websocket: %v", err)
 		}
 
-		var stats stats
-		if err := json.Unmarshal(p, &stats); err != nil {
-			t.Fatal(err)
+		// The time series must have one and only one element
+		if len(data.Goroutines) != 1 {
+			t.Errorf("len(goroutines) = %d, want 1", len(data.Goroutines))
+		}
+		// Heatmaps should have many elements, check that there's more than one.
+		if len(data.SizeClasses) <= 1 {
+			t.Errorf("len(sizeClasses) = %d, want > 1", len(data.SizeClasses))
 		}
 	}
 }
