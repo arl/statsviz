@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -20,5 +21,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/", r)
-	http.ListenAndServe(":8080", mux)
+
+	fmt.Println("Point your browser to http://localhost:8086/debug/statsviz/")
+	http.ListenAndServe(":8086", mux)
 }

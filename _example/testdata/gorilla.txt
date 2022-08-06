@@ -1,0 +1,18 @@
+go work init .
+go work use $STATSVIZ_MODULE
+
+cp $STATSVIZ_MODULE/_example/gorilla/main.go .
+
+# Start an HTTP server with a statsviz endpoint
+go build main.go
+! exec ./main &
+checkui http://localhost:8086/debug/statsviz/
+
+-- go.mod --
+module example/gorilla
+
+go 1.16
+
+require (
+	github.com/gorilla/mux v1.8.0
+)
