@@ -1,0 +1,20 @@
+go work init .
+go work use $STATSVIZ_MODULE
+
+cp $STATSVIZ_MODULE/_example/fasthttp/main.go .
+
+# Start an HTTP server with a statsviz endpoint
+go build main.go
+! exec ./main &
+checkui http://localhost:8083/debug/statsviz/
+
+-- go.mod --
+module example/fasthttp
+
+go 1.16
+
+require (
+	github.com/fasthttp/router v1.4.6
+	github.com/soheilhy/cmux v0.1.5
+	github.com/valyala/fasthttp v1.33.0
+)

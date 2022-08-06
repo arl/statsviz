@@ -19,7 +19,7 @@ func main() {
 	go example.Work()
 
 	// Create the main listener and mux
-	l, _ := net.Listen("tcp", ":8080")
+	l, _ := net.Listen("tcp", ":8083")
 	m := cmux.New(l)
 	ws := http.NewServeMux()
 
@@ -36,5 +36,6 @@ func main() {
 	// Server start
 	go http.Serve(m.Match(cmux.HTTP1HeaderField("Upgrade", "websocket")), ws)
 	go fasthttp.Serve(m.Match(cmux.Any()), r.Handler)
+	fmt.Println("Point your browser to http://localhost:8083/debug/statsviz/")
 	m.Serve()
 }
