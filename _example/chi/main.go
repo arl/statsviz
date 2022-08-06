@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -26,7 +27,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", r)
 
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	fmt.Println("Point your browser to http://localhost:8081/debug/statsviz/")
+	if err := http.ListenAndServe(":8081", mux); err != nil {
 		log.Fatalf("failed to start server: %s", err)
 	}
 }

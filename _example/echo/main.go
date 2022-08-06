@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -25,5 +26,6 @@ func main() {
 	e.GET("/debug/statsviz/*", echo.WrapHandler(mux))
 
 	// Start server
-	e.Logger.Fatal(e.Start(":8080"))
+	fmt.Println("Point your browser to http://localhost:8082/debug/statsviz/")
+	e.Logger.Fatal(e.Start(":8082"))
 }
