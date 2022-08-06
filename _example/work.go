@@ -14,7 +14,6 @@ func Work() {
 }
 
 func work(ctx context.Context, lvl int) {
-	println("work", lvl)
 	m := make(map[int]interface{})
 	tick := time.NewTicker(10 * time.Millisecond)
 
