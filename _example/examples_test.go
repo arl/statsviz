@@ -1,46 +1,63 @@
-//go:build linux
-// +build linux
-
 package example
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
+
+	"github.com/rogpeppe/go-internal/gotooltest"
+	"github.com/rogpeppe/go-internal/testscript"
 )
 
 func TestExamples(t *testing.T) {
-	examples := map[string]string{
-		"chi":        "http://localhost:8080/debug/statsviz/",
-		"default":    "http://localhost:8080/debug/statsviz/",
-		"echo":       "http://localhost:8080/debug/statsviz/",
-		"fasthttp":   "http://localhost:8080/debug/statsviz/",
-		"fiber":      "http://localhost:8080/debug/statsviz/",
-		"gin":        "http://localhost:8080/debug/statsviz/",
-		"gorilla":    "http://localhost:8080/debug/statsviz/",
-		"https":      "https://localhost:8080/debug/statsviz/",
-		"iris":       "http://localhost:8080/debug/statsviz/",
-		"middleware": "http://localhost:8080/debug/statsviz/",
-		"mux":        "http://localhost:8080/debug/statsviz/",
-		"options":    "http://localhost:8080/foo/bar/",
+	p := testscript.Params{
+		Dir: "testdata",
+		Setup: func(env *testscript.Env) error {
+			// Scripts will need statsviz as a dependency.
+			// Tell them where the module is, via an absolute path.
+			wd, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+			modPath := filepath.Dir(wd)
+			env.Setenv("STATSVIZ_MODULE", modPath)
+			return nil
+		},
+		Cmds: map[string]func(ts *testscript.TestScript, neg bool, args []string){
+			"checkui": checkui,
+		},
 	}
 
-	ents, err := os.ReadDir(".")
-	if err != nil {
+	if err := gotooltest.Setup(&p); err != nil {
 		t.Fatal(err)
 	}
+	testscript.Run(t, p)
+}
 
-	wd, err := os.Getwd()
+// checkui url [basic_auth_user basic_auth_pwd]
+func checkui(ts *testscript.TestScript, neg bool, args []string) {
+	if len(args) != 1 && len(args) != 3 {
+		ts.Fatalf(`checkui: wrong number of arguments. Call with "checkui URL [BASIC_USER BASIC_PWD]`)
+	}
+	u := args[0]
+	ts.Logf("checkui: loading web page %s", args[0])
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
-		t.Fatal(err)
+		ts.Fatalf("checkui: bad request: %v", err)
+	}
+	if len(args) == 3 {
+		ts.Logf("checkui: setting basic auth")
+		req.SetBasicAuth(args[1], args[2])
 	}
 
 	client := http.Client{
@@ -49,114 +66,21 @@ func TestExamples(t *testing.T) {
 				InsecureSkipVerify: true,
 			},
 		},
-	}
-	for _, ent := range ents {
-		if !ent.IsDir() || ent.Name() == "dev" {
-			continue
-		}
-		t.Run(ent.Name(), func(t *testing.T) {
-			// Some examples require files in their specific package, so by
-			// convention, we'll always be using the package as working
-			// directory.
-			if err := os.Chdir(filepath.Join(wd, ent.Name())); err != nil {
-				t.Fatal(err)
-			}
-
-			url, ok := examples[ent.Name()]
-			if !ok {
-				t.Fatalf("url not specified for example %q", ent.Name())
-				return
-			}
-			if url == "TODO" {
-				t.Skipf("skipping example %s for now (TODO)", ent.Name())
-				return
-			}
-
-			stop, err := gorun()
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer func() {
-				err := stop()
-				if err != nil {
-
-				}
-			}()
-
-			// Let the application we're testing the time to start listening for
-			// HTTP connections.
-			time.Sleep(1 * time.Second)
-			client.Timeout = 1 * time.Second
-
-			req, err := http.NewRequest(http.MethodGet, url, nil)
-			if err != nil {
-				t.Fatalf("bad requets: %v", err)
-			}
-			if strings.Contains(t.Name(), "middleware") {
-				req.SetBasicAuth("hello", "world")
-			}
-
-			resp, err := client.Do(req)
-			if err != nil {
-				t.Fatalf("HTTP get %s: %v", url, err)
-			}
-
-			body, err := io.ReadAll(resp.Body)
-			defer resp.Body.Close()
-
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			for _, s := range []string{"Heap", "Goroutines", "GC / CPU fraction"} {
-				if !bytes.Contains(body, []byte(s)) {
-					t.Errorf("body doesn't contain %s", s)
-				}
-			}
-			if t.Failed() {
-				fmt.Printf("body:%s\n", body)
-			}
-		})
-	}
-}
-
-// gorun runs 'go run .' and either returns an error immediately if there was
-// one, or returns a function that can be called at any moment in order to stop
-// both 'go run' and the started process.
-func gorun() (stop func() error, err error) {
-	out, err := exec.Command("go", "build", "-o", "out").CombinedOutput()
-	if testing.Verbose() {
-		if len(out) == 0 {
-			out = []byte("<no output>")
-		}
-		fmt.Printf("go build -o out, output:\n%s\n", string(out))
-	}
-	if err != nil {
-		return nil, fmt.Errorf("go build -o out: %v", err)
+		Timeout: 1 * time.Second,
 	}
 
-	cmd := exec.Command("./out")
-	errc := make(chan error)
-	go func() {
-		outb := &bytes.Buffer{}
-		cmd.Stderr = outb
-		cmd.Stdout = outb
-		errc <- cmd.Start()
-		// Ignore error since we kill the process ourselves.
-		_ = cmd.Wait()
+	// Let 1 second for the server to start and listen.
+	time.Sleep(1 * time.Second)
 
-		if testing.Verbose() {
-			out := "<no output>"
-			if outb.Len() > 0 {
-				out = outb.String()
-			}
-			fmt.Printf("command output:\n%s\n", out)
-		}
-	}()
+	resp, err := client.Do(req)
+	ts.Check(err)
 
-	if err := <-errc; err != nil {
-		return nil, fmt.Errorf("command error: %v", err)
+	body, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	ts.Check(err)
+
+	want := []byte(`id="plots"`)
+	if !bytes.Contains(body, want) {
+		ts.Fatalf("checkui: response body doesn't contain %s\n\nbody;\n\n%s", want, body)
 	}
-
-	return cmd.Process.Kill, nil
 }
