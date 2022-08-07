@@ -1,0 +1,15 @@
+go work init .
+go work use $STATSVIZ_MODULE
+
+cp $STATSVIZ_MODULE/_example/middleware/main.go .
+
+# Start an HTTP server with a statsviz endpoint
+go build main.go
+! exec ./main &
+checkui http://localhost:8090/debug/statsviz/ statsviz rocks
+
+
+-- go.mod --
+module example/middleware
+
+go 1.18
