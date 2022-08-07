@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -18,5 +19,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	fmt.Println("Point your browser to http://localhost:8091/debug/statsviz/")
+	log.Fatal(http.ListenAndServe(":8091", mux))
 }
