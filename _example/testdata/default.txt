@@ -8,7 +8,6 @@ go build main.go
 ! exec ./main &
 checkui http://localhost:8080/debug/statsviz/
 
-
 -- go.mod --
 module example/default
 
