@@ -14,4 +14,4 @@ jobs:
       - name: Tests
         run: go test -race ./...
       - name: Test Examples
-        run: cd _example && go test -race -v .
+        run: cd _example && go test -race .
