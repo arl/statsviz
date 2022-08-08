@@ -19,7 +19,7 @@ func main() {
 	go example.Work()
 
 	// Create the main listener and mux
-	l, err := net.Listen("tcp", ":8084")
+	l, err := net.Listen("tcp", ":8093")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -37,7 +37,7 @@ func main() {
 	app.Use("/debug/statsviz", adaptor.HTTPHandler(statsviz.Index))
 	ws.HandleFunc("/debug/statsviz/ws", statsviz.Ws)
 
-	fmt.Println("Point your browser to http://localhost:8084/debug/statsviz/")
+	fmt.Println("Point your browser to http://localhost:8093/debug/statsviz/")
 
 	// Server start
 	go http.Serve(m.Match(cmux.HTTP1HeaderField("Upgrade", "websocket")), ws)

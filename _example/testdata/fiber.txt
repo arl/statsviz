@@ -6,7 +6,7 @@ cp $STATSVIZ_MODULE/_example/fiber/main.go .
 # Start an HTTP server with a statsviz endpoint
 go build main.go
 ! exec ./main &
-checkui http://localhost:8084/debug/statsviz/
+checkui http://localhost:8093/debug/statsviz/
 
 -- go.mod --
 module example/fiber
