@@ -90,8 +90,7 @@ func (pl *List) WriteValues(w io.Writer) error {
 	gcStats := debug.GCStats{}
 	debug.ReadGCStats(&gcStats)
 	// In javascript, timestamps are in ms.
-	// TODO(arl) use UnixMilli when min version will be go1.17
-	lastgc := gcStats.LastGC.UnixNano() / 1e6
+	lastgc := gcStats.LastGC.UnixMilli()
 	m["lastgc"] = []int64{lastgc}
 	if err := json.NewEncoder(w).Encode(m); err != nil {
 		return fmt.Errorf("failed to write/convert metrics values to json: %v", err)
