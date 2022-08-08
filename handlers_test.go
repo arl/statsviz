@@ -50,8 +50,6 @@ func TestIndexAtRoot(t *testing.T) {
 	testIndex(t, IndexAtRoot("/test/"), "http://example.com/test/")
 }
 
-// TODO(arl): we need to add a test for hijack (plotsdef.js)
-
 func testWs(t *testing.T, f http.Handler, URL string) {
 	t.Helper()
 
@@ -189,4 +187,30 @@ func TestRegisterDefault(t *testing.T) {
 	}
 
 	testRegister(t, http.DefaultServeMux, "http://example.com/debug/statsviz/")
+}
+
+func Test_hijack(t *testing.T) {
+	tests := []struct {
+		url  string
+		want bool // true: leaf handler called
+	}{
+		{url: "http://localhost/foo/bar", want: true},
+		{url: "http://localhost/plotsdef.js", want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.url, func(t *testing.T) {
+			called := false
+			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				called = true
+			})
+
+			resp := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, tt.url, nil)
+
+			hijack(h)(resp, req)
+			if !called {
+				t.Errorf("leaf handler called=%t when requesting %v, want called=%t", called, tt.url, tt.want)
+			}
+		})
+	}
 }
