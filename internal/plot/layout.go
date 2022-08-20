@@ -16,6 +16,7 @@ type (
 		Title      string `json:"title"`
 		Type       string `json:"type"`
 		UpdateFreq int    `json:"updateFreq"`
+		InfoText   string `json:"infoText"`
 		Events     string `json:"events"`
 		Layout     struct {
 			Yaxis struct {
@@ -39,6 +40,7 @@ type (
 		Title      string `json:"title"`
 		Type       string `json:"type"`
 		UpdateFreq int    `json:"updateFreq"`
+		InfoText   string `json:"infoText"`
 		Events     string `json:"events"`
 		Layout     struct {
 			Yaxis struct {
