@@ -1,39 +1,74 @@
-const plotWidth = 630;
-const plotHeight = 450;
+var infoIcon = {
+    'width': 470,
+    'height': 530,
+    'path': 'M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 128c17.67 0 32 14.33 32 32c0 17.67-14.33 32-32 32S224 177.7 224 160C224 142.3 238.3 128 256 128zM296 384h-80C202.8 384 192 373.3 192 360s10.75-24 24-24h16v-64H224c-13.25 0-24-10.75-24-24S210.8 224 224 224h32c13.25 0 24 10.75 24 24v88h16c13.25 0 24 10.75 24 24S309.3 384 296 384z'
+}
 
-// https://plotly.com/javascript/configuration-options/
-const plotlyConfigBase = {
-    displaylogo: false,
-    modeBarButtonsToRemove: ['2D', 'zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'toggleSpikelines'],
-    toImageButtonOptions: {
-        format: 'png',
+const newConfigObject = (plotName) => {
+    return {
+        displaylogo: false,
+        modeBarButtonsToRemove: ['2D', 'zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'toggleSpikelines'],
+        modeBarButtonsToAdd: [{
+            name: 'info',
+            title: "Plot info",
+            icon: infoIcon,
+            val: false,
+            click: handleInfoButton,
+        }, ],
+        toImageButtonOptions: {
+            format: 'png',
+            filename: plotName,
+        }
     }
 }
 
-// https://plotly.com/javascript/reference/layout
-const plotlyLayoutBase = {
-    title: {
-        y: 0.88,
-        font: {
-            family: "Overpass",
-            size: 21,
+const newLayoutObject = (title, plotLayout) => {
+    const base = {
+        title: {
+            y: 0.88,
+            font: {
+                family: "Overpass",
+                size: 21,
+            },
+            text: title,
         },
-    },
-    width: plotWidth,
-    height: plotHeight,
-    hovermode: 'x',
-    xaxis: {
-        tickformat: '%H:%M:%S',
-        type: "date",
-    },
-    yaxis: {
-        exponentformat: 'SI',
-    },
-    showlegend: true,
-    legend: {
-        "orientation": "h"
-    },
-};
+        width: 630,
+        height: 450,
+        hovermode: 'x',
+        xaxis: {
+            tickformat: '%H:%M:%S',
+            type: "date",
+        },
+        yaxis: {
+            exponentformat: 'SI',
+        },
+        showlegend: true,
+        legend: {
+            "orientation": "h"
+        },
+    };
+
+    return {...base, ...plotLayout };
+}
+
+const handleInfoButton = (gd, ev) => {
+    let button = ev.currentTarget;
+    let val = (button.getAttribute('data-val') === 'true');
+
+    const options = {
+        allowHTML: true,
+        trigger: 'click',
+    };
+
+    const instance = tippy(ev.currentTarget, options);
+    instance.setContent("<div>" + gd.infoText + "</div>");
+    if (val) {
+        instance.hide();
+    } else {
+        instance.show();
+    }
+    button.setAttribute('data-val', !val);
+}
 
 /*
     Plot configuration object:
@@ -46,6 +81,7 @@ const plotlyLayoutBase = {
       "layout": object,                // (depends on plot type)
       "subplots": array,               // describe 'traces', only for 'scatter' or 'bar' plots
       "heatmap": object,               // heatmap details
+      "infoText": string,              // text showed in the plot 'info' tooltip
      }
 
     Layout for 'scatter' and 'bar' plots:
@@ -58,7 +94,7 @@ const plotlyLayoutBase = {
         }
     },
 
-    Layout" for heatmaps: // TODO(arl) simplify?
+    Layout" for heatmaps:
     {
         "yaxis": {
             "title": {
@@ -93,7 +129,6 @@ class Plot {
     /**
      * Construct a new Plot object, wrapping a Plotly chart. See above
      * documentation for plot configuration.
-     *
      */
     constructor(cfg) {
         this._cfg = cfg;
@@ -122,13 +157,12 @@ class Plot {
             });
         }
 
-        var layoutBase = JSON.parse(JSON.stringify(plotlyLayoutBase))
-        this._plotlyLayout = {...layoutBase, ...this._cfg.layout };
-        this._plotlyLayout.title.text = this._cfg.title;
+        this._plotlyLayout = newLayoutObject(this._cfg.title, this._cfg.layout);
+        this._plotlyConfig = newConfigObject(this._cfg.name);
+    }
 
-        var configBase = JSON.parse(JSON.stringify(plotlyConfigBase))
-        this._plotlyConfig = {...configBase }
-        this._plotlyConfig.toImageButtonOptions.filename = this._cfg.name
+    name() {
+        return this._cfg.name;
     }
 
     createElement(div, idx) {
@@ -139,6 +173,8 @@ class Plot {
         if (this._cfg.type == 'heatmap') {
             this._installHeatmapTooltip();
         }
+
+        this._htmlElt.infoText = this._cfg.infoText.split('\n').map(line => `<p>${line}</p>`).join('');
     }
 
     _installHeatmapTooltip() {

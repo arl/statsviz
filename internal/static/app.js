@@ -88,7 +88,7 @@ const attachPlots = () => {
 
     for (let i = 0; i < plots.length; i++) {
         const plot = plots[i];
-        let div = $('<div>');
+        let div = $(`<div id="${plot.name()}">`);
         plot.createElement(div[0], i)
         plotsDiv.append(div);
     }
