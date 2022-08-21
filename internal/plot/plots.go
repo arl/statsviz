@@ -1,6 +1,9 @@
 package plot
 
-import "runtime/metrics"
+import (
+	"math"
+	"runtime/metrics"
+)
 
 /*
  * heap (global)
@@ -458,6 +461,9 @@ func (p *sizeClasses) layout(samples []metrics.Sample) interface{} {
 		InfoText: `Using <b>/gc/heap/allocs-by-size</b> and <b>/gc/heap/frees-by-size</b>, shows the distribution of live bytes by size class.`,
 	}
 	h.Layout.Yaxis.Title = "size class"
+	h.Layout.Yaxis.TickMode = "array"
+	h.Layout.Yaxis.TickVals = []float64{1, 9, 17, 25, 31, 37, 43, 50, 58, 66}
+	h.Layout.Yaxis.TickText = []float64{1 << 4, 1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15}
 	return h
 }
 
@@ -477,7 +483,7 @@ func (p *sizeClasses) values(samples []metrics.Sample) interface{} {
 
 type gcpauses struct {
 	enabled    bool
-	histfactor int
+	histfactor int // if this changes, yaxis tickvals and ticktext must be recomputed (manually)
 	counts     [maxBuckets]uint64
 
 	idxgcpauses int
@@ -516,6 +522,12 @@ func (p *gcpauses) layout(samples []metrics.Sample) interface{} {
 		InfoText: `Shows <b>/gc/pauses:seconds</b>, the distribution of individual GC-related stop-the-world pause latencies`,
 	}
 	h.Layout.Yaxis.Title = "pause duration"
+	h.Layout.Yaxis.TickMode = "array"
+	h.Layout.Yaxis.TickVals = []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86}
+	ticks := []float64{-7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5}
+	for _, tick := range ticks {
+		h.Layout.Yaxis.TickText = append(h.Layout.Yaxis.TickText, math.Pow(10, tick))
+	}
 	return h
 }
 
@@ -530,7 +542,7 @@ func (p *gcpauses) values(samples []metrics.Sample) interface{} {
 
 type schedlat struct {
 	enabled    bool
-	histfactor int
+	histfactor int // if this changes, yaxis tickvals and ticktext must be recomputed (manually)
 	counts     [maxBuckets]uint64
 
 	idxschedlat int
@@ -569,6 +581,13 @@ func (p *schedlat) layout(samples []metrics.Sample) interface{} {
 		InfoText: `Shows <b>/sched/latencies:seconds</b>, the distribution of the time goroutines have spent in the scheduler in a runnable state before actually running`,
 	}
 	h.Layout.Yaxis.Title = "duration"
+	h.Layout.Yaxis.TickMode = "array"
+	h.Layout.Yaxis.TickVals = []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86}
+	ticks := []float64{-7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5}
+	for _, tick := range ticks {
+		h.Layout.Yaxis.TickText = append(h.Layout.Yaxis.TickText, math.Pow(10, tick))
+	}
+
 	return h
 }
 

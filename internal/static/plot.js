@@ -97,6 +97,9 @@ const handleInfoButton = (gd, ev) => {
     Layout" for heatmaps:
     {
         "yaxis": {
+            tickmode:  string  (supports 'array' only)
+            tickvals:  []float64
+            ticktext:  []float64
             "title": {
                 "text": "size class"
             }
@@ -130,6 +133,7 @@ class Plot {
      * Construct a new Plot object, wrapping a Plotly chart. See above
      * documentation for plot configuration.
      */
+
     constructor(cfg) {
         this._cfg = cfg;
         this._updateCount = 0;
@@ -159,6 +163,14 @@ class Plot {
 
         this._plotlyLayout = newLayoutObject(this._cfg.title, this._cfg.layout);
         this._plotlyConfig = newConfigObject(this._cfg.name);
+
+        if (this._plotlyLayout.yaxis.tickmode == "array") {
+            // Format yaxis ticks
+            const formatYUnit = formatFunction(this._cfg.hover.yunit);
+            for (let i = 0; i < this._plotlyLayout.yaxis.ticktext.length; i++) {
+                this._plotlyLayout.yaxis.ticktext[i] = formatYUnit(this._plotlyLayout.yaxis.ticktext[i]);
+            }
+        }
     }
 
     name() {

@@ -44,7 +44,10 @@ type (
 		Events     string `json:"events"`
 		Layout     struct {
 			Yaxis struct {
-				Title string `json:"title"`
+				Title    string    `json:"title"`
+				TickMode string    `json:"tickmode"`
+				TickVals []float64 `json:"tickvals"`
+				TickText []float64 `json:"ticktext"`
 			} `json:"yaxis"`
 		} `json:"layout"`
 		Colorscale []WeightedColor `json:"colorscale"`
