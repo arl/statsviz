@@ -42,8 +42,8 @@ const init = (plotdefs, buflen) => {
 }
 
 // push a new datapoint to all time series.
-const pushData = (ts, data) => {
-    series.times.push(ts);
+const pushData = (data) => {
+    series.times.push(data.timestamp);
 
     // Update time series.
     for (const [name, plotData] of series.plotData) {

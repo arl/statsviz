@@ -44,7 +44,7 @@ const connect = () => {
 
     let initDone = false;
     ws.onmessage = event => {
-        let allStats = JSON.parse(event.data)
+        let data = JSON.parse(event.data)
 
         if (!initDone) {
             configurePlots(PlotsDef);
@@ -56,7 +56,7 @@ const connect = () => {
             return;
         }
 
-        stats.pushData(new Date(), allStats);
+        stats.pushData(data);
         if (isPaused()) {
             return
         }

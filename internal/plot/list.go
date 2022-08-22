@@ -7,6 +7,7 @@ import (
 	"runtime/debug"
 	"runtime/metrics"
 	"sync"
+	"time"
 )
 
 type plot interface {
@@ -16,6 +17,8 @@ type plot interface {
 	values([]metrics.Sample) interface{}
 }
 
+// List holds all the plots that statsviz knows about. Some plots might be
+// disabled, if they rely on metrics that are unknown to the current Go version.
 type List struct {
 	plots []plot
 
@@ -72,6 +75,8 @@ func (pl *List) config() {
 	}
 }
 
+// WriteValues writes into w a JSON object containing the data points for all
+// plots at the current instant.
 func (pl *List) WriteValues(w io.Writer) error {
 	pl.mu.Lock()
 	defer pl.mu.Unlock()
@@ -92,6 +97,7 @@ func (pl *List) WriteValues(w io.Writer) error {
 	// In javascript, timestamps are in ms.
 	lastgc := gcStats.LastGC.UnixMilli()
 	m["lastgc"] = []int64{lastgc}
+	m["timestamp"] = time.Now().UnixMilli()
 	if err := json.NewEncoder(w).Encode(m); err != nil {
 		return fmt.Errorf("failed to write/convert metrics values to json: %v", err)
 	}
