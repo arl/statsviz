@@ -4,7 +4,7 @@ var infoIcon = {
     'path': 'M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 128c17.67 0 32 14.33 32 32c0 17.67-14.33 32-32 32S224 177.7 224 160C224 142.3 238.3 128 256 128zM296 384h-80C202.8 384 192 373.3 192 360s10.75-24 24-24h16v-64H224c-13.25 0-24-10.75-24-24S210.8 224 224 224h32c13.25 0 24 10.75 24 24v88h16c13.25 0 24 10.75 24 24S309.3 384 296 384z'
 }
 
-const newConfigObject = (plotName) => {
+const newConfigObject = (cfg) => {
     return {
         displaylogo: false,
         modeBarButtonsToRemove: ['2D', 'zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'toggleSpikelines'],
@@ -17,20 +17,24 @@ const newConfigObject = (plotName) => {
         }, ],
         toImageButtonOptions: {
             format: 'png',
-            filename: plotName,
+            filename: cfg.name,
         }
     }
 }
 
-const newLayoutObject = (title, plotLayout) => {
-    const base = {
+const copyArrayOrNull = (o) => {
+    return Array.isArray(o) && [...o] || null;
+}
+
+const newLayoutObject = (cfg) => {
+    const layout = {
         title: {
             y: 0.88,
             font: {
                 family: "Overpass",
                 size: 21,
             },
-            text: title,
+            text: cfg.title,
         },
         width: 630,
         height: 450,
@@ -41,6 +45,10 @@ const newLayoutObject = (title, plotLayout) => {
         },
         yaxis: {
             exponentformat: 'SI',
+            tickmode: cfg.layout.yaxis.tickmode,
+            ticktext: copyArrayOrNull(cfg.layout.yaxis.ticktext),
+            tickvals: copyArrayOrNull(cfg.layout.yaxis.tickvals),
+            title: cfg.layout.yaxis.title,
         },
         showlegend: true,
         legend: {
@@ -48,7 +56,15 @@ const newLayoutObject = (title, plotLayout) => {
         },
     };
 
-    return {...base, ...plotLayout };
+    if (layout.yaxis.tickmode == "array") {
+        // Format yaxis ticks
+        const formatYUnit = formatFunction(cfg.hover.yunit);
+        for (let i = 0; i < layout.yaxis.ticktext.length; i++) {
+            layout.yaxis.ticktext[i] = formatYUnit(layout.yaxis.ticktext[i]);
+        }
+    }
+
+    return layout;
 }
 
 const handleInfoButton = (gd, ev) => {
@@ -161,16 +177,8 @@ class Plot {
             });
         }
 
-        this._plotlyLayout = newLayoutObject(this._cfg.title, this._cfg.layout);
-        this._plotlyConfig = newConfigObject(this._cfg.name);
-
-        if (this._plotlyLayout.yaxis.tickmode == "array") {
-            // Format yaxis ticks
-            const formatYUnit = formatFunction(this._cfg.hover.yunit);
-            for (let i = 0; i < this._plotlyLayout.yaxis.ticktext.length; i++) {
-                this._plotlyLayout.yaxis.ticktext[i] = formatYUnit(this._plotlyLayout.yaxis.ticktext[i]);
-            }
-        }
+        this._plotlyLayout = newLayoutObject(cfg);
+        this._plotlyConfig = newConfigObject(cfg);
     }
 
     name() {
@@ -180,7 +188,8 @@ class Plot {
     createElement(div, idx) {
         this._htmlElt = div;
         this._plotIdx = idx;
-        // Create plot with dummy data, removing the 'bad time formatting' warning at startup.
+        // Pass a single data with no data to create an empty plot, this removes
+        // the 'bad time formatting' warning at startup.
         Plotly.newPlot(this._htmlElt, [{ x: new Date() }], this._plotlyLayout, this._plotlyConfig);
         if (this._cfg.type == 'heatmap') {
             this._installHeatmapTooltip();

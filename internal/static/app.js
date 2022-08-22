@@ -84,7 +84,7 @@ const configurePlots = (plotdefs) => {
 const attachPlots = () => {
     let row = null;
     let plotsDiv = $('#plots');
-    plotsDiv.empty()
+    plotsDiv.empty();
 
     for (let i = 0; i < plots.length; i++) {
         const plot = plots[i];
