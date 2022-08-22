@@ -653,6 +653,50 @@ func (p *cgo) values(samples []metrics.Sample) interface{} {
 }
 
 /*
+ * gc stack size
+ */
+
+type gcStackSize struct {
+	enabled  bool
+	idxstack int
+}
+
+func makeGCStackSize(idxs map[string]int) *gcStackSize {
+	idxstack, ok := idxs["/gc/stack/starting-size:bytes"]
+
+	return &gcStackSize{
+		enabled:  ok,
+		idxstack: idxstack,
+	}
+}
+
+func (p *gcStackSize) name() string    { return "gc/stack-size" }
+func (p *gcStackSize) isEnabled() bool { return p.enabled }
+
+func (p *gcStackSize) layout(_ []metrics.Sample) interface{} {
+	s := Scatter{
+		Name:  p.name(),
+		Title: "Starting size of goroutines stacks",
+		Type:  "scatter",
+		Subplots: []Subplot{
+			{
+				Name:    "goroutines stack starting size",
+				Unitfmt: "%{y:.4s}B",
+			},
+		},
+		InfoText: "Shows the stack size of new goroutines, <b>/gc/stack/starting-size:bytes</b>",
+	}
+
+	s.Layout.Yaxis.Title = "bytes"
+	return s
+}
+
+func (p *gcStackSize) values(samples []metrics.Sample) interface{} {
+	stackSize := samples[p.idxstack].Value.Uint64()
+	return []uint64{stackSize}
+}
+
+/*
  * helpers
  */
 
