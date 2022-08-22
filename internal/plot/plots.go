@@ -598,6 +598,61 @@ func (p *schedlat) values(samples []metrics.Sample) interface{} {
 }
 
 /*
+ * cgo
+ */
+
+type cgo struct {
+	enabled  bool
+	idxgo2c  int
+	lastgo2c uint64
+}
+
+func makeCGOPlot(idxs map[string]int) *cgo {
+	idxgo2c, ok := idxs["/cgo/go-to-c-calls:calls"]
+
+	return &cgo{
+		enabled:  ok,
+		idxgo2c:  idxgo2c,
+		lastgo2c: math.MaxUint64,
+	}
+}
+
+func (p *cgo) name() string    { return "cgo" }
+func (p *cgo) isEnabled() bool { return p.enabled }
+
+func (p *cgo) layout(_ []metrics.Sample) interface{} {
+	s := Scatter{
+		Name:  p.name(),
+		Title: "CGO Calls",
+		Type:  "bar",
+		Subplots: []Subplot{
+			{
+				Name:    "calls from go to c",
+				Unitfmt: "%{y}",
+				Color:   "red",
+			},
+		},
+		InfoText: "Shows the rate of calls made from Go to C by the current process, per unit of time. Uses <b>/cgo/go-to-c-calls:calls</b>",
+	}
+
+	s.Layout.Yaxis.Title = "calls"
+	return s
+}
+
+func (p *cgo) values(samples []metrics.Sample) interface{} {
+	go2c := samples[p.idxgo2c].Value.Uint64()
+	curgo2c := go2c - p.lastgo2c
+	if math.MaxUint64 == p.lastgo2c {
+		// We don't want a big spike at statsviz launch in case the process has
+		// been running for some time and curgo2c is high.
+		curgo2c = 0
+	}
+	p.lastgo2c = go2c
+
+	return []uint64{curgo2c}
+}
+
+/*
  * helpers
  */
 

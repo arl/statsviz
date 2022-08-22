@@ -59,6 +59,7 @@ func (pl *List) config() {
 	pl.plots = append(pl.plots, makeSizeClassesPlot(pl.idxs))
 	pl.plots = append(pl.plots, makeGCPausesPlot(pl.idxs))
 	pl.plots = append(pl.plots, makeSchedLatPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeCGOPlot(pl.idxs))
 
 	metrics.Read(pl.samples)
 
@@ -83,21 +84,21 @@ func (pl *List) WriteValues(w io.Writer) error {
 
 	metrics.Read(pl.samples)
 
+	// lastgc time series is used as source to represent garbage collection
+	// timestamps as vertical bars on certain plots.
+	gcStats := debug.GCStats{}
+	debug.ReadGCStats(&gcStats)
+
 	m := make(map[string]interface{})
 	for _, p := range pl.plots {
 		if p.isEnabled() {
 			m[p.name()] = p.values(pl.samples)
 		}
 	}
-
-	// lastgc time series is used as source to represent garbage collection
-	// timestamps as vertical bars on certain plots.
-	gcStats := debug.GCStats{}
-	debug.ReadGCStats(&gcStats)
 	// In javascript, timestamps are in ms.
-	lastgc := gcStats.LastGC.UnixMilli()
-	m["lastgc"] = []int64{lastgc}
+	m["lastgc"] = []int64{gcStats.LastGC.UnixMilli()}
 	m["timestamp"] = time.Now().UnixMilli()
+
 	if err := json.NewEncoder(w).Encode(m); err != nil {
 		return fmt.Errorf("failed to write/convert metrics values to json: %v", err)
 	}
