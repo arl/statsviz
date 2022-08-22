@@ -1,6 +1,7 @@
 package statsviz
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/arl/statsviz/internal/static"
 	"github.com/gorilla/websocket"
 )
 
@@ -30,8 +32,13 @@ func testIndex(t *testing.T, f http.Handler, url string) {
 		t.Errorf("header[Content-Type] %s, want %s", resp.Header.Get("Content-Type"), "text/html; charset=utf-8")
 	}
 
-	if !strings.Contains(string(body), `id="plots"`) {
-		t.Errorf("body doesn't contain %q", `id="plots"`)
+	html, err := static.Assets.ReadFile("index.html")
+	if err != nil {
+		t.Fatalf("couldn't read index.html from assets Fs: %v", err)
+	}
+
+	if !bytes.Equal(html, body) {
+		t.Errorf("read body is not that of index.html from assets")
 	}
 }
 
@@ -190,27 +197,19 @@ func TestRegisterDefault(t *testing.T) {
 }
 
 func Test_hijack(t *testing.T) {
-	tests := []struct {
-		url  string
-		want bool // true: leaf handler called
-	}{
-		{url: "http://localhost/foo/bar", want: true},
-		{url: "http://localhost/plotsdef.js", want: false},
+	// Check that the file server has correctly been hijacked: 'plotsdef.js'
+	// doesn't actually exist, it is generated on the fly.
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/plotsdef.js", nil)
+	hijack(IndexAtRoot("/debug/statsviz/"))(w, req)
+
+	resp := w.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("http status %v, want %v", resp.StatusCode, http.StatusOK)
 	}
-	for _, tt := range tests {
-		t.Run(tt.url, func(t *testing.T) {
-			called := false
-			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				called = true
-			})
 
-			resp := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodGet, tt.url, nil)
-
-			hijack(h)(resp, req)
-			if !called {
-				t.Errorf("leaf handler called=%t when requesting %v, want called=%t", called, tt.url, tt.want)
-			}
-		})
+	contentType := "text/javascript; charset=utf-8"
+	if resp.Header.Get("Content-Type") != contentType {
+		t.Errorf("header[Content-Type] %s, want %s", resp.Header.Get("Content-Type"), contentType)
 	}
 }
