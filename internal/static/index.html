@@ -7,12 +7,16 @@
     <meta name="description" content="Statsviz interface" />
     <link rel="stylesheet" href="./bootstrap.min.css" />
     <link rel="stylesheet" href="./statsviz.css" />
+    <link rel="stylesheet" href="./bootstrap-toggle.min.css">
+    <link rel="stylesheet" href="./css/font.awesome-6.1.2-all.min.css">
     <script src="./jquery-3.6.0.min.js"></script>
     <script src="./plotly-basic-2.12.1.min.js"></script>
     <script src="./plotly-cartesian-2.12.1.min.js"></script>
     <script type="module" src="./bootstrap.bundle.min.js"></script>
     <script src="./popperjs-core2"></script>
     <script src="./tippy.js@6"></script>
+    <script src="./bootstrap-toggle.min.js"></script>
+    <script src="./font.awesome-6.1.2-all.min.js"></script>
 </head>
 
 <body>
@@ -32,7 +36,18 @@
                     </li>
                 </ul>
             </div>
-
+            <span title="show/hide GC events">
+                <input id="show_gc" type="checkbox" data-toggle="toggle" data-onstyle="default" data-on="<span style='color:black'><i class='fa-solid fa-trash-can'></i></span>" data-off="<span style='color:lightgrey'><i class='fa-solid fa-trash-can'></i></span>"
+            data-size="mini" data-bs-toggle="tooltip">
+            </span>
+            <select data-bs-toggle="tooltip" title="time range" id="select_timerange">
+                <option selected value="60">1 minute</option>
+                <option value="300">5 minute</option>
+                <option value="600">10 minutes</option>
+              </select>
+            <span title="play/pause">
+                <input id="play_pause" type="checkbox" data-toggle="toggle" data-onstyle="default" data-on="<i class='fa fa-play'></i>" data-off="<i class='fa fa-pause'></i>" data-size="mini" data-bs-toggle="tooltip">
+            </span>
         </div>
     </nav>
 

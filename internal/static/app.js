@@ -11,7 +11,7 @@ const buildWebsocketURI = () => {
     return ws_prot + "//" + loc.host + loc.pathname + "ws"
 }
 
-const dataRetentionSeconds = 60;
+const dataRetentionSeconds = 600;
 var timeout = 250;
 
 const clamp = (val, min, max) => {
@@ -20,8 +20,12 @@ const clamp = (val, min, max) => {
     return val;
 }
 
-/* WebSocket connection handling */
+/* nav bar ui management */
+let paused = false;
+let show_gc = true;
+let timerange = 60;
 
+/* WebSocket connection handling */
 const connect = () => {
     const uri = buildWebsocketURI();
     let ws = new WebSocket(uri);
@@ -52,12 +56,22 @@ const connect = () => {
 
             attachPlots();
 
+            $('#play_pause').change(() => { paused = !paused; });
+            $('#show_gc').change(() => {
+                show_gc = !show_gc;
+                updatePlots();
+            });
+            $('#select_timerange').click(() => {
+                const val = parseInt($("#select_timerange option:selected").val(), 10);
+                timerange = val;
+                updatePlots();
+            });
             initDone = true;
             return;
         }
 
         stats.pushData(data);
-        if (isPaused()) {
+        if (paused) {
             return
         }
         updatePlots(PlotsDef.events);
@@ -66,12 +80,6 @@ const connect = () => {
 
 connect();
 
-/* plots management */
-
-// TODO(arl) not used for now
-let paused = false;
-const isPaused = () => { return paused; }
-const togglePause = () => { paused = !paused; }
 let plots = [];
 
 const configurePlots = (plotdefs) => {
@@ -98,15 +106,17 @@ const updatePlots = () => {
     // Create shapes.
     let shapes = new Map();
 
-    let data = stats.slice(dataRetentionSeconds);
+    let data = stats.slice(timerange);
 
-    for (const [name, serie] of data.events) {
-        shapes.set(name, plot.createVerticalLines(serie));
+    if (show_gc) {
+        for (const [name, serie] of data.events) {
+            shapes.set(name, plot.createVerticalLines(serie));
+        }
     }
 
-    // Always show the full range (dataRetentionSeconds) on x axis.
+    // Always show the full range on x axis.
     const now = data.times[data.times.length - 1];
-    let xrange = [now - dataRetentionSeconds * 1000, now];
+    let xrange = [now - timerange * 1000, now];
 
     plots.forEach(plot => {
         if (!plot.hidden) {
