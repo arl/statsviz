@@ -32,7 +32,7 @@ func IndexAtRoot(root string) http.HandlerFunc {
 // file server.
 func hijack(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "plotsdef.js" {
+		if r.URL.Path == "js/plotsdef.js" {
 			buf := &bytes.Buffer{}
 			buf.WriteString("export default ")
 			enc := json.NewEncoder(buf)

@@ -200,7 +200,7 @@ func Test_hijack(t *testing.T) {
 	// Check that the file server has correctly been hijacked: 'plotsdef.js'
 	// doesn't actually exist, it is generated on the fly.
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/plotsdef.js", nil)
+	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/js/plotsdef.js", nil)
 	hijack(IndexAtRoot("/debug/statsviz/"))(w, req)
 
 	resp := w.Result()
