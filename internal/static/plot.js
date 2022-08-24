@@ -40,9 +40,10 @@ const newLayoutObject = (cfg) => {
         height: 450,
         hovermode: 'x',
         xaxis: {
-            autorange: false,
             tickformat: '%H:%M:%S',
             type: "date",
+            fixedrange: true,
+            autorange: false,
         },
         yaxis: {
             exponentformat: 'SI',
@@ -50,6 +51,7 @@ const newLayoutObject = (cfg) => {
             ticktext: copyArrayOrNull(cfg.layout.yaxis.ticktext),
             tickvals: copyArrayOrNull(cfg.layout.yaxis.tickvals),
             title: cfg.layout.yaxis.title,
+            fixedrange: true,
         },
         showlegend: true,
         legend: {
