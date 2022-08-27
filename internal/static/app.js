@@ -60,7 +60,7 @@ const connect = () => {
         if (isPaused()) {
             return
         }
-        updatePlots(stats.slice(dataRetentionSeconds), PlotsDef.events);
+        updatePlots(PlotsDef.events);
     }
 }
 
@@ -94,17 +94,23 @@ const attachPlots = () => {
     }
 }
 
-const updatePlots = (data) => {
+const updatePlots = () => {
     // Create shapes.
     let shapes = new Map();
+
+    let data = stats.slice(dataRetentionSeconds);
 
     for (const [name, serie] of data.events) {
         shapes.set(name, plot.createVerticalLines(serie));
     }
 
+    // Always show the full range (dataRetentionSeconds) on x axis.
+    const now = data.times[data.times.length - 1];
+    let xrange = [now - dataRetentionSeconds * 1000, now];
+
     plots.forEach(plot => {
         if (!plot.hidden) {
-            plot.update(data, shapes);
+            plot.update(xrange, data, shapes);
         }
     });
 }

@@ -40,6 +40,7 @@ const newLayoutObject = (cfg) => {
         height: 450,
         hovermode: 'x',
         xaxis: {
+            autorange: false,
             tickformat: '%H:%M:%S',
             type: "date",
         },
@@ -266,12 +267,17 @@ class Plot {
         return this._dataTemplate;
     }
 
-    update(data, shapes) {
+    update(xrange, data, shapes) {
         this._updateCount++;
         if (this._cfg.updateFreq == 0 || (this._updateCount % this._cfg.updateFreq == 0)) {
+            // Update layout with vertical shapes if necessary.
             if (this._cfg.events != '') {
                 this._plotlyLayout.shapes = shapes.get(this._cfg.events);
             }
+
+            // Move the xaxis time range.
+            this._plotlyLayout.xaxis.range = xrange;
+
             Plotly.react(this._htmlElt, this._extractData(data), this._plotlyLayout, this._plotlyConfig);
         }
     }
