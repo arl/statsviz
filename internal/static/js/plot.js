@@ -31,8 +31,8 @@ const newLayoutObject = (cfg) => {
         title: {
             y: 0.88,
             font: {
-                family: "Overpass",
-                size: 21,
+                family: "Roboto",
+                size: 18,
             },
             text: cfg.title,
         },
