@@ -61,6 +61,7 @@ func (pl *List) config() {
 	pl.plots = append(pl.plots, makeSchedLatPlot(pl.idxs))
 	pl.plots = append(pl.plots, makeCGOPlot(pl.idxs))
 	pl.plots = append(pl.plots, makeGCStackSize(pl.idxs))
+	pl.plots = append(pl.plots, makeSchedEvents(pl.idxs))
 
 	metrics.Read(pl.samples)
 

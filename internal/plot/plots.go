@@ -598,6 +598,86 @@ func (p *schedlat) values(samples []metrics.Sample) interface{} {
 }
 
 /*
+ * scheduling events
+ */
+
+type schedEvents struct {
+	enabled bool
+
+	idxschedlat   int
+	idxGomaxprocs int
+	lasttot       uint64
+}
+
+func makeSchedEvents(idxs map[string]int) *schedEvents {
+	idxschedlat, ok1 := idxs["/sched/latencies:seconds"]
+	idxGomaxprocs, ok2 := idxs["/sched/gomaxprocs:threads"]
+
+	return &schedEvents{
+		enabled:       ok1 && ok2,
+		idxschedlat:   idxschedlat,
+		idxGomaxprocs: idxGomaxprocs,
+		lasttot:       math.MaxUint64,
+	}
+}
+
+func (p *schedEvents) name() string    { return "sched events" }
+func (p *schedEvents) isEnabled() bool { return p.enabled }
+
+func (p *schedEvents) layout(_ []metrics.Sample) interface{} {
+	s := Scatter{
+		Name:   p.name(),
+		Title:  "Goroutine scheduling events",
+		Type:   "scatter",
+		Events: "lastgc",
+		Subplots: []Subplot{
+			{
+				Name:    "events per unit of time",
+				Unitfmt: "%{y}",
+			},
+			{
+				Name:    "events per unit of time, per P",
+				Unitfmt: "%{y}",
+			},
+		},
+		InfoText: `<i>Events per second</i> is the sum of all buckets in <b>/sched/latencies:seconds</b>, that is, it tracks the total number of goroutine scheduling events. That number is multiplied by the constant 8.
+<i>Events per second per P (processor)</i> is <i>Events per second</i> divided by current <b>GOMAXPROCS</b>, from <b>/sched/gomaxprocs:threads</b>.`,
+	}
+	s.Layout.Yaxis.Title = "events"
+	return s
+}
+
+// gTrackingPeriod is currently always 8. Guard it behind build tags when that
+// changes. See https://github.com/golang/go/blob/go1.18.4/src/runtime/runtime2.go#L502-L504
+const currentGtrackingPeriod = 8
+
+func (p *schedEvents) values(samples []metrics.Sample) interface{} {
+	schedlat := samples[p.idxschedlat].Value.Float64Histogram()
+	gomaxprocs := samples[p.idxGomaxprocs].Value.Uint64()
+
+	total := uint64(0)
+	for _, v := range schedlat.Counts {
+		total += v
+	}
+	total *= currentGtrackingPeriod
+
+	curtot := total - p.lasttot
+	if p.lasttot == math.MaxUint64 {
+		// We don't want a big spike at statsviz launch in case the process has
+		// been running for some time and curtot is high.
+		curtot = 0
+	}
+	p.lasttot = total
+
+	ftot := float64(curtot)
+
+	return []float64{
+		ftot,
+		ftot / float64(gomaxprocs),
+	}
+}
+
+/*
  * cgo
  */
 
