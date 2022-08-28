@@ -36,6 +36,11 @@ const newLayoutObject = (cfg) => {
             },
             text: cfg.title,
         },
+        margin: {
+            t: 80,
+        },
+        paper_bgcolor: '#f8f8f8',
+        plot_bgcolor: '#ffffdd',
         width: 630,
         height: 450,
         hovermode: 'x',

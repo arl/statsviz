@@ -641,7 +641,8 @@ func (p *schedEvents) layout(_ []metrics.Sample) interface{} {
 			},
 		},
 		InfoText: `<i>Events per second</i> is the sum of all buckets in <b>/sched/latencies:seconds</b>, that is, it tracks the total number of goroutine scheduling events. That number is multiplied by the constant 8.
-<i>Events per second per P (processor)</i> is <i>Events per second</i> divided by current <b>GOMAXPROCS</b>, from <b>/sched/gomaxprocs:threads</b>.`,
+<i>Events per second per P (processor)</i> is <i>Events per second</i> divided by current <b>GOMAXPROCS</b>, from <b>/sched/gomaxprocs:threads</b>.
+NOTE: the multiplying factor comes from internal Go runtime source code and might change from version to version.`,
 	}
 	s.Layout.Yaxis.Title = "events"
 	return s
@@ -760,7 +761,7 @@ func (p *gcStackSize) layout(_ []metrics.Sample) interface{} {
 		Type:  "scatter",
 		Subplots: []Subplot{
 			{
-				Name:    "goroutines stack starting size",
+				Name:    "new goroutines stack size",
 				Unitfmt: "%{y:.4s}B",
 			},
 		},
