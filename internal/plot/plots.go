@@ -332,10 +332,10 @@ func (p *mspanMcache) layout(_ []metrics.Sample) interface{} {
 				Unitfmt: "%{y:.4s}B",
 			},
 		},
-		InfoText: `Mspan in-use is <b>/memory/classes/metadata/mspan/inuse</b>, the memory that is occupied by runtime mspan structures that are currently being used
-Mspan free is <b>/memory/classes/metadata/mspan/free</b>, the memory that is reserved for runtime mspan structures, but not in-use
-Mcache in-use is <b>/memory/classes/metadata/mcache/inuse</b>, the memory that is occupied by runtime mcache structures that are currently being used
-Mcache free is <b>/memory/classes/metadata/mcache/free</b>, the memory that is reserved for runtime mcache structures, but not in-use
+		InfoText: `Mspan in-use is <b>/memory/classes/metadata/mspan/inuse</b>, the memory that is occupied by runtime mspan structures that are currently being used.
+Mspan free is <b>/memory/classes/metadata/mspan/free</b>, the memory that is reserved for runtime mspan structures, but not in-use.
+Mcache in-use is <b>/memory/classes/metadata/mcache/inuse</b>, the memory that is occupied by runtime mcache structures that are currently being used.
+Mcache free is <b>/memory/classes/metadata/mcache/free</b>, the memory that is reserved for runtime mcache structures, but not in-use.
 `,
 	}
 	s.Layout.Yaxis.Title = "bytes"
@@ -390,7 +390,7 @@ func (p *goroutines) layout(_ []metrics.Sample) interface{} {
 				Unitfmt: "%{y}",
 			},
 		},
-		InfoText: "Goroutines is <b>/sched/goroutines</b>, the count of live goroutines",
+		InfoText: "Goroutines is <b>/sched/goroutines</b>, the count of live goroutines.",
 	}
 
 	s.Layout.Yaxis.Title = "goroutines"
@@ -483,7 +483,7 @@ func (p *sizeClasses) values(samples []metrics.Sample) interface{} {
 
 type gcpauses struct {
 	enabled    bool
-	histfactor int // if this changes, yaxis tickvals and ticktext must be recomputed (manually)
+	histfactor int
 	counts     [maxBuckets]uint64
 
 	idxgcpauses int
@@ -519,7 +519,7 @@ func (p *gcpauses) layout(samples []metrics.Sample) interface{} {
 			YUnit: "duration",
 			ZName: "pauses",
 		},
-		InfoText: `Shows <b>/gc/pauses:seconds</b>, the distribution of individual GC-related stop-the-world pause latencies`,
+		InfoText: `Shows <b>/gc/pauses:seconds</b>, the distribution of individual GC-related stop-the-world pause latencies.`,
 	}
 	h.Layout.Yaxis.Title = "pause duration"
 	h.Layout.Yaxis.TickMode = "array"
@@ -542,7 +542,7 @@ func (p *gcpauses) values(samples []metrics.Sample) interface{} {
 
 type schedlat struct {
 	enabled    bool
-	histfactor int // if this changes, yaxis tickvals and ticktext must be recomputed (manually)
+	histfactor int
 	counts     [maxBuckets]uint64
 
 	idxschedlat int
@@ -567,7 +567,7 @@ func (p *schedlat) layout(samples []metrics.Sample) interface{} {
 
 	h := Heatmap{
 		Name:       p.name(),
-		Title:      "Time in scheduler before a goroutine runs",
+		Title:      "Time goroutines spend in runnable state",
 		Type:       "heatmap",
 		UpdateFreq: 5,
 		Colorscale: GreenShades,
@@ -578,7 +578,7 @@ func (p *schedlat) layout(samples []metrics.Sample) interface{} {
 			YUnit: "duration",
 			ZName: "goroutines",
 		},
-		InfoText: `Shows <b>/sched/latencies:seconds</b>, the distribution of the time goroutines have spent in the scheduler in a runnable state before actually running`,
+		InfoText: `Shows <b>/sched/latencies:seconds</b>, the distribution of the time goroutines have spent in the scheduler in a runnable state before actually running.`,
 	}
 	h.Layout.Yaxis.Title = "duration"
 	h.Layout.Yaxis.TickMode = "array"
@@ -632,7 +632,7 @@ func (p *cgo) layout(_ []metrics.Sample) interface{} {
 				Color:   "red",
 			},
 		},
-		InfoText: "Shows the rate of calls made from Go to C by the current process, per unit of time. Uses <b>/cgo/go-to-c-calls:calls</b>",
+		InfoText: "Shows the count of calls made from Go to C by the current process, per unit of time. Uses <b>/cgo/go-to-c-calls:calls</b>",
 	}
 
 	s.Layout.Yaxis.Title = "calls"
@@ -642,7 +642,7 @@ func (p *cgo) layout(_ []metrics.Sample) interface{} {
 func (p *cgo) values(samples []metrics.Sample) interface{} {
 	go2c := samples[p.idxgo2c].Value.Uint64()
 	curgo2c := go2c - p.lastgo2c
-	if math.MaxUint64 == p.lastgo2c {
+	if p.lastgo2c == math.MaxUint64 {
 		// We don't want a big spike at statsviz launch in case the process has
 		// been running for some time and curgo2c is high.
 		curgo2c = 0
