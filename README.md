@@ -144,8 +144,8 @@ More details in [CONTRIBUTING.md](CONTRIBUTING.md).
 Roadmap
 -------
 
- - [ ] add stop-the-world duration heatmap
- - [ ] increase data retention
+ - [x] switch to runtime/metrics
+ - [x] increase data retention
  - [ ] light/dark mode selector
  - [x] plot image export as png
  - [ ] save timeseries to disk
