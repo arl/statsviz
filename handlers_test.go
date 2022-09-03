@@ -90,7 +90,7 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 		// heatmap (sizeClasses).
 		var data struct {
 			Goroutines  []uint64 `json:"goroutines"`
-			SizeClasses []uint64 `json:"sizeClasses"`
+			SizeClasses []uint64 `json:"size-classes"`
 		}
 		if err := ws.ReadJSON(&data); err != nil {
 			t.Fatalf("failed reading json from websocket: %v", err)
