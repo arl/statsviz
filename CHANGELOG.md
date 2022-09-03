@@ -1,6 +1,6 @@
 Unreleased yet
 ==============
-  * Switch to runtime/metrics as source, major refactor (#TODO)
+  * Switch to runtime/metrics as source, major refactor (#75)
     + New heatmap UI component
     + Dynamic plots definition based on server side generated config
     + Add many new plots (scheduler latency, scheduling events, and more)
