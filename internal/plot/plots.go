@@ -59,7 +59,7 @@ func (pl *List) config() {
 	pl.plots = append(pl.plots, makeGoroutinesPlot(pl.idxs))
 	pl.plots = append(pl.plots, makeSizeClassesPlot(pl.idxs))
 	pl.plots = append(pl.plots, makeGCPausesPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeSchedLatPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeRunnableTime(pl.idxs))
 	pl.plots = append(pl.plots, makeGCStackSize(pl.idxs))
 	pl.plots = append(pl.plots, makeSchedEvents(pl.idxs))
 	pl.plots = append(pl.plots, makeCGOPlot(pl.idxs))
@@ -299,7 +299,7 @@ func makeLiveObjectsPlot(idxs map[string]int) *liveObjects {
 	}
 }
 
-func (p *liveObjects) name() string    { return "live objects" }
+func (p *liveObjects) name() string    { return "live-objects" }
 func (p *liveObjects) isEnabled() bool { return p.enabled }
 
 func (p *liveObjects) layout(_ []metrics.Sample) interface{} {
@@ -350,7 +350,7 @@ func makeLiveBytesPlot(idxs map[string]int) *liveBytes {
 	}
 }
 
-func (p *liveBytes) name() string    { return "live bytes" }
+func (p *liveBytes) name() string    { return "live-bytes" }
 func (p *liveBytes) isEnabled() bool { return p.enabled }
 
 func (p *liveBytes) layout(_ []metrics.Sample) interface{} {
@@ -527,7 +527,7 @@ func makeSizeClassesPlot(idxs map[string]int) *sizeClasses {
 	}
 }
 
-func (p *sizeClasses) name() string    { return "sizeclasses" }
+func (p *sizeClasses) name() string    { return "size-classes" }
 func (p *sizeClasses) isEnabled() bool { return p.enabled }
 
 func (p *sizeClasses) layout(samples []metrics.Sample) interface{} {
@@ -601,7 +601,7 @@ func makeGCPausesPlot(idxs map[string]int) *gcpauses {
 	}
 }
 
-func (p *gcpauses) name() string    { return "gcpauses" }
+func (p *gcpauses) name() string    { return "gc-pauses" }
 func (p *gcpauses) isEnabled() bool { return p.enabled }
 
 func (p *gcpauses) layout(samples []metrics.Sample) interface{} {
@@ -611,7 +611,7 @@ func (p *gcpauses) layout(samples []metrics.Sample) interface{} {
 
 	h := Heatmap{
 		Name:       p.name(),
-		Title:      "Stop-the-world pause latencies",
+		Title:      "Stop-the-world Pause Latencies",
 		Type:       "heatmap",
 		UpdateFreq: 5,
 		Colorscale: PinkShades,
@@ -640,10 +640,10 @@ func (p *gcpauses) values(samples []metrics.Sample) interface{} {
 }
 
 /*
- * scheduler latencies
+ * time spent in runnable state
  */
 
-type schedlat struct {
+type runnableTime struct {
 	enabled    bool
 	histfactor int
 	counts     [maxBuckets]uint64
@@ -651,26 +651,26 @@ type schedlat struct {
 	idxschedlat int
 }
 
-func makeSchedLatPlot(idxs map[string]int) *schedlat {
+func makeRunnableTime(idxs map[string]int) *runnableTime {
 	idxschedlat, ok := idxs["/sched/latencies:seconds"]
 
-	return &schedlat{
+	return &runnableTime{
 		enabled:     ok,
 		idxschedlat: idxschedlat,
 	}
 }
 
-func (p *schedlat) name() string    { return "sched-latencies" }
-func (p *schedlat) isEnabled() bool { return p.enabled }
+func (p *runnableTime) name() string    { return "runnable-time" }
+func (p *runnableTime) isEnabled() bool { return p.enabled }
 
-func (p *schedlat) layout(samples []metrics.Sample) interface{} {
+func (p *runnableTime) layout(samples []metrics.Sample) interface{} {
 	schedlat := samples[p.idxschedlat].Value.Float64Histogram()
 	p.histfactor = downsampleFactor(len(schedlat.Buckets), maxBuckets)
 	buckets := downsampleBuckets(schedlat, p.histfactor)
 
 	h := Heatmap{
 		Name:       p.name(),
-		Title:      "Time goroutines spend in runnable state",
+		Title:      "Time Goroutines Spend in 'Runnable'",
 		Type:       "heatmap",
 		UpdateFreq: 5,
 		Colorscale: GreenShades,
@@ -694,7 +694,7 @@ func (p *schedlat) layout(samples []metrics.Sample) interface{} {
 	return h
 }
 
-func (p *schedlat) values(samples []metrics.Sample) interface{} {
+func (p *runnableTime) values(samples []metrics.Sample) interface{} {
 	schedlat := samples[p.idxschedlat].Value.Float64Histogram()
 
 	return downsampleCounts(schedlat, p.histfactor, p.counts[:])
@@ -724,13 +724,13 @@ func makeSchedEvents(idxs map[string]int) *schedEvents {
 	}
 }
 
-func (p *schedEvents) name() string    { return "sched events" }
+func (p *schedEvents) name() string    { return "sched-events" }
 func (p *schedEvents) isEnabled() bool { return p.enabled }
 
 func (p *schedEvents) layout(_ []metrics.Sample) interface{} {
 	s := Scatter{
 		Name:   p.name(),
-		Title:  "Goroutine scheduling events",
+		Title:  "Goroutine Scheduling Events",
 		Type:   "scatter",
 		Events: "lastgc",
 		Subplots: []Subplot{
@@ -854,13 +854,13 @@ func makeGCStackSize(idxs map[string]int) *gcStackSize {
 	}
 }
 
-func (p *gcStackSize) name() string    { return "gc/stack-size" }
+func (p *gcStackSize) name() string    { return "gc-stack-size" }
 func (p *gcStackSize) isEnabled() bool { return p.enabled }
 
 func (p *gcStackSize) layout(_ []metrics.Sample) interface{} {
 	s := Scatter{
 		Name:  p.name(),
-		Title: "Starting size of goroutines stacks",
+		Title: "Starting Size of Goroutines Stacks",
 		Type:  "scatter",
 		Subplots: []Subplot{
 			{
