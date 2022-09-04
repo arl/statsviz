@@ -78,48 +78,66 @@ predefined number of datapoints.
 
 ## Documentation
 
+### Go API
+
 Check out the API reference on [pkg.go.dev](https://pkg.go.dev/github.com/arl/statsviz#section-documentation).
 
 
-Plots
------
+### User interface
 
-On the plots where it matters, garbage collections are shown as vertical lines.
+The controls at the top of the page act on all plots:
 
-### Heap (global)
+<img alt="menu" src="https://github.com/arl/statsviz/raw/readme-docs/menu-001.png">
+
+ - the groom icon shows/hides the vertical lines representing garbage collections.
+ - the time range selector defines the visualized time span.
+ - the play/pause icon allows to stop plots from being refreshed.
+
+
+On top of each plot you'll find 2 icons:
+
+<img alt="menu" src="https://github.com/arl/statsviz/raw/readme-docs/plot.menu-001.png">
+
+ - the camera icon downloads the plot as a PNG image.
+ - the info icon shows information about the current plot.
+
+
+#### Plots
+
+##### Heap (global)
 <img alt="Heap (global) image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-global.png">
 
-### Heap (details)
+##### Heap (details)
 <img alt="Heap (details) image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-details.png">
 
-### Live Objects in Heap
-<img alt="Live Objects in Heap image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live%20objects.png">
+##### Live Objects in Heap
+<img alt="Live Objects in Heap image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-objects.png">
 
-### Live Bytes in Heap
-<img alt="Live Bytes in Heap image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live%20bytes.png">
+##### Live Bytes in Heap
+<img alt="Live Bytes in Heap image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-bytes.png">
 
-### MSpan/MCache
+##### MSpan/MCache
 <img alt="MSpan/MCache image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/mspan-mcache.png">
 
-### Goroutines
+##### Goroutines
 <img alt="Goroutines image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/goroutines.png">
 
-### Size Classes
-<img alt="Size Classes image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/sizeclasses.png">
+##### Size Classes
+<img alt="Size Classes image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/size-classes.png">
 
-### Stop-the-world Pause Latencies
-<img alt="Stop-the-world Pause Latencies image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gcpauses.png">
+##### Stop-the-world Pause Latencies
+<img alt="Stop-the-world Pause Latencies image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-pauses.png">
 
-### Time Goroutines Spend in 'Runnable'
-<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/sched-latencies.png">
+##### Time Goroutines Spend in 'Runnable'
+<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/runnable-time.png">
 
-### Starting Size of Goroutines Stacks
-<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc_stack-size.png">
+##### Starting Size of Goroutines Stacks
+<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-stack-size.png">
 
-### Goroutine Scheduling Events
-<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/sched%20events.png">
+##### Goroutine Scheduling Events
+<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/sched-events.png">
 
-### CGO Calls
+##### CGO Calls
 <img alt="CGO Calls image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cgo.png">
 
 
