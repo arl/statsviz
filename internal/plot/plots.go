@@ -165,9 +165,9 @@ func (p *heapGlobal) layout(_ []metrics.Sample) interface{} {
 				StackGroup: "one",
 			},
 		},
-		InfoText: `Heap in use is <b>/memory/classes/heap/objects + /memory/classes/heap/unused</b>. It amounts to the memory occupied by live objects and dead objects that are not yet marked free by the GC, plus some memory reserved for heap objects.
-Heap free is <b>/memory/classes/heap/free</b>, that is free memory that could be returned to the OS, but has not been.
-Heap released is <b>/memory/classes/heap/free</b>, memory that is free memory that has been returned to the OS.`,
+		InfoText: `<i>Heap in use</i> is <b>/memory/classes/heap/objects + /memory/classes/heap/unused</b>. It amounts to the memory occupied by live objects and dead objects that are not yet marked free by the GC, plus some memory reserved for heap objects.
+<i>Heap free</i> is <b>/memory/classes/heap/free</b>, that is free memory that could be returned to the OS, but has not been.
+<i>Heap released</i> is <b>/memory/classes/heap/free</b>, memory that is free memory that has been returned to the OS.`,
 	}
 	s.Layout.Yaxis.TickSuffix = "B"
 	s.Layout.Yaxis.Title = "bytes"
@@ -249,10 +249,10 @@ func (p *heapDetails) layout(_ []metrics.Sample) interface{} {
 				Unitfmt: "%{y:.4s}B",
 			},
 		},
-		InfoText: `Heap sys is <b>/memory/classes/heap/objects + /memory/classes/heap/unused + /memory/classes/heap/released + /memory/classes/heap/free</b>. It's an estimate of all the heap memory obtained form the OS.
-Heap objects is <b>/memory/classes/heap/objects</b>, the memory occupied by live objects and dead objects that have not yet been marked free by the GC.
-Heap stacks is <b>/memory/classes/heap/stacks</b>, the memory used for stack space.
-Heap goal is <b>gc/heap/goal</b>, the heap size target for the end of the GC cycle.`,
+		InfoText: `<i>Heap</i> sys is <b>/memory/classes/heap/objects + /memory/classes/heap/unused + /memory/classes/heap/released + /memory/classes/heap/free</b>. It's an estimate of all the heap memory obtained form the OS.
+<i>Heap objects</i> is <b>/memory/classes/heap/objects</b>, the memory occupied by live objects and dead objects that have not yet been marked free by the GC.
+<i>Heap stacks</i> is <b>/memory/classes/heap/stacks</b>, the memory used for stack space.
+<i>Heap goal</i> is <b>gc/heap/goal</b>, the heap size target for the end of the GC cycle.`,
 	}
 	s.Layout.Yaxis.TickSuffix = "B"
 	s.Layout.Yaxis.Title = "bytes"
@@ -315,7 +315,7 @@ func (p *liveObjects) layout(_ []metrics.Sample) interface{} {
 				Color:   RGBString(255, 195, 128),
 			},
 		},
-		InfoText: `Live objects is <b>/gc/heap/objects</b>. It's the number of objects, live or unswept, occupying heap memory."`,
+		InfoText: `<i>Live objects</i> is <b>/gc/heap/objects</b>. It's the number of objects, live or unswept, occupying heap memory.`,
 	}
 	s.Layout.Yaxis.Title = "objects"
 	return s
@@ -366,7 +366,7 @@ func (p *liveBytes) layout(_ []metrics.Sample) interface{} {
 				Color:   RGBString(135, 182, 218),
 			},
 		},
-		InfoText: `Live bytes is <b>/gc/heap/allocs - /gc/heap/frees</b>. It's the number of bytes currently allocated (and not yet GC'ec) to the heap by the application.`,
+		InfoText: `<i>Live bytes</i> is <b>/gc/heap/allocs - /gc/heap/frees</b>. It's the number of bytes currently allocated (and not yet GC'ec) to the heap by the application.`,
 	}
 	s.Layout.Yaxis.Title = "bytes"
 	return s
@@ -435,10 +435,10 @@ func (p *mspanMcache) layout(_ []metrics.Sample) interface{} {
 				Unitfmt: "%{y:.4s}B",
 			},
 		},
-		InfoText: `Mspan in-use is <b>/memory/classes/metadata/mspan/inuse</b>, the memory that is occupied by runtime mspan structures that are currently being used.
-Mspan free is <b>/memory/classes/metadata/mspan/free</b>, the memory that is reserved for runtime mspan structures, but not in-use.
-Mcache in-use is <b>/memory/classes/metadata/mcache/inuse</b>, the memory that is occupied by runtime mcache structures that are currently being used.
-Mcache free is <b>/memory/classes/metadata/mcache/free</b>, the memory that is reserved for runtime mcache structures, but not in-use.
+		InfoText: `<i>Mspan in-use</i> is <b>/memory/classes/metadata/mspan/inuse</b>, the memory that is occupied by runtime mspan structures that are currently being used.
+<i>Mspan free</i> is <b>/memory/classes/metadata/mspan/free</b>, the memory that is reserved for runtime mspan structures, but not in-use.
+<i>Mcache in-use</i> is <b>/memory/classes/metadata/mcache/inuse</b>, the memory that is occupied by runtime mcache structures that are currently being used.
+<i>Mcache free</i> is <b>/memory/classes/metadata/mcache/free</b>, the memory that is reserved for runtime mcache structures, but not in-use.
 `,
 	}
 	s.Layout.Yaxis.Title = "bytes"
@@ -493,7 +493,7 @@ func (p *goroutines) layout(_ []metrics.Sample) interface{} {
 				Unitfmt: "%{y}",
 			},
 		},
-		InfoText: "Goroutines is <b>/sched/goroutines</b>, the count of live goroutines.",
+		InfoText: "<i>Goroutines</i> is <b>/sched/goroutines</b>, the count of live goroutines.",
 	}
 
 	s.Layout.Yaxis.Title = "goroutines"
@@ -561,7 +561,7 @@ func (p *sizeClasses) layout(samples []metrics.Sample) interface{} {
 			YUnit: "bytes",
 			ZName: "objects",
 		},
-		InfoText: `Using <b>/gc/heap/allocs-by-size</b> and <b>/gc/heap/frees-by-size</b>, shows the distribution of live bytes by size class.`,
+		InfoText: `This heatmap shows the distribution of size classes, using <b>/gc/heap/allocs-by-size</b> and <b>/gc/heap/frees-by-size</b>.`,
 	}
 	h.Layout.Yaxis.Title = "size class"
 	h.Layout.Yaxis.TickMode = "array"
@@ -622,7 +622,7 @@ func (p *gcpauses) layout(samples []metrics.Sample) interface{} {
 			YUnit: "duration",
 			ZName: "pauses",
 		},
-		InfoText: `Shows <b>/gc/pauses:seconds</b>, the distribution of individual GC-related stop-the-world pause latencies.`,
+		InfoText: `This heatmap shows the distribution of individual GC-related stop-the-world pause latencies, uses <b>/gc/pauses:seconds</b>,.`,
 	}
 	h.Layout.Yaxis.Title = "pause duration"
 	h.Layout.Yaxis.TickMode = "array"
@@ -681,7 +681,7 @@ func (p *runnableTime) layout(samples []metrics.Sample) interface{} {
 			YUnit: "duration",
 			ZName: "goroutines",
 		},
-		InfoText: `Shows <b>/sched/latencies:seconds</b>, the distribution of the time goroutines have spent in the scheduler in a runnable state before actually running.`,
+		InfoText: `This heatmap shows the distribution of the time goroutines have spent in the scheduler in a runnable state before actually running, uses <b>/sched/latencies:seconds</b>.`,
 	}
 	h.Layout.Yaxis.Title = "duration"
 	h.Layout.Yaxis.TickMode = "array"
@@ -745,7 +745,7 @@ func (p *schedEvents) layout(_ []metrics.Sample) interface{} {
 		},
 		InfoText: `<i>Events per second</i> is the sum of all buckets in <b>/sched/latencies:seconds</b>, that is, it tracks the total number of goroutine scheduling events. That number is multiplied by the constant 8.
 <i>Events per second per P (processor)</i> is <i>Events per second</i> divided by current <b>GOMAXPROCS</b>, from <b>/sched/gomaxprocs:threads</b>.
-NOTE: the multiplying factor comes from internal Go runtime source code and might change from version to version.`,
+<b>NOTE</b>: the multiplying factor comes from internal Go runtime source code and might change from version to version.`,
 	}
 	s.Layout.Yaxis.Title = "events"
 	return s
@@ -868,7 +868,7 @@ func (p *gcStackSize) layout(_ []metrics.Sample) interface{} {
 				Unitfmt: "%{y:.4s}B",
 			},
 		},
-		InfoText: "Shows the stack size of new goroutines, <b>/gc/stack/starting-size:bytes</b>",
+		InfoText: "Shows the stack size of new goroutines, uses <b>/gc/stack/starting-size:bytes</b>",
 	}
 
 	s.Layout.Yaxis.Title = "bytes"
