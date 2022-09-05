@@ -100,39 +100,51 @@ On top of each plot you'll find 2 icons:
 #### Plots
 
 ##### Heap (global)
+
 <img alt="Heap (global) image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-global.png">
 
 ##### Heap (details)
+
 <img alt="Heap (details) image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-details.png">
 
 ##### Live Objects in Heap
+
 <img alt="Live Objects in Heap image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-objects.png">
 
 ##### Live Bytes in Heap
+
 <img alt="Live Bytes in Heap image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-bytes.png">
 
 ##### MSpan/MCache
+
 <img alt="MSpan/MCache image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/mspan-mcache.png">
 
 ##### Goroutines
+
 <img alt="Goroutines image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/goroutines.png">
 
 ##### Size Classes
+
 <img alt="Size Classes image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/size-classes.png">
 
 ##### Stop-the-world Pause Latencies
+
 <img alt="Stop-the-world Pause Latencies image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-pauses.png">
 
 ##### Time Goroutines Spend in 'Runnable'
+
 <img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/runnable-time.png">
 
 ##### Starting Size of Goroutines Stacks
+
 <img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-stack-size.png">
 
 ##### Goroutine Scheduling Events
+
 <img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/sched-events.png">
 
 ##### CGO Calls
+
 <img alt="CGO Calls image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cgo.png">
 
 
