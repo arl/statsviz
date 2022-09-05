@@ -16,32 +16,27 @@
 
 Visualise Go program runtime metrics data in real time: heap, objects, goroutines, GC pauses, scheduler, etc.
 
- - Import `"github.com/arl/statsviz"`
- - Register statsviz HTTP handlers
- - Start your program
- - Open your browser at `http://host:port/debug/statsviz`
- - Enjoy... 
-
-
 ## Usage
 
-Download the latest version of the `statsviz` module.
+Download the latest version:
 
     go get github.com/arl/statsviz@latest
 
 
-Register statsviz HTTP handlers on [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) (preferred method):
+Register statsviz endpoint on your server [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) (preferred method):
 
 ```go
 mux := http.NewServeMux()
 statsviz.Register(mux)
 ```
 
-Or register them with on `http.DefaultServeMux`:
+Or register on `http.DefaultServeMux`:
 
 ```go
 statsviz.RegisterDefault()
 ```
+
+By default statsviz is served at `/debug/statsviz/`.
 
 If your application is not already running an HTTP server, you need to start
 one. Add `"net/http"` and `"log"` to your imports and the following code to your
@@ -52,8 +47,6 @@ go func() {
     log.Println(http.ListenAndServe("localhost:6060", nil))
 }()
 ```
-
-By default the handled path is `/debug/statsviz/`.
 
 Then open your browser at http://localhost:6060/debug/statsviz/.
 
@@ -141,18 +134,17 @@ On top of each plot you'll find 2 icons:
 <img alt="CGO Calls image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cgo.png">
 
 
-## Examples directory
+## Examples
 
-Have a look at the [_example](./_example/README.md) directory to see various ways to use Statsviz, such as:
- - using `http.DefaultServeMux`
- - using your own `http.ServeMux`
+Check out the [_example](./_example/README.md) directory to see various ways to use Statsviz, such as:
+ - use of `http.DefaultServeMux` or your own `http.ServeMux`
  - wrap HTTP handler behind a middleware
- - register at `/foo/bar` instead of `/debug/statviz`
+ - register the web page at `/foo/bar` instead of `/debug/statviz`
  - use `https://` rather than `http://`
- - using with various Go HTTP libraries/frameworks:
+ - register statsviz handlers with various Go HTTP libraries/frameworks:
    - [fasthttp](https://github.com/valyala/fasthttp)
    - [gin](https://github.com/gin-gonic/gin)
-   - and many others thanks to awesome contributors!
+   - and many others thanks to many awesome contributors!
 
 
 ## Contributing
