@@ -11,10 +11,12 @@
 
 <p align="center">
   <img alt="Statsviz Gopher Logo" width="160" src="https://raw.githubusercontent.com/arl/statsviz/readme-docs/logo.png?sanitize=true">
+  <img alt="statsviz ui" width="450" align="right" src="https://github.com/arl/statsviz/raw/readme-docs/window.png">
 </p>
 <br />
 
-Visualise Go program runtime metrics data in real time: heap, objects, goroutines, GC pauses, scheduler, etc.
+Visualise Go program runtime metrics data in real time: heap, objects, goroutines, GC pauses, scheduler, etc. in your browser.
+
 
 ## Usage
 
