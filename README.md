@@ -161,6 +161,11 @@ Check out the [_example](./_example/README.md) directory to see various ways to 
    - and many others thanks to many awesome contributors!
 
 
+## Questions / Troubleshooting
+
+Use the [discussions](https://github.com/arl/statsviz/discussions) sections for questions.  
+Please use [issues](https://github.com/arl/statsviz/issues/new/choose) for bugs and feature requests.
+
 ## Contributing
 
 Pull-requests are welcome!
