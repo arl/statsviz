@@ -1,13 +1,18 @@
-on: [push, pull_request]
+on: [push]
 name: Coverage
 jobs:
-  coverage:
+  run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          fetch-depth: 2
-      - uses: actions/setup-go@v2
+          go-version: 1.19.x
+      - run: go test -coverprofile=coverage.txt
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
         with:
-          go-version: 1.16.x
-      - run: go test -coverprofile=coverage.txt && bash <(curl -s https://codecov.io/bash)
+          fail_ci_if_error: false
+          files: coverage.txt
+          name: codecov-umbrella
+          verbose: true

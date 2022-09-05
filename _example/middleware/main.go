@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -32,8 +33,11 @@ func main() {
 	const statsvizRoot = "/debug/statsviz"
 
 	mux := http.NewServeMux()
-	mux.Handle(statsvizRoot+"/", basicAuth(statsviz.IndexAtRoot(statsvizRoot), "hello", "world", ""))
+	mux.Handle(statsvizRoot+"/", basicAuth(statsviz.IndexAtRoot(statsvizRoot), "statsviz", "rocks", ""))
 	mux.HandleFunc(statsvizRoot+"/ws", statsviz.Ws)
 
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	fmt.Println("Point your browser to http://localhost:8090/debug/statsviz/")
+	fmt.Println("Basic auth user:     statsviz")
+	fmt.Println("Basic auth password: rocks")
+	log.Fatal(http.ListenAndServe(":8090", mux))
 }

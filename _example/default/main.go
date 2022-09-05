@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -14,5 +15,7 @@ func main() {
 
 	// Register statsviz handlers on the default serve mux.
 	statsviz.RegisterDefault()
+
+	fmt.Println("Point your browser to http://localhost:8080/debug/statsviz/")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

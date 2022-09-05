@@ -1,0 +1,18 @@
+go work init .
+go work use $STATSVIZ_MODULE
+
+cp $STATSVIZ_MODULE/_example/gin/main.go .
+
+# Start an HTTP server with a statsviz endpoint
+go build main.go
+! exec ./main &
+checkui http://localhost:8085/debug/statsviz/
+
+-- go.mod --
+module example/gin
+
+go 1.16
+
+require (
+	github.com/gin-gonic/gin v1.7.7
+)

@@ -1,63 +1,44 @@
-Statsviz
-========
+# Statsviz
 
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=round-square)](https://pkg.go.dev/github.com/arl/statsviz)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 [![Latest tag](https://img.shields.io/github/tag/arl/statsviz.svg)](https://github.com/arl/statsviz/tag/)  
+
+
 [![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-linux/badge.svg)](https://github.com/arl/statsviz/actions)
 [![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-others/badge.svg)](https://github.com/arl/statsviz/actions)
 [![codecov](https://codecov.io/gh/arl/statsviz/branch/main/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
 
 <p align="center">
-  <img alt="Statsviz Gopger Logo" width="250" src="https://raw.githubusercontent.com/arl/statsviz/readme-docs/logo.png?sanitize=true">
+  <img alt="Statsviz Gopher Logo" width="160" src="https://raw.githubusercontent.com/arl/statsviz/readme-docs/logo.png?sanitize=true">
+  <img alt="statsviz ui" width="450" align="right" src="https://github.com/arl/statsviz/raw/readme-docs/window.png">
 </p>
 <br />
 
-Instant Live Visualization of your Go application runtime statistics Heap, Objects, Goroutines, GC, etc.
-
- - Import `"github.com/arl/statsviz"`
- - Register statsviz HTTP handlers
- - Start your program
- - Open your browser at `http://host:port/debug/statsviz`
- - Enjoy... 
+Visualise Go program runtime metrics data in real time: heap, objects, goroutines, GC pauses, scheduler, etc. in your browser.
 
 
-How does that work?
------------------
+## Usage
 
-Statsviz serves 2 HTTP handlers.
+Download the latest version:
 
-The first one (by default `/debug/statsviz`) serves an html/js user interface showing 
-some initially empty plots.
-
-When you points your browser to statsviz user interface page, it connects to statsviz
-second HTTP handler. This second handler then upgrades the connection to the websocket
-protocol and starts a goroutine that periodically calls [runtime.ReadMemStats](https://golang.org/pkg/runtime/#ReadMemStats), 
-sending the result to the user interface, which inturn, updates the plots.
-
-Stats are stored in-browser inside a circular buffer which keep tracks of a predefined number of
-datapoints, 60, so one minute-worth of data, by default. You can change the frequency
-at which stats are sent by passing [SendFrequency](https://pkg.go.dev/github.com/arl/statsviz@v0.2.1#SendFrequency)
-to [Register](https://pkg.go.dev/github.com/arl/statsviz@v0.2.1#Register).
+    go get github.com/arl/statsviz@latest
 
 
-Usage
------
-
-    go get github.com/arl/statsviz
-
-Either `Register` statsviz HTTP handlers with the [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) you're using (preferred method):
+Register statsviz endpoint on your server [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) (preferred method):
 
 ```go
 mux := http.NewServeMux()
 statsviz.Register(mux)
 ```
 
-Or register them with the `http.DefaultServeMux`:
+Or register on `http.DefaultServeMux`:
 
 ```go
 statsviz.RegisterDefault()
 ```
+
+By default statsviz is served at `/debug/statsviz/`.
 
 If your application is not already running an HTTP server, you need to start
 one. Add `"net/http"` and `"log"` to your imports and the following code to your
@@ -69,88 +50,116 @@ go func() {
 }()
 ```
 
-By default the handled path is `/debug/statsviz/`.
-
 Then open your browser at http://localhost:6060/debug/statsviz/.
 
-Go version
-----------
 
-You need at least *go1.16* due to the use of [`go:embed`](https://pkg.go.dev/embed).  
-However you can still use Statsviz with older Go versions, at least *go1.12*, by locking the module to `statsviz@v0.0.4` in your `go.mod`.
+## How does that work?
 
-    go get github.com/arl/statsviz@v0.0.4
+Statsviz serves 2 HTTP endpoints:
 
-Documentation
--------------
+ - The first one (`/debug/statsviz`) serves a web page with statsviz
+user interface, showing initially empty plots.
 
-Check out the [API documentation](https://pkg.go.dev/github.com/arl/statsviz#section-documentation).
+ - The second HTTP handler (`/debug/statsviz/ws`) listens for a WebSocket
+connection that will be initiated by statsviz web page as soon as it's loaded in
+your browser.
 
+That's it, now your application sends all [runtime/metrics](https://pkg.go.dev/runtime/metrics) 
+data points to the web page, once per second.
 
-Plots
------
-
-On the plots where it matters, garbage collections are shown as vertical lines.
-
-### Heap
-<img alt="Heap plot image" src="https://github.com/arl/statsviz/raw/readme-docs/heap.png" width="600">
-
-### MSpans / MCaches
-<img alt="MSpan/MCache plot image" src="https://github.com/arl/statsviz/raw/readme-docs/mspan-mcache.png" width="600">
-
-### Size classes heatmap
-<img alt="Size classes heatmap image" src="https://github.com/arl/statsviz/raw/readme-docs/size-classes.png" width="600">
-
-### Objects
-<img alt="Objects plot image" src="https://github.com/arl/statsviz/raw/readme-docs/objects.png" width="600">
-
-### Goroutines
-<img alt="Goroutines plot image" src="https://github.com/arl/statsviz/raw/readme-docs/goroutines.png" width="600">
-
-### GC/CPU fraction
-<img alt="GC/CPU fraction plot image" src="https://github.com/arl/statsviz/raw/readme-docs/gc-cpu-fraction.png" width="600">
+Data points are stored in-browser in a circular buffer which keep tracks of a
+predefined number of datapoints.
 
 
-Examples
---------
+## Documentation
 
-Have a look at the [_example](./_example/README.md) directory to see various ways to use Statsviz, such as:
- - using `http.DefaultServeMux`
- - using your own `http.ServeMux`
+### Go API
+
+Check out the API reference on [pkg.go.dev](https://pkg.go.dev/github.com/arl/statsviz#section-documentation).
+
+
+### User interface
+
+The controls at the top of the page act on all plots:
+
+<img alt="menu" src="https://github.com/arl/statsviz/raw/readme-docs/menu-001.png">
+
+ - the groom icon shows/hides the vertical lines representing garbage collections.
+ - the time range selector defines the visualized time span.
+ - the play/pause icon allows to stop plots from being refreshed.
+
+
+On top of each plot you'll find 2 icons:
+
+<img alt="menu" src="https://github.com/arl/statsviz/raw/readme-docs/plot.menu-001.png">
+
+ - the camera icon downloads the plot as a PNG image.
+ - the info icon shows information about the current plot.
+
+
+#### Plots
+
+##### Heap (global)
+<img alt="Heap (global) image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-global.png">
+
+##### Heap (details)
+<img alt="Heap (details) image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-details.png">
+
+##### Live Objects in Heap
+<img alt="Live Objects in Heap image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-objects.png">
+
+##### Live Bytes in Heap
+<img alt="Live Bytes in Heap image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-bytes.png">
+
+##### MSpan/MCache
+<img alt="MSpan/MCache image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/mspan-mcache.png">
+
+##### Goroutines
+<img alt="Goroutines image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/goroutines.png">
+
+##### Size Classes
+<img alt="Size Classes image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/size-classes.png">
+
+##### Stop-the-world Pause Latencies
+<img alt="Stop-the-world Pause Latencies image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-pauses.png">
+
+##### Time Goroutines Spend in 'Runnable'
+<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/runnable-time.png">
+
+##### Starting Size of Goroutines Stacks
+<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-stack-size.png">
+
+##### Goroutine Scheduling Events
+<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/sched-events.png">
+
+##### CGO Calls
+<img alt="CGO Calls image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cgo.png">
+
+
+## Examples
+
+Check out the [_example](./_example/README.md) directory to see various ways to use Statsviz, such as:
+ - use of `http.DefaultServeMux` or your own `http.ServeMux`
  - wrap HTTP handler behind a middleware
- - register at `/foo/bar` instead of `/debug/statviz`
+ - register the web page at `/foo/bar` instead of `/debug/statviz`
  - use `https://` rather than `http://`
- - using with various Go HTTP libraries/frameworks:
+ - register statsviz handlers with various Go HTTP libraries/frameworks:
    - [fasthttp](https://github.com/valyala/fasthttp)
    - [gin](https://github.com/gin-gonic/gin)
-   - and many others thanks to awesome contributors!
+   - and many others thanks to many awesome contributors!
 
 
-Contributing
-------------
+## Contributing
 
 Pull-requests are welcome!
 More details in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 
-Roadmap
--------
-
- - [ ] add stop-the-world duration heatmap
- - [ ] increase data retention
- - [ ] light/dark mode selector
- - [x] plot image export as png
- - [ ] save timeseries to disk
- - [ ] load from disk previously saved timeseries
-
-
-Changelog
----------
+## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md).
 
 
-License
--------
+## License
 
-- [MIT License](LICENSE)
+ See [MIT License](LICENSE)

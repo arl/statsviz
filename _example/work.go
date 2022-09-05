@@ -14,7 +14,6 @@ func Work() {
 }
 
 func work(ctx context.Context, lvl int) {
-	println("work", lvl)
 	m := make(map[int]interface{})
 	tick := time.NewTicker(10 * time.Millisecond)
 
@@ -46,6 +45,9 @@ func work(ctx context.Context, lvl int) {
 			obj = make([]byte, 10*i%1024)
 		case 6, 7:
 			obj = make([]string, 512)
+			go func() {
+				time.Sleep(time.Second)
+			}()
 		case 8:
 			obj = make([]byte, 16*1024)
 		case 9:

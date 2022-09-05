@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -24,5 +25,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Fatal(http.ListenAndServeTLS(":8080", certFile, keyFile, mux))
+	fmt.Println("Point your browser to https://localhost:8087/debug/statsviz/")
+	log.Fatal(http.ListenAndServeTLS(":8087", certFile, keyFile, mux))
 }

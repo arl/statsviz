@@ -1,8 +1,8 @@
 package statsviz
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/arl/statsviz/internal/static"
 	"github.com/gorilla/websocket"
 )
 
@@ -21,7 +22,7 @@ func testIndex(t *testing.T, f http.Handler, url string) {
 	f.ServeHTTP(w, req)
 
 	resp := w.Result()
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("http status %v, want %v", resp.StatusCode, http.StatusOK)
@@ -31,8 +32,13 @@ func testIndex(t *testing.T, f http.Handler, url string) {
 		t.Errorf("header[Content-Type] %s, want %s", resp.Header.Get("Content-Type"), "text/html; charset=utf-8")
 	}
 
-	if !strings.Contains(string(body), "goroutines") {
-		t.Errorf("body doesn't contain %q", "goroutines")
+	html, err := static.Assets.ReadFile("index.html")
+	if err != nil {
+		t.Fatalf("couldn't read index.html from assets Fs: %v", err)
+	}
+
+	if !bytes.Equal(html, body) {
+		t.Errorf("read body is not that of index.html from assets")
 	}
 }
 
@@ -77,16 +83,26 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 	}
 	defer ws.Close()
 
-	// Wait for 2 messages and check that the payload is what we expect.
+	// Check the content of 2 consecutive payloads.
 	for i := 0; i < 2; i++ {
-		_, p, err := ws.ReadMessage()
-		if err != nil {
-			t.Fatalf("%v", err)
+
+		// Verifies that we've received 1 time series (goroutines) and one
+		// heatmap (sizeClasses).
+		var data struct {
+			Goroutines  []uint64 `json:"goroutines"`
+			SizeClasses []uint64 `json:"size-classes"`
+		}
+		if err := ws.ReadJSON(&data); err != nil {
+			t.Fatalf("failed reading json from websocket: %v", err)
 		}
 
-		var stats stats
-		if err := json.Unmarshal(p, &stats); err != nil {
-			t.Fatal(err)
+		// The time series must have one and only one element
+		if len(data.Goroutines) != 1 {
+			t.Errorf("len(goroutines) = %d, want 1", len(data.Goroutines))
+		}
+		// Heatmaps should have many elements, check that there's more than one.
+		if len(data.SizeClasses) <= 1 {
+			t.Errorf("len(sizeClasses) = %d, want > 1", len(data.SizeClasses))
 		}
 	}
 }
@@ -178,4 +194,22 @@ func TestRegisterDefault(t *testing.T) {
 	}
 
 	testRegister(t, http.DefaultServeMux, "http://example.com/debug/statsviz/")
+}
+
+func Test_hijack(t *testing.T) {
+	// Check that the file server has correctly been hijacked: 'plotsdef.js'
+	// doesn't actually exist, it is generated on the fly.
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/js/plotsdef.js", nil)
+	hijack(IndexAtRoot("/debug/statsviz/"))(w, req)
+
+	resp := w.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("http status %v, want %v", resp.StatusCode, http.StatusOK)
+	}
+
+	contentType := "text/javascript; charset=utf-8"
+	if resp.Header.Get("Content-Type") != contentType {
+		t.Errorf("header[Content-Type] %s, want %s", resp.Header.Get("Content-Type"), contentType)
+	}
 }
