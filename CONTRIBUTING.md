@@ -1,25 +1,28 @@
 Contributing
 ============
 
-First of all, thank you to consider contributing to this open-source project!
+First of all, thank you for considering to contribute to statsviz!
 
 Pull-requests are welcome!
 
 
-## Contribute to statviz Go library
+## Go library
 
-The statsviz Go API is very thin so there's not much to do and it's unlikely that
-the API will change, however some new options can be added to `statsviz.Register` 
-without breaking compatibility.
+The statsviz Go public API is relatively light so there's not much to do and at the moment
+it's unlikely that the API will change. However some new options can be added to
+`statsviz.Register` without breaking compatibility.
+
 That being said, there may be things to improve in the implementation, any
 contribution is very welcome!
 
+Big changes should be discussed on the issue tracker prior to start working on
+the code.
+
 If you've decided to contribute, thank you so much, please comment on the existing 
-issue or create one stating you want to tackle it, so we can assign it to you and 
-reduce the possibility of duplicate work.
+issue or create one stating what you want to tackle and why.
 
 
-## Contribute to the user interface (html/css/javascript)
+## User interface (html/css/javascript)
 
 The user interface aims to be simple, light and minimal.
 
@@ -27,15 +30,13 @@ Assets are located in the `internal/static` directory and are embedded with
 [`go:embed`](https://pkg.go.dev/embed).
 
 
-## Contribute by improving documentation
+## Documentation
 
 No contribution is too small, improvements to code comments and/or README
 are welcome!
 
-Thank you!
 
-
-## Contribute by adding an example
+## Examples
 
 There are many Go libraries to handle HTTP routing.
 
@@ -54,4 +55,4 @@ example showing how to register statsviz within library `foobar`:
  - the example should compile and run
  - when ran, statsviz interface should be accessible at http://localhost:8080/debug/statsviz
 
-Thanks a lot!
+Thank you!
