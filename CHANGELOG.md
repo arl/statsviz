@@ -1,5 +1,6 @@
-Unreleased yet
+v0.5.0 / 2022-09-05
 ==============
+  * Assets are `go:embed`ed, so the minimum go version is now go1.16 (#55)
   * Switch to runtime/metrics as source, major refactor (#75)
     + New heatmap UI component
     + Dynamic plots definition based on server side generated config
