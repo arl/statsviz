@@ -45,5 +45,5 @@ body {
     display: grid;
     height: 100%;
     /* column must be same as plotWidth (plot.js) */
-    grid-template-columns: repeat(auto-fill, minmax(630px, 0px));
+    grid-template-columns: repeat(auto-fill, minmax(0px, 630px));
 }
