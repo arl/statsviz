@@ -1,3 +1,7 @@
+v0.5.1 / 2022-09-30
+==============
+  * Fix UI on Firefox (#83)
+
 v0.5.0 / 2022-09-05
 ==============
   * Switch to runtime/metrics as source, major refactor (#75)
