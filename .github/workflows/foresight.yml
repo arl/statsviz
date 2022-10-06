@@ -1,0 +1,34 @@
+name: Foresight CI Workflow
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Collect Workflow Telemetry
+        if: always()
+        uses: runforesight/foresight-workflow-kit-action@v1
+        with:
+          api_key: ${{ secrets.FORESIGHT_API_KEY }}
+
+      - name: Go tests
+        run: go test -v -json -coverprofile cover.out ./... > ./test-report.json || true
+
+      - name: Analyze Test and Coverage Results
+        uses: runforesight/foresight-test-kit-action@v1
+        if: success() || failure()
+        with:
+          api_key: ${{ secrets.FORESIGHT_API_KEY }}
+          test_format: JSON
+          test_framework: GOLANG
+          test_path: "./test-report.json"
+          coverage_format: GOLANG
+          coverage_path: "./cover.out"
