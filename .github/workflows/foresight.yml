@@ -1,4 +1,4 @@
-name: Foresight CI Workflow
+name: Foresight CI workflow
 
 on: [push]
 
@@ -13,16 +13,19 @@ jobs:
         with:
           go-version: 1.19
 
-      - name: Collect Workflow Telemetry
+      - name: Collect workflow telemetry
         if: always()
         uses: runforesight/foresight-workflow-kit-action@v1
         with:
           api_key: ${{ secrets.FORESIGHT_API_KEY }}
 
-      - name: Go tests
-        run: go test -v -json -coverprofile cover.out ./... > ./test-report.json || true
+      - name: Run statsviz tests
+        run: go test -v -json ./... > ./test-report.json || true
 
-      - name: Analyze Test and Coverage Results
+      - name: Run _example tests
+        run: cd _example && go test -v -json ./... >> ./test-report.json || true
+
+      - name: Analyze test results
         uses: runforesight/foresight-test-kit-action@v1
         if: success() || failure()
         with:
@@ -30,5 +33,3 @@ jobs:
           test_format: JSON
           test_framework: GOLANG
           test_path: "./test-report.json"
-          coverage_format: GOLANG
-          coverage_path: "./cover.out"
