@@ -46,6 +46,18 @@ _Special thanks to_
 
 Visualise Go program runtime metrics data in real time: heap, objects, goroutines, GC pauses, scheduler, etc. in your browser.
 
+  - [Usage](#usage)
+  - [How does that work?](#how-does-that-work)
+  - [Documentation](#documentation)
+    - [Go API](#go-api)
+    - [User interface](#user-interface)
+      - [Plots](#plots)
+  - [Examples](#examples)
+  - [Questions / Troubleshooting](#questions--troubleshooting)
+  - [Contributing](#contributing)
+  - [Changelog](#changelog)
+  - [License](#license)
+
 
 ## Usage
 
