@@ -1,5 +1,35 @@
 # Statsviz
 
+**Sponsorhips:**
+
+_Special thanks to_
+
+<div align="center">
+<table cellpadding="5">
+<tbody align="center">
+<tr>
+<td style="width:50%">
+  <a href="https://www.runforesight.com/?utm_source=statsviz&utm_medium=sponsorship">
+    <img src="https://www.thundra.io/hubfs/RunForesight/GitHub%20Sponsorship%20banners/github-actions-observability.png" alt="Foresight" width="200">
+  </a>
+  <br/>
+<h3>Foresight: Increase CI/CD Health & Test Performance</h3>
+
+  <sub>
+  <p>
+  Foresight provides full visibility and deep insights into the health and performance of your tests and CI pipelines. Assess the risk of code changes, deal with flaky tests, see workflow and test trends over time, and improve the contributing experience with Foresight.
+  </p>
+
+  [Sign up now!](https://runforesight.com/?utm_source=statsviz&utm_medium=sponsorship)
+  </sub>
+</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=round-square)](https://pkg.go.dev/github.com/arl/statsviz)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 [![Latest tag](https://img.shields.io/github/tag/arl/statsviz.svg)](https://github.com/arl/statsviz/tag/)  
