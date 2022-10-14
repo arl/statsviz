@@ -24,9 +24,9 @@ _Special thanks to_ my **sponsors:**
 [![codecov](https://codecov.io/gh/arl/statsviz/branch/main/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
 [![Latest tag](https://img.shields.io/github/tag/arl/statsviz.svg)](https://github.com/arl/statsviz/tag/) 
 
+[![Foresight](https://github.com/arl/statsviz/raw/readme-docs/sponsor/fo-badge.s.png)](https://statsviz.app.runforesight.com/)
 [![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-linux/badge.svg)](https://github.com/arl/statsviz/actions)
 [![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-others/badge.svg)](https://github.com/arl/statsviz/actions)
-[![Foresight Docs](https://api-public.service.runforesight.com/api/v1/badge/test?repoId=cb74ed7d-09bb-4569-8514-1a9cba2c2077)](https://docs.runforesight.com/)
 
 
 # Statsviz
