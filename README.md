@@ -1,3 +1,23 @@
+[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=round-square)](https://pkg.go.dev/github.com/arl/statsviz)
+[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
+[![codecov](https://codecov.io/gh/arl/statsviz/branch/main/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
+[![Latest tag](https://img.shields.io/github/tag/arl/statsviz.svg)](https://github.com/arl/statsviz/tag/) 
+
+[![Foresight](https://github.com/arl/statsviz/raw/readme-docs/sponsor/fo-badge.s.png)](https://statsviz.app.runforesight.com/)
+[![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-linux/badge.svg)](https://github.com/arl/statsviz/actions)
+[![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-others/badge.svg)](https://github.com/arl/statsviz/actions)
+# Statsviz
+
+<p align="center">
+  <img alt="Statsviz Gopher Logo" width="120" src="https://raw.githubusercontent.com/arl/statsviz/readme-docs/logo.png?sanitize=true">
+  <img alt="statsviz ui" width="450" align="right" src="https://github.com/arl/statsviz/raw/readme-docs/window.png">
+</p>
+<br/>
+
+Visualise Go program runtime metrics data in real time: heap, objects, goroutines, GC pauses, scheduler, etc. in your browser.
+
+<hr>
+
 _Special thanks to_ my **sponsors:**
 
 <table cellpadding="5">
@@ -17,27 +37,6 @@ _Special thanks to_ my **sponsors:**
 </table>
 
 <br/><hr/>
-
-
-[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=round-square)](https://pkg.go.dev/github.com/arl/statsviz)
-[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
-[![codecov](https://codecov.io/gh/arl/statsviz/branch/main/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
-[![Latest tag](https://img.shields.io/github/tag/arl/statsviz.svg)](https://github.com/arl/statsviz/tag/) 
-
-[![Foresight](https://github.com/arl/statsviz/raw/readme-docs/sponsor/fo-badge.s.png)](https://statsviz.app.runforesight.com/)
-[![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-linux/badge.svg)](https://github.com/arl/statsviz/actions)
-[![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-others/badge.svg)](https://github.com/arl/statsviz/actions)
-
-
-# Statsviz
-
-<p align="center">
-  <img alt="Statsviz Gopher Logo" width="160" src="https://raw.githubusercontent.com/arl/statsviz/readme-docs/logo.png?sanitize=true">
-  <img alt="statsviz ui" width="450" align="right" src="https://github.com/arl/statsviz/raw/readme-docs/window.png">
-</p>
-<br/>
-
-Visualise Go program runtime metrics data in real time: heap, objects, goroutines, GC pauses, scheduler, etc. in your browser.
 
   - [Usage](#usage)
   - [How does that work?](#how-does-that-work)
