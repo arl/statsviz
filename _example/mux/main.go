@@ -13,11 +13,12 @@ func main() {
 	// Force the GC to work to make the plots "move".
 	go example.Work()
 
-	// Create a serve mux and register statsviz handlers.
+	// Create a serve mux.
 	mux := http.NewServeMux()
-	if err := statsviz.Register(mux); err != nil {
-		log.Fatal(err)
-	}
+
+	// Create statsviz endpoint and registers it with the serve mux.
+	se := statsviz.NewEndpoint()
+	se.Register(mux)
 
 	fmt.Println("Point your browser to http://localhost:8091/debug/statsviz/")
 	log.Fatal(http.ListenAndServe(":8091", mux))
