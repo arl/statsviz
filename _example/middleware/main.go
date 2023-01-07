@@ -32,9 +32,12 @@ func main() {
 
 	const statsvizRoot = "/debug/statsviz"
 
+	// Create statsviz endpoint.
+	se := statsviz.NewEndpoint()
+
 	mux := http.NewServeMux()
-	mux.Handle(statsvizRoot+"/", basicAuth(statsviz.IndexAtRoot(statsvizRoot), "statsviz", "rocks", ""))
-	mux.HandleFunc(statsvizRoot+"/ws", statsviz.Ws)
+	mux.Handle(statsvizRoot+"/", basicAuth(se.Index(), "statsviz", "rocks", ""))
+	mux.HandleFunc(statsvizRoot+"/ws", se.Ws())
 
 	fmt.Println("Point your browser to http://localhost:8090/debug/statsviz/")
 	fmt.Println("Basic auth user:     statsviz")
