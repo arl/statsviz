@@ -21,7 +21,10 @@ func main() {
 	go app.Listen(":8089")
 
 	mux := http.NewServeMux()
-	statsviz.Register(mux)
+
+	// Create and register statsviz endpoint.
+	se := statsviz.NewEndpoint()
+	se.Register(mux)
 	statsSrv := &http.Server{Addr: ":8088", Handler: mux}
 
 	fmt.Println("Point your browser to http://localhost:8088/debug/statsviz\n")
