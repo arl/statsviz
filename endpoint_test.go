@@ -47,16 +47,17 @@ func testIndex(t *testing.T, f http.Handler, url string) {
 func TestIndex(t *testing.T) {
 	t.Parallel()
 
-	testIndex(t, Index, "http://example.com/debug/statsviz/")
+	se := NewEndpoint()
+	testIndex(t, se.Index(), "http://example.com/debug/statsviz/")
 }
 
-func TestIndexAtRoot(t *testing.T) {
+func TestRoot(t *testing.T) {
 	t.Parallel()
 
-	testIndex(t, IndexAtRoot("/debug/"), "http://example.com/debug/")
-	testIndex(t, IndexAtRoot("/debug"), "http://example.com/debug/")
-	testIndex(t, IndexAtRoot("/"), "http://example.com/")
-	testIndex(t, IndexAtRoot("/test/"), "http://example.com/test/")
+	testIndex(t, NewEndpoint().WithRoot("/debug/").Index(), "http://example.com/debug/")
+	testIndex(t, NewEndpoint().WithRoot("/debug").Index(), "http://example.com/debug/")
+	testIndex(t, NewEndpoint().WithRoot("/").Index(), "http://example.com/")
+	testIndex(t, NewEndpoint().WithRoot("/test/").Index(), "http://example.com/test/")
 }
 
 func testWs(t *testing.T, f http.Handler, URL string) {
@@ -112,7 +113,7 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 func TestWs(t *testing.T) {
 	t.Parallel()
 
-	testWs(t, http.HandlerFunc(Ws), "http://example.com/debug/statsviz/ws")
+	testWs(t, NewEndpoint().Ws(), "http://example.com/debug/statsviz/ws")
 }
 
 func TestWsCantUpgrade(t *testing.T) {
@@ -120,7 +121,7 @@ func TestWsCantUpgrade(t *testing.T) {
 
 	req := httptest.NewRequest("GET", url, nil)
 	w := httptest.NewRecorder()
-	Ws(w, req)
+	NewEndpoint().Ws()(w, req)
 
 	if w.Result().StatusCode != http.StatusBadRequest {
 		t.Errorf("responded %v to %q with non-websocket-upgradable conn, want %v", w.Result().StatusCode, url, http.StatusBadRequest)
@@ -138,10 +139,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		if err := Register(mux); err != nil {
-			t.Fatal(err)
-		}
-
+		NewEndpoint().Register(mux)
 		testRegister(t, mux, "http://example.com/debug/statsviz/")
 	})
 
@@ -149,9 +147,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		if err := Register(mux, Root("")); err != nil {
-			t.Fatal(err)
-		}
+		NewEndpoint().WithRoot("").Register(mux)
 
 		testRegister(t, mux, "http://example.com/")
 	})
@@ -160,9 +156,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		if err := Register(mux, Root("/root/to/statsviz")); err != nil {
-			t.Fatal(err)
-		}
+		NewEndpoint().WithRoot("/root/to/statsviz").Register(mux)
 
 		testRegister(t, mux, "http://example.com/root/to/statsviz/")
 	})
@@ -171,10 +165,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		err := Register(mux, Root("/root/to/statsviz"), SendFrequency(100*time.Millisecond))
-		if err != nil {
-			t.Fatal(err)
-		}
+		NewEndpoint().WithRoot("/root/to/statsviz").WithSendInterval(100 * time.Millisecond).Register(mux)
 
 		testRegister(t, mux, "http://example.com/root/to/statsviz/")
 	})
@@ -183,18 +174,12 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		err := Register(mux, Root("/root/to/statsviz"), SendFrequency(0))
-		if err == nil {
-			t.Fatal(err)
-		}
+		NewEndpoint().WithRoot("/root/to/statsviz").WithSendInterval(0).Register(mux)
 	})
 }
 
 func TestRegisterDefault(t *testing.T) {
-	if err := RegisterDefault(); err != nil {
-		t.Fatal(err)
-	}
-
+	NewEndpoint().Register(http.DefaultServeMux)
 	testRegister(t, http.DefaultServeMux, "http://example.com/debug/statsviz/")
 }
 
@@ -203,7 +188,8 @@ func Test_hijack(t *testing.T) {
 	// doesn't actually exist, it is generated on the fly.
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/js/plotsdef.js", nil)
-	hijack(IndexAtRoot("/debug/statsviz/"))(w, req)
+
+	hijack(NewEndpoint().Index())(w, req)
 
 	resp := w.Result()
 	if resp.StatusCode != http.StatusOK {
