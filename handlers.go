@@ -1,10 +1,7 @@
 package statsviz
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -25,42 +22,6 @@ func IndexAtRoot(root string) http.HandlerFunc {
 	prefix := strings.TrimRight(root, "/") + "/"
 	assetsFS := http.FileServer(http.FS(static.Assets))
 	return http.StripPrefix(prefix, hijack(assetsFS)).ServeHTTP
-}
-
-// hijack returns a handler that hijacks requests for plotsdef.js, this file is
-// generated dynamically. Other requests are forwarded to h, typically a http
-// file server.
-func hijack(h http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "js/plotsdef.js" {
-			buf := &bytes.Buffer{}
-			buf.WriteString("export default ")
-			enc := json.NewEncoder(buf)
-			enc.SetIndent("", "  ")
-			if err := enc.Encode(plots.Config()); err != nil {
-				panic("error encoding plots definition: " + err.Error())
-			}
-			buf.WriteString(";")
-			w.Header().Add("Content-Length", strconv.Itoa(buf.Len()))
-			w.Header().Add("Content-Type", "text/javascript; charset=utf-8")
-			buf.WriteTo(w)
-			return
-		}
-		// Force Content-Type if needed.
-		if ct, ok := contentTypes[r.URL.Path]; ok {
-			w.Header().Add("Content-Type", ct)
-		}
-
-		h.ServeHTTP(w, r)
-	}
-}
-
-// Force Content-Type HTTP header for certain files of some javascript libraries
-// that have no extensions. Otherwise the http fileserver would serve them under
-// "Content-Type = text/plain".
-var contentTypes = map[string]string{
-	"libs/js/popperjs-core2": "text/javascript",
-	"libs/js/tippy.js@6":     "text/javascript",
 }
 
 // Ws is a default Websocket handler, created with NewWsHandler, sending statistics
