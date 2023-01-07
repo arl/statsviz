@@ -43,11 +43,20 @@ func (e *Endpoint) WithRoot(root string) *Endpoint {
 	return e
 }
 
+// indexAtRoot returns an index statsviz handler rooted at root. It's useful if
+// you desire your server to responds with the statsviz HTML page at a
+// path that is different than /debug/statsviz.
+func indexAtRoot(root string) http.HandlerFunc {
+	prefix := strings.TrimRight(root, "/") + "/"
+	assetsFS := http.FileServer(http.FS(static.Assets))
+	return http.StripPrefix(prefix, hijack(assetsFS)).ServeHTTP
+}
+
 // Register registers on the given mux the HTTP handlers required for statsviz
 // endpoint.
 func (e *Endpoint) Register(mux *http.ServeMux) {
-	mux.Handle(e.root+"/", IndexAtRoot(e.root))
-	mux.HandleFunc(e.root+"/ws", NewWsHandler(e.intv))
+	mux.Handle(e.root+"/", e.Index())
+	mux.HandleFunc(e.root+"/ws", e.Ws())
 }
 
 // Index returns the index handler, responding with statsviz user interface HTML
