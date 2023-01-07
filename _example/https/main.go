@@ -19,11 +19,12 @@ func main() {
 		keyFile  = "./key.pem"
 	)
 
+	// Create statsviz endpoint.
+	se := statsviz.NewEndpoint()
+
 	// Create a serve mux and register statsviz handlers.
 	mux := http.NewServeMux()
-	if err := statsviz.Register(mux); err != nil {
-		log.Fatal(err)
-	}
+	se.Register(mux)
 
 	fmt.Println("Point your browser to https://localhost:8087/debug/statsviz/")
 	log.Fatal(http.ListenAndServeTLS(":8087", certFile, keyFile, mux))
