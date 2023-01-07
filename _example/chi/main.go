@@ -12,17 +12,19 @@ import (
 )
 
 func main() {
-
 	// Force the GC to work to make the plots "move".
 	go example.Work()
 
-	// Create a Chi router and register statsviz handlers.
+	// Create statsviz endpoint.
+	se := statsviz.NewEndpoint()
+
+	// Create a chi router and register both handlers of the statviz endpoint.
 	r := chi.NewRouter()
-	r.Get("/debug/statsviz/ws", statsviz.Ws)
+	r.Get("/debug/statsviz/ws", se.Ws())
 	r.Get("/debug/statsviz", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/debug/statsviz/", 301)
 	})
-	r.Handle("/debug/statsviz/*", statsviz.Index)
+	r.Handle("/debug/statsviz/*", se.Index())
 
 	mux := http.NewServeMux()
 	mux.Handle("/", r)
