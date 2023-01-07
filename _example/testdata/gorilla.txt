@@ -1,18 +1,10 @@
-go work init .
-go work use $STATSVIZ_MODULE
+cp $STATSVIZ_ROOT/_example/gorilla/main.go .
+cp $STATSVIZ_ROOT/_example/gorilla/go.mod .
 
-cp $STATSVIZ_MODULE/_example/gorilla/main.go .
+go mod edit -replace=github.com/arl/statsviz=$STATSVIZ_ROOT
+go mod tidy
 
 # Start an HTTP server with a statsviz endpoint
 go build main.go
 ! exec ./main &
 checkui http://localhost:8086/debug/statsviz/
-
--- go.mod --
-module example/gorilla
-
-go 1.16
-
-require (
-	github.com/gorilla/mux v1.8.0
-)

@@ -1,20 +1,10 @@
-go work init .
-go work use $STATSVIZ_MODULE
+cp $STATSVIZ_ROOT/_example/fiber/main.go .
+cp $STATSVIZ_ROOT/_example/fiber/go.mod .
 
-cp $STATSVIZ_MODULE/_example/fiber/main.go .
+go mod edit -replace=github.com/arl/statsviz=$STATSVIZ_ROOT
+go mod tidy
 
 # Start an HTTP server with a statsviz endpoint
 go build main.go
 ! exec ./main &
 checkui http://localhost:8093/debug/statsviz/
-
--- go.mod --
-module example/fiber
-
-go 1.16
-
-require (
-	github.com/gofiber/adaptor/v2 v2.1.18
-	github.com/gofiber/fiber/v2 v2.27.0
-	github.com/soheilhy/cmux v0.1.5
-)

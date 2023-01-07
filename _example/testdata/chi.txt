@@ -1,18 +1,10 @@
-go work init .
-go work use $STATSVIZ_MODULE
+cp $STATSVIZ_ROOT/_example/chi/main.go .
+cp $STATSVIZ_ROOT/_example/chi/go.mod .
 
-cp $STATSVIZ_MODULE/_example/chi/main.go .
+go mod edit -replace=github.com/arl/statsviz=$STATSVIZ_ROOT
+go mod tidy
 
 # Start an HTTP server with a statsviz endpoint
 go build main.go
 ! exec ./main &
 checkui http://localhost:8081/debug/statsviz/
-
--- go.mod --
-module example/chi
-
-go 1.18
-
-require (
-        github.com/go-chi/chi v1.5.4
-)

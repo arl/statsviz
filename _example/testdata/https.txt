@@ -1,16 +1,12 @@
-go work init .
-go work use $STATSVIZ_MODULE
+cp $STATSVIZ_ROOT/_example/https/main.go .
+cp $STATSVIZ_ROOT/_example/https/cert.pem .
+cp $STATSVIZ_ROOT/_example/https/key.pem .
+cp $STATSVIZ_ROOT/_example/chi/go.mod .
 
-cp $STATSVIZ_MODULE/_example/https/main.go .
-cp $STATSVIZ_MODULE/_example/https/cert.pem .
-cp $STATSVIZ_MODULE/_example/https/key.pem .
+go mod edit -replace=github.com/arl/statsviz=$STATSVIZ_ROOT
+go mod tidy
 
 # Start an HTTP server with a statsviz endpoint
 go build main.go
 ! exec ./main &
 checkui https://localhost:8087/debug/statsviz/
-
--- go.mod --
-module example/default
-
-go 1.18
