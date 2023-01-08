@@ -14,8 +14,9 @@ import (
 )
 
 type Endpoint struct {
-	intv time.Duration
-	root string
+	intv  time.Duration // interval between consecutive metrics emission
+	root  string        // http path root
+	plots plot.List     // plots shown on the user interface
 }
 
 func NewEndpoint() *Endpoint {
@@ -57,7 +58,7 @@ func (e *Endpoint) Register(mux *http.ServeMux) {
 func (e *Endpoint) Index() http.HandlerFunc {
 	prefix := strings.TrimSuffix(e.root, "/") + "/"
 	assetsFS := http.FileServer(http.FS(static.Assets))
-	return http.StripPrefix(prefix, hijack(assetsFS)).ServeHTTP
+	return http.StripPrefix(prefix, hijack(assetsFS, &e.plots)).ServeHTTP
 }
 
 // Ws returns a handler that upgrades the HTTP connection to the WebSocket
@@ -77,14 +78,14 @@ func (e *Endpoint) Ws() http.HandlerFunc {
 
 		// Explicitly ignore this error. We don't want to spam standard output
 		// each time the other end of the websocket connection closes.
-		_ = sendStats(ws, e.intv)
+		_ = e.sendStats(ws, e.intv)
 	}
 }
 
 // hijack returns a handler that hijacks requests for plotsdef.js, this file is
 // generated dynamically. Other requests are forwarded to h, typically a http
 // file server.
-func hijack(h http.Handler) http.HandlerFunc {
+func hijack(h http.Handler, plots *plot.List) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "js/plotsdef.js" {
 			buf := &bytes.Buffer{}
@@ -117,10 +118,8 @@ var contentTypes = map[string]string{
 	"libs/js/tippy.js@6":     "text/javascript",
 }
 
-var plots plot.List
-
 // sendStats indefinitely send runtime statistics on the websocket connection.
-func sendStats(conn *websocket.Conn, frequency time.Duration) error {
+func (e *Endpoint) sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	tick := time.NewTicker(frequency)
 	defer tick.Stop()
 
@@ -128,14 +127,14 @@ func sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	// (started by a previous process for example) then plotsdef.js won't be
 	// requested. So, call plots.config manually to ensure that the data
 	// structures inside 'plots' are correctly initialized.
-	plots.Config()
+	e.plots.Config()
 
 	for range tick.C {
 		w, err := conn.NextWriter(websocket.TextMessage)
 		if err != nil {
 			return err
 		}
-		if err := plots.WriteValues(w); err != nil {
+		if err := e.plots.WriteValues(w); err != nil {
 			return err
 		}
 		if err := w.Close(); err != nil {
