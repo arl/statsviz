@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/arl/statsviz/internal/plot"
 	"github.com/arl/statsviz/internal/static"
 	"github.com/gorilla/websocket"
 )
@@ -43,15 +44,6 @@ func (e *Endpoint) WithRoot(root string) *Endpoint {
 	return e
 }
 
-// indexAtRoot returns an index statsviz handler rooted at root. It's useful if
-// you desire your server to responds with the statsviz HTML page at a
-// path that is different than /debug/statsviz.
-func indexAtRoot(root string) http.HandlerFunc {
-	prefix := strings.TrimRight(root, "/") + "/"
-	assetsFS := http.FileServer(http.FS(static.Assets))
-	return http.StripPrefix(prefix, hijack(assetsFS)).ServeHTTP
-}
-
 // Register registers on the given mux the HTTP handlers required for statsviz
 // endpoint.
 func (e *Endpoint) Register(mux *http.ServeMux) {
@@ -60,8 +52,8 @@ func (e *Endpoint) Register(mux *http.ServeMux) {
 }
 
 // Index returns the index handler, responding with statsviz user interface HTML
-// page. Use [WithRoot] if you wish statsviz user interface to be presented at
-// path different than /debug/statsviz.
+// page. Use [WithRoot] if you wish statsviz user interface to be served at a
+// path other than /debug/statsviz.
 func (e *Endpoint) Index() http.HandlerFunc {
 	prefix := strings.TrimSuffix(e.root, "/") + "/"
 	assetsFS := http.FileServer(http.FS(static.Assets))
@@ -123,4 +115,33 @@ func hijack(h http.Handler) http.HandlerFunc {
 var contentTypes = map[string]string{
 	"libs/js/popperjs-core2": "text/javascript",
 	"libs/js/tippy.js@6":     "text/javascript",
+}
+
+var plots plot.List
+
+// sendStats indefinitely send runtime statistics on the websocket connection.
+func sendStats(conn *websocket.Conn, frequency time.Duration) error {
+	tick := time.NewTicker(frequency)
+	defer tick.Stop()
+
+	// If the websocket connection is initiated by an already open web ui
+	// (started by a previous process for example) then plotsdef.js won't be
+	// requested. So, call plots.config manually to ensure that the data
+	// structures inside 'plots' are correctly initialized.
+	plots.Config()
+
+	for range tick.C {
+		w, err := conn.NextWriter(websocket.TextMessage)
+		if err != nil {
+			return err
+		}
+		if err := plots.WriteValues(w); err != nil {
+			return err
+		}
+		if err := w.Close(); err != nil {
+			return err
+		}
+	}
+
+	panic("unreachable")
 }

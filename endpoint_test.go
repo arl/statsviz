@@ -207,7 +207,8 @@ func TestContentTypeIsSet(t *testing.T) {
 	// something more specific than "text/plain" because that'd make the page be
 	// rejected in certain 'strict' environments.
 	const root = "/some/root/path"
-	httpfs := IndexAtRoot(root)
+	e := NewEndpoint().WithRoot(root)
+	httpfs := e.Index()
 
 	requested := []string{}
 
