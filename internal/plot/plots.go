@@ -33,37 +33,29 @@ type List struct {
 	samples []metrics.Sample
 }
 
-func (pl *List) initMetrics() {
-	pl.idxs = make(map[string]int)
-	pl.descs = metrics.All()
-	pl.samples = make([]metrics.Sample, len(pl.descs))
+func NewList() *List {
+	descs := metrics.All()
+	pl := &List{
+		idxs:    make(map[string]int),
+		descs:   descs,
+		samples: make([]metrics.Sample, len(descs)),
+	}
+
 	for i := range pl.samples {
 		pl.samples[i].Name = pl.descs[i].Name
 		pl.idxs[pl.samples[i].Name] = i
 	}
+
+	pl.addRuntimeMetrics()
+	return pl
 }
 
 func (pl *List) Config() *Config {
-	pl.once.Do(pl.config)
+	pl.once.Do(pl.genConfig)
 	return pl.cfg
 }
 
-func (pl *List) config() {
-	pl.initMetrics()
-
-	pl.plots = append(pl.plots, makeHeapGlobalPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeHeapDetailsPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeLiveObjectsPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeLiveBytesPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeMSpanMCachePlot(pl.idxs))
-	pl.plots = append(pl.plots, makeGoroutinesPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeSizeClassesPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeGCPausesPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeRunnableTime(pl.idxs))
-	pl.plots = append(pl.plots, makeGCStackSize(pl.idxs))
-	pl.plots = append(pl.plots, makeSchedEvents(pl.idxs))
-	pl.plots = append(pl.plots, makeCGOPlot(pl.idxs))
-
+func (pl *List) genConfig() {
 	metrics.Read(pl.samples)
 
 	var layouts []interface{}
@@ -77,6 +69,21 @@ func (pl *List) config() {
 		Events: []string{"lastgc"},
 		Series: layouts,
 	}
+}
+
+func (pl *List) addRuntimeMetrics() {
+	pl.plots = append(pl.plots, makeHeapGlobalPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeHeapDetailsPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeLiveObjectsPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeLiveBytesPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeMSpanMCachePlot(pl.idxs))
+	pl.plots = append(pl.plots, makeGoroutinesPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeSizeClassesPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeGCPausesPlot(pl.idxs))
+	pl.plots = append(pl.plots, makeRunnableTime(pl.idxs))
+	pl.plots = append(pl.plots, makeGCStackSize(pl.idxs))
+	pl.plots = append(pl.plots, makeSchedEvents(pl.idxs))
+	pl.plots = append(pl.plots, makeCGOPlot(pl.idxs))
 }
 
 // WriteValues writes into w a JSON object containing the data points for all

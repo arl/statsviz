@@ -16,7 +16,7 @@ import (
 type Endpoint struct {
 	intv  time.Duration // interval between consecutive metrics emission
 	root  string        // http path root
-	plots plot.List     // plots shown on the user interface
+	plots *plot.List    // plots shown on the user interface
 }
 
 func NewEndpoint() *Endpoint {
@@ -26,8 +26,9 @@ func NewEndpoint() *Endpoint {
 	)
 
 	return &Endpoint{
-		intv: defaultSendInterval,
-		root: defaultRoot,
+		intv:  defaultSendInterval,
+		root:  defaultRoot,
+		plots: plot.NewList(),
 	}
 }
 
@@ -58,7 +59,7 @@ func (e *Endpoint) Register(mux *http.ServeMux) {
 func (e *Endpoint) Index() http.HandlerFunc {
 	prefix := strings.TrimSuffix(e.root, "/") + "/"
 	assetsFS := http.FileServer(http.FS(static.Assets))
-	return http.StripPrefix(prefix, hijack(assetsFS, &e.plots)).ServeHTTP
+	return http.StripPrefix(prefix, hijack(assetsFS, e.plots)).ServeHTTP
 }
 
 // Ws returns a handler that upgrades the HTTP connection to the WebSocket

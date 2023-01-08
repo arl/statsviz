@@ -190,7 +190,7 @@ func Test_hijack(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/js/plotsdef.js", nil)
 
 	se := NewEndpoint()
-	hijack(se.Index(), &se.plots)(w, req)
+	hijack(se.Index(), se.plots)(w, req)
 
 	resp := w.Result()
 	if resp.StatusCode != http.StatusOK {
