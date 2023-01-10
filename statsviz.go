@@ -46,12 +46,16 @@ const (
 	defaultSendInterval = time.Second
 )
 
+// An Endpoint serves, and consists of, 2 HTTP handlers necessary for Statsviz
+// user interface.
 type Endpoint struct {
 	intv  time.Duration // interval between consecutive metrics emission
 	root  string        // http path root
 	plots *plot.List    // plots shown on the user interface
 }
 
+// NewEndpoint constructs a new Statsviz endpoint, pre-configured with default
+// settings or with given options.
 func NewEndpoint(opts ...Option) *Endpoint {
 	e := &Endpoint{
 		intv:  defaultSendInterval,
@@ -66,18 +70,19 @@ func NewEndpoint(opts ...Option) *Endpoint {
 	return e
 }
 
+// Option is an Endpoint configuration option.
 type Option func(*Endpoint)
 
-// WithInterval changes the time interval at which metrics are obtained and
-// sent to the user interface. By default, this interval is one second.
+// WithInterval option changes the time interval at which metrics are obtained
+// and sent to the user interface. By default, this interval is one second.
 func WithInterval(intv time.Duration) Option {
 	return func(e *Endpoint) {
 		e.intv = intv
 	}
 }
 
-// WithRoot changes the root path at which statsviz endpoint gets served. By
-// default this path is /debug/statviz, WithRoot allows to modify this.
+// WithRoot option changes the root path at which statsviz endpoint gets served.
+// By default this path is /debug/statviz, WithRoot allows to modify this.
 func WithRoot(path string) Option {
 	return func(e *Endpoint) {
 		e.root = path

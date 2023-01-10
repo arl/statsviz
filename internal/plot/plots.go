@@ -58,7 +58,7 @@ func (pl *List) Config() *Config {
 func (pl *List) genConfig() {
 	metrics.Read(pl.samples)
 
-	var layouts []interface{}
+	layouts := make([]interface{}, 0, len(pl.plots))
 	for _, p := range pl.plots {
 		if p.isEnabled() {
 			layouts = append(layouts, p.layout(pl.samples))
