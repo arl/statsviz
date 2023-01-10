@@ -37,7 +37,13 @@ import (
 
 	"github.com/arl/statsviz/internal/plot"
 	"github.com/arl/statsviz/internal/static"
+
 	"github.com/gorilla/websocket"
+)
+
+const (
+	defaultRoot         = "/debug/statsviz"
+	defaultSendInterval = time.Second
 )
 
 type Endpoint struct {
@@ -46,31 +52,36 @@ type Endpoint struct {
 	plots *plot.List    // plots shown on the user interface
 }
 
-func NewEndpoint() *Endpoint {
-	const (
-		defaultRoot         = "/debug/statsviz"
-		defaultSendInterval = time.Second
-	)
-
-	return &Endpoint{
+func NewEndpoint(opts ...Option) *Endpoint {
+	e := &Endpoint{
 		intv:  defaultSendInterval,
 		root:  defaultRoot,
 		plots: plot.NewList(),
 	}
-}
 
-// WithSendInterval specifies the time interval at which metrics are requested
-// and sent to the user interface. Default is one second.
-func (e *Endpoint) WithSendInterval(intv time.Duration) *Endpoint {
-	e.intv = intv
+	for _, opt := range opts {
+		opt(e)
+	}
+
 	return e
 }
 
-// WithRoot specifies the root path of statsviz HTTP handlers.
-// Default is /debug/statsviz.
-func (e *Endpoint) WithRoot(root string) *Endpoint {
-	e.root = root
-	return e
+type Option func(*Endpoint)
+
+// WithInterval changes the time interval at which metrics are obtained and
+// sent to the user interface. By default, this interval is one second.
+func WithInterval(intv time.Duration) Option {
+	return func(e *Endpoint) {
+		e.intv = intv
+	}
+}
+
+// WithRoot changes the root path at which statsviz endpoint gets served. By
+// default this path is /debug/statviz, WithRoot allows to modify this.
+func WithRoot(path string) Option {
+	return func(e *Endpoint) {
+		e.root = path
+	}
 }
 
 // Register registers on the given mux the HTTP handlers required for statsviz

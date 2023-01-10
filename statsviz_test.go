@@ -54,10 +54,10 @@ func TestIndex(t *testing.T) {
 func TestRoot(t *testing.T) {
 	t.Parallel()
 
-	testIndex(t, NewEndpoint().WithRoot("/debug/").Index(), "http://example.com/debug/")
-	testIndex(t, NewEndpoint().WithRoot("/debug").Index(), "http://example.com/debug/")
-	testIndex(t, NewEndpoint().WithRoot("/").Index(), "http://example.com/")
-	testIndex(t, NewEndpoint().WithRoot("/test/").Index(), "http://example.com/test/")
+	testIndex(t, NewEndpoint(WithRoot("/debug/")).Index(), "http://example.com/debug/")
+	testIndex(t, NewEndpoint(WithRoot("/debug")).Index(), "http://example.com/debug/")
+	testIndex(t, NewEndpoint(WithRoot("/")).Index(), "http://example.com/")
+	testIndex(t, NewEndpoint(WithRoot("/test/")).Index(), "http://example.com/test/")
 }
 
 func testWs(t *testing.T, f http.Handler, URL string) {
@@ -147,7 +147,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		NewEndpoint().WithRoot("").Register(mux)
+		NewEndpoint(WithRoot("")).Register(mux)
 
 		testRegister(t, mux, "http://example.com/")
 	})
@@ -156,16 +156,19 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		NewEndpoint().WithRoot("/root/to/statsviz").Register(mux)
+		NewEndpoint(WithRoot("/path/to/statsviz")).Register(mux)
 
-		testRegister(t, mux, "http://example.com/root/to/statsviz/")
+		testRegister(t, mux, "http://example.com/path/to/statsviz/")
 	})
 
 	t.Run("root+frequency", func(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		NewEndpoint().WithRoot("/root/to/statsviz").WithSendInterval(100 * time.Millisecond).Register(mux)
+		NewEndpoint(
+			WithRoot("/root/to/statsviz"),
+			WithInterval(100*time.Millisecond),
+		).Register(mux)
 
 		testRegister(t, mux, "http://example.com/root/to/statsviz/")
 	})
@@ -174,7 +177,10 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		NewEndpoint().WithRoot("/root/to/statsviz").WithSendInterval(0).Register(mux)
+		NewEndpoint(
+			WithRoot("/root/to/statsviz"),
+			WithInterval(0),
+		).Register(mux)
 	})
 }
 
@@ -184,8 +190,8 @@ func TestRegisterDefault(t *testing.T) {
 }
 
 func Test_hijack(t *testing.T) {
-	// Check that the file server has correctly been hijacked: 'plotsdef.js'
-	// doesn't actually exist, it is generated on the fly.
+	// Check that the file server has been 'hijacked'.
+	// 'plotsdef.js' is generated at runtime, it doesn't actually exist, it is generated on the fly.
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/js/plotsdef.js", nil)
 
