@@ -51,24 +51,22 @@ func NewList() *List {
 }
 
 func (pl *List) Config() *Config {
-	pl.once.Do(pl.genConfig)
-	return pl.cfg
-}
+	pl.once.Do(func() {
+		metrics.Read(pl.samples)
 
-func (pl *List) genConfig() {
-	metrics.Read(pl.samples)
-
-	layouts := make([]interface{}, 0, len(pl.plots))
-	for _, p := range pl.plots {
-		if p.isEnabled() {
-			layouts = append(layouts, p.layout(pl.samples))
+		layouts := make([]interface{}, 0, len(pl.plots))
+		for _, p := range pl.plots {
+			if p.isEnabled() {
+				layouts = append(layouts, p.layout(pl.samples))
+			}
 		}
-	}
 
-	pl.cfg = &Config{
-		Events: []string{"lastgc"},
-		Series: layouts,
-	}
+		pl.cfg = &Config{
+			Events: []string{"lastgc"},
+			Series: layouts,
+		}
+	})
+	return pl.cfg
 }
 
 func (pl *List) addRuntimeMetrics() {
