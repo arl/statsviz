@@ -120,8 +120,9 @@ func (e *Endpoint) Ws() http.HandlerFunc {
 		}
 		defer ws.Close()
 
-		// Explicitly ignore this error. We don't want to spam standard output
-		// each time the other end of the websocket connection closes.
+		// Explicitly ignore this error. This happens if/when the other end
+		// connection closes for example. We can't handle it in any meaningful
+		// way anyways.
 		_ = e.sendStats(ws, e.intv)
 	}
 }
