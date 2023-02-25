@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type plot interface {
+type runtimeMetric interface {
 	name() string
 	isEnabled() bool
 	layout([]metrics.Sample) interface{}
@@ -21,7 +21,7 @@ type plot interface {
 // List holds all the plots that statsviz knows about. Some plots might be
 // disabled, if they rely on metrics that are unknown to the current Go version.
 type List struct {
-	plots []plot
+	plots     []runtimeMetric
 
 	once sync.Once // ensure Config is called once
 	cfg  *Config
@@ -33,12 +33,12 @@ type List struct {
 	samples []metrics.Sample
 }
 
-func NewList() *List {
+func NewList(userPlots []interface{}) *List {
 	descs := metrics.All()
 	pl := &List{
-		idxs:    make(map[string]int),
-		descs:   descs,
-		samples: make([]metrics.Sample, len(descs)),
+		idxs:      make(map[string]int),
+		descs:     descs,
+		samples:   make([]metrics.Sample, len(descs)),
 	}
 
 	for i := range pl.samples {
@@ -70,18 +70,20 @@ func (pl *List) Config() *Config {
 }
 
 func (pl *List) addRuntimeMetrics() {
-	pl.plots = append(pl.plots, makeHeapGlobalPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeHeapDetailsPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeLiveObjectsPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeLiveBytesPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeMSpanMCachePlot(pl.idxs))
-	pl.plots = append(pl.plots, makeGoroutinesPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeSizeClassesPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeGCPausesPlot(pl.idxs))
-	pl.plots = append(pl.plots, makeRunnableTime(pl.idxs))
-	pl.plots = append(pl.plots, makeGCStackSize(pl.idxs))
-	pl.plots = append(pl.plots, makeSchedEvents(pl.idxs))
-	pl.plots = append(pl.plots, makeCGOPlot(pl.idxs))
+	pl.plots = []runtimeMetric{
+		makeHeapGlobalPlot(pl.idxs),
+		makeHeapDetailsPlot(pl.idxs),
+		makeLiveObjectsPlot(pl.idxs),
+		makeLiveBytesPlot(pl.idxs),
+		makeMSpanMCachePlot(pl.idxs),
+		makeGoroutinesPlot(pl.idxs),
+		makeSizeClassesPlot(pl.idxs),
+		makeGCPausesPlot(pl.idxs),
+		makeRunnableTime(pl.idxs),
+		makeGCStackSize(pl.idxs),
+		makeSchedEvents(pl.idxs),
+		makeCGOPlot(pl.idxs),
+	}
 }
 
 // WriteValues writes into w a JSON object containing the data points for all
