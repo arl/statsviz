@@ -11,21 +11,31 @@ import (
 	"time"
 )
 
-var names map[string]bool
-
 var (
-	_ = mustRegisterPlotName("lastgc")
-	_ = mustRegisterPlotName("timestamp")
+	names       map[string]bool
+	usedMetrics map[string]struct{}
 )
 
-func mustRegisterPlotName(name string) bool {
+var (
+	_ = registerRuntimePlot("lastgc")
+	_ = registerRuntimePlot("timestamp")
+)
+
+func registerRuntimePlot(name string, metrics ...string) bool {
 	if names == nil {
 		names = make(map[string]bool)
+		usedMetrics = make(map[string]struct{})
 	}
 	if names[name] {
 		panic(name + " is an already reserved plot name")
 	}
 	names[name] = true
+
+	// Record the metrics we use.
+	for _, m := range metrics {
+		usedMetrics[m] = struct{}{}
+	}
+
 	return true
 }
 
@@ -158,6 +168,12 @@ func (pl *List) WriteValues(w io.Writer) error {
 /*
  * heap (global)
  */
+var _ = registerRuntimePlot("heap-global",
+	"/memory/classes/heap/objects:bytes",
+	"/memory/classes/heap/unused:bytes",
+	"/memory/classes/heap/free:bytes",
+	"/memory/classes/heap/released:bytes",
+)
 
 type heapGlobal struct {
 	enabled bool
@@ -182,8 +198,6 @@ func makeHeapGlobalPlot(idxs map[string]int) *heapGlobal {
 		idxreleased: idxreleased,
 	}
 }
-
-var _ = mustRegisterPlotName("heap-global")
 
 func (p *heapGlobal) name() string    { return "heap-global" }
 func (p *heapGlobal) isEnabled() bool { return p.enabled }
@@ -240,6 +254,14 @@ func (p *heapGlobal) values(samples []metrics.Sample) interface{} {
 /*
  * heap (details)
  */
+var _ = registerRuntimePlot("heap-details",
+	"/memory/classes/heap/objects:bytes",
+	"/memory/classes/heap/unused:bytes",
+	"/memory/classes/heap/free:bytes",
+	"/memory/classes/heap/released:bytes",
+	"/memory/classes/heap/stacks:bytes",
+	"/gc/heap/goal:bytes",
+)
 
 type heapDetails struct {
 	enabled bool
@@ -270,8 +292,6 @@ func makeHeapDetailsPlot(idxs map[string]int) *heapDetails {
 		idxgoal:     idxgoal,
 	}
 }
-
-var _ = mustRegisterPlotName("heap-details")
 
 func (p *heapDetails) name() string    { return "heap-details" }
 func (p *heapDetails) isEnabled() bool { return p.enabled }
@@ -334,6 +354,7 @@ func (p *heapDetails) values(samples []metrics.Sample) interface{} {
 /*
  * live objects
  */
+var _ = registerRuntimePlot("live-objects", "/gc/heap/objects:objects")
 
 type liveObjects struct {
 	enabled bool
@@ -349,8 +370,6 @@ func makeLiveObjectsPlot(idxs map[string]int) *liveObjects {
 		idxobjects: idxobjects,
 	}
 }
-
-var _ = mustRegisterPlotName("live-objects")
 
 func (p *liveObjects) name() string    { return "live-objects" }
 func (p *liveObjects) isEnabled() bool { return p.enabled }
@@ -384,6 +403,10 @@ func (p *liveObjects) values(samples []metrics.Sample) interface{} {
 /*
  * live bytes
  */
+var _ = registerRuntimePlot("live-bytes",
+	"/gc/heap/allocs:bytes",
+	"/gc/heap/frees:bytes",
+)
 
 type liveBytes struct {
 	enabled bool
@@ -402,8 +425,6 @@ func makeLiveBytesPlot(idxs map[string]int) *liveBytes {
 		idxfrees:  idxfrees,
 	}
 }
-
-var _ = mustRegisterPlotName("live-bytes")
 
 func (p *liveBytes) name() string    { return "live-bytes" }
 func (p *liveBytes) isEnabled() bool { return p.enabled }
@@ -438,6 +459,12 @@ func (p *liveBytes) values(samples []metrics.Sample) interface{} {
 /*
  * mspan mcache
  */
+var _ = registerRuntimePlot("mspan-mcache",
+	"/memory/classes/metadata/mspan/inuse:bytes",
+	"/memory/classes/metadata/mspan/free:bytes",
+	"/memory/classes/metadata/mcache/inuse:bytes",
+	"/memory/classes/metadata/mcache/free:bytes",
+)
 
 type mspanMcache struct {
 	enabled bool
@@ -462,8 +489,6 @@ func makeMSpanMCachePlot(idxs map[string]int) *mspanMcache {
 		idxmcacheFree:  idxmcacheFree,
 	}
 }
-
-var _ = mustRegisterPlotName("mspan-mcache")
 
 func (p *mspanMcache) name() string    { return "mspan-mcache" }
 func (p *mspanMcache) isEnabled() bool { return p.enabled }
@@ -519,6 +544,7 @@ func (p *mspanMcache) values(samples []metrics.Sample) interface{} {
 /*
  * goroutines
  */
+var _ = registerRuntimePlot("goroutines", "/sched/goroutines:goroutines")
 
 type goroutines struct {
 	enabled bool
@@ -534,8 +560,6 @@ func makeGoroutinesPlot(idxs map[string]int) *goroutines {
 		idxgs:   idxgs,
 	}
 }
-
-var _ = mustRegisterPlotName("goroutines")
 
 func (p *goroutines) name() string    { return "goroutines" }
 func (p *goroutines) isEnabled() bool { return p.enabled }
@@ -566,6 +590,10 @@ func (p *goroutines) values(samples []metrics.Sample) interface{} {
 /*
  * size classes
  */
+var _ = registerRuntimePlot("size-classes",
+	"/gc/heap/allocs-by-size:bytes",
+	"/gc/heap/frees-by-size:bytes",
+)
 
 type sizeClasses struct {
 	enabled     bool
@@ -585,8 +613,6 @@ func makeSizeClassesPlot(idxs map[string]int) *sizeClasses {
 		idxfrees:  idxfrees,
 	}
 }
-
-var _ = mustRegisterPlotName("size-classes")
 
 func (p *sizeClasses) name() string    { return "size-classes" }
 func (p *sizeClasses) isEnabled() bool { return p.enabled }
@@ -644,6 +670,7 @@ func (p *sizeClasses) values(samples []metrics.Sample) interface{} {
 /*
  * gc pauses
  */
+var _ = registerRuntimePlot("gc-pauses", "/gc/pauses:seconds")
 
 type gcpauses struct {
 	enabled    bool
@@ -661,8 +688,6 @@ func makeGCPausesPlot(idxs map[string]int) *gcpauses {
 		idxgcpauses: idxgcpauses,
 	}
 }
-
-var _ = mustRegisterPlotName("gc-pauses")
 
 func (p *gcpauses) name() string    { return "gc-pauses" }
 func (p *gcpauses) isEnabled() bool { return p.enabled }
@@ -705,6 +730,7 @@ func (p *gcpauses) values(samples []metrics.Sample) interface{} {
 /*
  * time spent in runnable state
  */
+var _ = registerRuntimePlot("runnable-time", "/sched/latencies:seconds")
 
 type runnableTime struct {
 	enabled    bool
@@ -722,8 +748,6 @@ func makeRunnableTime(idxs map[string]int) *runnableTime {
 		idxschedlat: idxschedlat,
 	}
 }
-
-var _ = mustRegisterPlotName("runnable-time")
 
 func (p *runnableTime) name() string    { return "runnable-time" }
 func (p *runnableTime) isEnabled() bool { return p.enabled }
@@ -768,6 +792,10 @@ func (p *runnableTime) values(samples []metrics.Sample) interface{} {
 /*
  * scheduling events
  */
+var _ = registerRuntimePlot("sched-events",
+	"/sched/latencies:seconds",
+	"/sched/gomaxprocs:threads",
+)
 
 type schedEvents struct {
 	enabled bool
@@ -788,8 +816,6 @@ func makeSchedEvents(idxs map[string]int) *schedEvents {
 		lasttot:       math.MaxUint64,
 	}
 }
-
-var _ = mustRegisterPlotName("sched-events")
 
 func (p *schedEvents) name() string    { return "sched-events" }
 func (p *schedEvents) isEnabled() bool { return p.enabled }
@@ -851,6 +877,7 @@ func (p *schedEvents) values(samples []metrics.Sample) interface{} {
 /*
  * cgo
  */
+var _ = registerRuntimePlot("cgo", "/cgo/go-to-c-calls:calls")
 
 type cgo struct {
 	enabled  bool
@@ -867,8 +894,6 @@ func makeCGOPlot(idxs map[string]int) *cgo {
 		lastgo2c: math.MaxUint64,
 	}
 }
-
-var _ = mustRegisterPlotName("cgo")
 
 func (p *cgo) name() string    { return "cgo" }
 func (p *cgo) isEnabled() bool { return p.enabled }
@@ -908,6 +933,7 @@ func (p *cgo) values(samples []metrics.Sample) interface{} {
 /*
  * gc stack size
  */
+var _ = registerRuntimePlot("gc-stack-size", "/gc/stack/starting-size:bytes")
 
 type gcStackSize struct {
 	enabled  bool
@@ -922,8 +948,6 @@ func makeGCStackSize(idxs map[string]int) *gcStackSize {
 		idxstack: idxstack,
 	}
 }
-
-var _ = mustRegisterPlotName("gc-stack-size")
 
 func (p *gcStackSize) name() string    { return "gc-stack-size" }
 func (p *gcStackSize) isEnabled() bool { return p.enabled }
