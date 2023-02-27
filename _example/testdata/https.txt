@@ -4,6 +4,7 @@ cp $STATSVIZ_ROOT/_example/https/key.pem .
 cp $STATSVIZ_ROOT/_example/chi/go.mod .
 
 go mod edit -replace=github.com/arl/statsviz=$STATSVIZ_ROOT
+go mod edit -replace=github.com/arl/statsviz/_example=$STATSVIZ_ROOT/_example
 go mod tidy
 
 # Start an HTTP server with a statsviz endpoint
