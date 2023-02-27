@@ -82,18 +82,18 @@ func (p *TimeSeriesBuilder) AddSeries(ts TimeSeries, getval GetValueFunc) *TimeS
 	return p
 }
 
-func (p *TimeSeriesBuilder) Build() (UserPlot, error) {
+func (p *TimeSeriesBuilder) Build() (TimeSeriesPlot, error) {
 	if p.s.Name == "" {
-		return UserPlot{}, ErrEmptyPlotName
+		return TimeSeriesPlot{}, ErrEmptyPlotName
 	}
 	if plot.IsReservedPlotName(p.s.Name) {
-		return UserPlot{}, ErrReservedPlotName(p.s.Name)
+		return TimeSeriesPlot{}, ErrReservedPlotName(p.s.Name)
 	}
 	if len(p.s.Subplots) == 0 {
-		return UserPlot{}, ErrNoTimeSeries
+		return TimeSeriesPlot{}, ErrNoTimeSeries
 	}
 
-	up := UserPlot{
+	up := TimeSeriesPlot{
 		timeseries: &plot.ScatterUserPlot{
 			Plot:  plot.Scatter(p.s),
 			Funcs: p.funcs,
@@ -102,9 +102,7 @@ func (p *TimeSeriesBuilder) Build() (UserPlot, error) {
 	return up, nil
 }
 
-// Plot is statsviz user plot.
-type UserPlot struct {
-	// opaque type only made to be passed from Build to WithUserPlot
+// TimeSeriesPlot is an opaque type representing a timeseries plot.
+type TimeSeriesPlot struct {
 	timeseries *plot.ScatterUserPlot
-	heatmap    *plot.HeatmapUserPlot
 }

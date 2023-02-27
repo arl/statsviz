@@ -92,18 +92,13 @@ func WithRoot(path string) Option {
 	}
 }
 
-// WithUserPlot adds a new plot to statsviz user interface tracking an
-// user-provided metric. WithUserPlot can be called multiple times.
-func WithUserPlot(userPlot UserPlot) Option {
+// WithTimeseriesPlot adds a new timeseries plot to statsviz user interface
+// tracking an user-provided metric. WithTimeseriesPlot can be called multiple
+// times.
+func WithTimeseriesPlot(tsp TimeSeriesPlot) Option {
 	return func(e *Endpoint) {
-		// Sanity check
-		if (userPlot.heatmap != nil) == (userPlot.timeseries != nil) {
-			panic("userplot must be a timeseries or a heatmap")
-		}
-		e.userPlots = append(e.userPlots, plot.UserPlot{
-			Scatter: userPlot.timeseries,
-			Heatmap: userPlot.heatmap,
-		})
+		e.userPlots = append(e.userPlots,
+			plot.UserPlot{Scatter: tsp.timeseries})
 	}
 }
 
