@@ -5,12 +5,12 @@
 // (preferred method):
 //
 //	mux := http.NewServeMux()
-//	endpoint := statvis.NewEndpoint()
+//	endpoint := statviz.NewEndpoint()
 //	endpoint.Register(mux)
 //
 // Or register with [http.DefaultServeMux`]:
 //
-//	endpoint := statvis.NewEndpoint()
+//	endpoint := statviz.NewEndpoint()
 //	endpoint.Register(http.DefaultServeMux)
 //
 // By default Statsviz is served at `/debug/statsviz/`. You can change that (and
@@ -144,6 +144,7 @@ func hijack(h http.Handler, plots *plot.List) http.HandlerFunc {
 			w.Header().Add("Content-Length", strconv.Itoa(buf.Len()))
 			w.Header().Add("Content-Type", "text/javascript; charset=utf-8")
 			buf.WriteTo(w)
+
 			return
 		}
 		// Force Content-Type if needed.
@@ -170,7 +171,7 @@ func (e *Endpoint) sendStats(conn *websocket.Conn, frequency time.Duration) erro
 
 	// If the websocket connection is initiated by an already open web ui
 	// (started by a previous process for example) then plotsdef.js won't be
-	// requested. So, call plots.config manually to ensure that the data
+	// requested. So, call plots.Config manually to ensure that the data
 	// structures inside 'plots' are correctly initialized.
 	e.plots.Config()
 
