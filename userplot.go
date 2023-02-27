@@ -3,7 +3,6 @@ package statsviz
 import (
 	"errors"
 	"fmt"
-	"image/color"
 
 	"github.com/arl/statsviz/internal/plot"
 )
@@ -16,7 +15,7 @@ const (
 )
 
 // GetValueFunc reads the value of a metrics and returns it.
-type GetValueFunc = plot.GetValueFunc // func() float64
+type GetValueFunc func() float64
 
 var (
 	ErrNoTimeSeries  = errors.New("user plot must have at least one time series")
@@ -31,7 +30,7 @@ func (e ErrReservedPlotName) Error() string {
 
 type TimeSeriesBuilder struct {
 	s     plot.Scatter
-	funcs []GetValueFunc // one func per time series
+	funcs []func() float64 // one func per time series
 }
 
 func NewTimeSeriesPlot(name string) *TimeSeriesBuilder {
@@ -68,7 +67,6 @@ type TimeSeries struct {
 	Unitfmt    string
 	StackGroup string
 	HoverOn    string
-	Color      color.RGBA
 }
 
 // AddSeries adds a time series to the current plot. Plots should hold at least
@@ -79,7 +77,6 @@ func (p *TimeSeriesBuilder) AddSeries(ts TimeSeries, getval GetValueFunc) *TimeS
 		Unitfmt:    ts.Unitfmt,
 		StackGroup: ts.StackGroup,
 		HoverOn:    ts.HoverOn,
-		Color:      plot.RGBString(ts.Color.R, ts.Color.G, ts.Color.B),
 	})
 	p.funcs = append(p.funcs, getval)
 	return p
@@ -97,7 +94,7 @@ func (p *TimeSeriesBuilder) Build() (UserPlot, error) {
 	}
 
 	up := UserPlot{
-		scatter: &plot.ScatterUserPlot{
+		timeseries: &plot.ScatterUserPlot{
 			Plot:  plot.Scatter(p.s),
 			Funcs: p.funcs,
 		},
@@ -108,6 +105,6 @@ func (p *TimeSeriesBuilder) Build() (UserPlot, error) {
 // Plot is statsviz user plot.
 type UserPlot struct {
 	// opaque type only made to be passed from Build to WithUserPlot
-	scatter *plot.ScatterUserPlot
-	heatmap *plot.HeatmapUserPlot
+	timeseries *plot.ScatterUserPlot
+	heatmap    *plot.HeatmapUserPlot
 }
