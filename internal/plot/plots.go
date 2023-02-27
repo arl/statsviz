@@ -44,6 +44,7 @@ type runtimeMetric interface {
 // disabled, if they rely on metrics that are unknown to the current Go version.
 type List struct {
 	rtPlots   []runtimeMetric
+	userPlots []UserPlot
 
 	once sync.Once // ensure Config is called once
 	cfg  *Config
@@ -55,50 +56,57 @@ type List struct {
 	samples []metrics.Sample
 }
 
-func NewList(userPlots []interface{}) *List {
+func NewList(userPlots []UserPlot) *List {
 	descs := metrics.All()
 	pl := &List{
-		idxs:      idxs,
+		idxs:      make(map[string]int),
 		descs:     descs,
 		samples:   make([]metrics.Sample, len(descs)),
-		rtPlots: []runtimeMetric{
-			makeHeapGlobalPlot(idxs),
-			makeHeapDetailsPlot(idxs),
-			makeLiveObjectsPlot(idxs),
-			makeLiveBytesPlot(idxs),
-			makeMSpanMCachePlot(idxs),
-			makeGoroutinesPlot(idxs),
-			makeSizeClassesPlot(idxs),
-			makeGCPausesPlot(idxs),
-			makeRunnableTime(idxs),
-			makeGCStackSize(idxs),
-			makeSchedEvents(idxs),
-			makeCGOPlot(idxs),
-		},
+		userPlots: userPlots,
 	}
-
 	for i := range pl.samples {
 		pl.samples[i].Name = pl.descs[i].Name
 		pl.idxs[pl.samples[i].Name] = i
 	}
+	metrics.Read(pl.samples)
 
 	return pl
 }
 
 func (pl *List) Config() *Config {
 	pl.once.Do(func() {
-		metrics.Read(pl.samples)
+		pl.rtPlots =
+			[]runtimeMetric{
+				makeHeapGlobalPlot(pl.idxs),
+				makeHeapDetailsPlot(pl.idxs),
+				makeLiveObjectsPlot(pl.idxs),
+				makeLiveBytesPlot(pl.idxs),
+				makeMSpanMCachePlot(pl.idxs),
+				makeGoroutinesPlot(pl.idxs),
+				makeSizeClassesPlot(pl.idxs),
+				makeGCPausesPlot(pl.idxs),
+				makeRunnableTime(pl.idxs),
+				makeGCStackSize(pl.idxs),
+				makeSchedEvents(pl.idxs),
+				makeCGOPlot(pl.idxs),
+			}
 
 		layouts := make([]interface{}, 0, len(pl.rtPlots))
-		for _, p := range pl.rtPlots {
-			if p.isEnabled() {
-				layouts = append(layouts, p.layout(pl.samples))
+		for i := range pl.rtPlots {
+			if pl.rtPlots[i].isEnabled() {
+				layouts = append(layouts, pl.rtPlots[i].layout(pl.samples))
 			}
 		}
 
 		pl.cfg = &Config{
 			Events: []string{"lastgc"},
 			Series: layouts,
+		}
+
+		// User plots go at the back of the list for now.
+		// TODO(arl) We might improve this in the future.
+		for i := range pl.userPlots {
+			pl.cfg.Series = append(pl.cfg.Series, pl.userPlots[i].Layout())
 		}
 	})
 	return pl.cfg
@@ -126,6 +134,20 @@ func (pl *List) WriteValues(w io.Writer) error {
 	// In javascript, timestamps are in ms.
 	m["lastgc"] = []int64{gcStats.LastGC.UnixMilli()}
 	m["timestamp"] = time.Now().UnixMilli()
+
+	for i := range pl.userPlots {
+		up := &pl.userPlots[i]
+		switch {
+		case up.Scatter != nil:
+			vals := make([]float64, len(up.Scatter.Funcs))
+			for i := range up.Scatter.Funcs {
+				vals[i] = up.Scatter.Funcs[i]()
+			}
+			m[up.Scatter.Plot.Name] = vals
+		case up.Heatmap != nil:
+			panic("unimplemented")
+		}
+	}
 
 	if err := json.NewEncoder(w).Encode(m); err != nil {
 		return fmt.Errorf("failed to write/convert metrics values to json: %v", err)
