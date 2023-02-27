@@ -52,21 +52,24 @@ type Endpoint struct {
 	intv  time.Duration // interval between consecutive metrics emission
 	root  string        // http path root
 	plots *plot.List    // plots shown on the user interface
+
+	// user plots
+	userPlots []plot.UserPlot
 }
 
 // NewEndpoint constructs a new Statsviz endpoint, pre-configured with default
 // settings or with given options.
 func NewEndpoint(opts ...Option) *Endpoint {
 	e := &Endpoint{
-		intv:  defaultSendInterval,
-		root:  defaultRoot,
-		plots: plot.NewList(),
+		intv: defaultSendInterval,
+		root: defaultRoot,
 	}
 
 	for _, opt := range opts {
 		opt(e)
 	}
 
+	e.plots = plot.NewList(e.userPlots)
 	return e
 }
 
@@ -86,6 +89,21 @@ func WithInterval(intv time.Duration) Option {
 func WithRoot(path string) Option {
 	return func(e *Endpoint) {
 		e.root = path
+	}
+}
+
+// WithUserPlot adds a new plot to statsviz user interface tracking an
+// user-provided metric. WithUserPlot can be called multiple times.
+func WithUserPlot(userPlot UserPlot) Option {
+	return func(e *Endpoint) {
+		// Sanity check
+		if (userPlot.heatmap != nil) == (userPlot.timeseries != nil) {
+			panic("userplot must be a timeseries or a heatmap")
+		}
+		e.userPlots = append(e.userPlots, plot.UserPlot{
+			Scatter: userPlot.timeseries,
+			Heatmap: userPlot.heatmap,
+		})
 	}
 }
 
