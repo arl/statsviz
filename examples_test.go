@@ -1,4 +1,4 @@
-package example
+package statsviz_test
 
 import (
 	"bytes"
@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -26,7 +25,7 @@ func TestExamples(t *testing.T) {
 			if err != nil {
 				return err
 			}
-			env.Setenv("STATSVIZ_ROOT", filepath.Dir(wd))
+			env.Setenv("STATSVIZ_ROOT", wd)
 			return nil
 		},
 		Cmds: map[string]func(ts *testscript.TestScript, neg bool, args []string){
