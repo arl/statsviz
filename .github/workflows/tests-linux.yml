@@ -11,5 +11,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
+      - name: go mod tidy check
+        run: .github/scripts/modtidy-check.sh
       - name: Tests
         run: go test -race ./...
