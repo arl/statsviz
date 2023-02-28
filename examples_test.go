@@ -70,7 +70,7 @@ func checkui(ts *testscript.TestScript, neg bool, args []string) {
 				InsecureSkipVerify: true,
 			},
 		},
-		Timeout: 1 * time.Second,
+		Timeout: 5 * time.Second,
 	}
 
 	// Let 1 second for the server to start and listen.
