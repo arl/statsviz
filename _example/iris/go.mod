@@ -1,6 +1,6 @@
 module example/iris
 
-go 1.18
+go 1.16
 
 require (
 	github.com/arl/statsviz v0.5.1
