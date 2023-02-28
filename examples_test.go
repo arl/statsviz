@@ -1,3 +1,5 @@
+//go:build unix
+
 package statsviz_test
 
 import (
