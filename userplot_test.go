@@ -8,7 +8,7 @@ import (
 func TestTimeSeriesBuilderErrors(t *testing.T) {
 	t.Run("empty name", func(t *testing.T) {
 		tsb := NewTimeSeriesPlot("").
-			AddSeries(TimeSeries{})
+			AddTimeSeries(TimeSeries{})
 
 		if _, err := tsb.Build(); !errors.Is(err, ErrEmptyPlotName) {
 			t.Errorf("Build() returned err = %v, want %v", err, ErrEmptyPlotName)
@@ -16,7 +16,7 @@ func TestTimeSeriesBuilderErrors(t *testing.T) {
 	})
 	t.Run("reserved name", func(t *testing.T) {
 		tsb := NewTimeSeriesPlot("timestamp").
-			AddSeries(TimeSeries{})
+			AddTimeSeries(TimeSeries{})
 
 		var target ErrReservedPlotName
 		if _, err := tsb.Build(); !errors.As(err, &target) {

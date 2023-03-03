@@ -67,9 +67,9 @@ type TimeSeries struct {
 	Value      func() float64
 }
 
-// AddSeries adds a time series to the current plot. Plots should hold at least
+// AddTimeSeries adds a time series to the current plot. Plots should hold at least
 // one time series.
-func (p *TimeSeriesBuilder) AddSeries(ts TimeSeries) *TimeSeriesBuilder {
+func (p *TimeSeriesBuilder) AddTimeSeries(ts TimeSeries) *TimeSeriesBuilder {
 	p.s.Subplots = append(p.s.Subplots, plot.Subplot{
 		Name:       ts.Name,
 		Unitfmt:    ts.Unitfmt,
