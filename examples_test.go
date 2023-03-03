@@ -17,6 +17,10 @@ import (
 )
 
 func TestExamples(t *testing.T) {
+	if testing.Short() {
+		t.Skipf("TestExamples skipped in short mode")
+	}
+
 	p := testscript.Params{
 		Dir: "testdata",
 		Setup: func(env *testscript.Env) error {
