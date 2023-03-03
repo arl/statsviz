@@ -13,14 +13,13 @@ func main() {
 	// Force the GC to work to make the plots "move".
 	go example.Work()
 
-	fmt.Printf("Point your browser to http://localhost:8085/debug/statsviz/\n\n")
-
 	// Create statsviz endpoint.
-	se := statsviz.NewEndpoint()
+	ep := statsviz.NewEndpoint()
 
-	ws := se.Ws()
-	index := se.Index()
+	ws := ep.Ws()
+	index := ep.Index()
 
+	// Register the endpoint handlers on gin router.
 	router := gin.New()
 	router.GET("/debug/statsviz/*filepath", func(context *gin.Context) {
 		if context.Param("filepath") == "/ws" {
@@ -29,5 +28,7 @@ func main() {
 		}
 		index(context.Writer, context.Request)
 	})
+
+	fmt.Printf("Point your browser to http://localhost:8085/debug/statsviz/\n\n")
 	router.Run(":8085")
 }

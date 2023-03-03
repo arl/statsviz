@@ -22,14 +22,12 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// Create and register statsviz endpoint.
-	se := statsviz.NewEndpoint()
-	se.Register(mux)
-	statsSrv := &http.Server{Addr: ":8088", Handler: mux}
+	// Create Statsviz endpoint and register it with the mux.
+	statsviz.NewEndpoint().Register(mux)
 
 	fmt.Println("Point your browser to http://localhost:8088/debug/statsviz\n")
 
 	// NewHost puts the http server for statsviz under the control of iris but
 	// iris won't touch its handlers.
-	app.NewHost(statsSrv).ListenAndServe()
+	app.NewHost(&http.Server{Addr: ":8088", Handler: mux}).ListenAndServe()
 }

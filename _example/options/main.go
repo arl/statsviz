@@ -15,14 +15,15 @@ func main() {
 
 	// Serve statsviz user interface from /foo/bar instead of /debug/statsviz
 	// and send metrics every 250 milliseconds instead of 1 second.
-	se := statsviz.NewEndpoint(
+	ep := statsviz.NewEndpoint(
 		statsviz.WithRoot("/foo/bar"),
 		statsviz.WithInterval(250*time.Millisecond),
 	)
 
-	// Create a serve mux and register statsviz endpoint.
 	mux := http.NewServeMux()
-	se.Register(mux)
+
+	// Register the endpoint handlers on the mux.
+	ep.Register(mux)
 
 	log.Println("Point your browser to http://localhost:8092/foo/bar")
 	log.Fatal(http.ListenAndServe(":8092", mux))

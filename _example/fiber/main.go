@@ -34,10 +34,11 @@ func main() {
 	})
 
 	// Create statsviz endpoint.
-	se := statsviz.NewEndpoint()
+	ep := statsviz.NewEndpoint()
 
-	app.Use("/debug/statsviz", adaptor.HTTPHandler(se.Index()))
-	ws.HandleFunc("/debug/statsviz/ws", se.Ws())
+	// Register the endpoint handlers.
+	app.Use("/debug/statsviz", adaptor.HTTPHandler(ep.Index()))
+	ws.HandleFunc("/debug/statsviz/ws", ep.Ws())
 
 	fmt.Println("Point your browser to http://localhost:8093/debug/statsviz/")
 

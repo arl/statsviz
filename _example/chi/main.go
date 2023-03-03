@@ -16,15 +16,15 @@ func main() {
 	go example.Work()
 
 	// Create statsviz endpoint.
-	se := statsviz.NewEndpoint()
+	ep := statsviz.NewEndpoint()
 
-	// Create a chi router and register both handlers of the statviz endpoint.
+	// Create a chi router and register statsviz http handlers.
 	r := chi.NewRouter()
-	r.Get("/debug/statsviz/ws", se.Ws())
+	r.Get("/debug/statsviz/ws", ep.Ws())
 	r.Get("/debug/statsviz", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/debug/statsviz/", 301)
 	})
-	r.Handle("/debug/statsviz/*", se.Index())
+	r.Handle("/debug/statsviz/*", ep.Index())
 
 	mux := http.NewServeMux()
 	mux.Handle("/", r)
