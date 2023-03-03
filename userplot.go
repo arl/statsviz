@@ -14,9 +14,6 @@ const (
 	Bar     TimeSeriesType = "bar"
 )
 
-// GetValueFunc reads the value of a metrics and returns it.
-type GetValueFunc func() float64
-
 var (
 	ErrNoTimeSeries  = errors.New("user plot must have at least one time series")
 	ErrEmptyPlotName = errors.New("user plot name must not be empty")
@@ -67,18 +64,19 @@ type TimeSeries struct {
 	Unitfmt    string
 	StackGroup string
 	HoverOn    string
+	Value      func() float64
 }
 
 // AddSeries adds a time series to the current plot. Plots should hold at least
 // one time series.
-func (p *TimeSeriesBuilder) AddSeries(ts TimeSeries, getval GetValueFunc) *TimeSeriesBuilder {
+func (p *TimeSeriesBuilder) AddSeries(ts TimeSeries) *TimeSeriesBuilder {
 	p.s.Subplots = append(p.s.Subplots, plot.Subplot{
 		Name:       ts.Name,
 		Unitfmt:    ts.Unitfmt,
 		StackGroup: ts.StackGroup,
 		HoverOn:    ts.HoverOn,
 	})
-	p.funcs = append(p.funcs, getval)
+	p.funcs = append(p.funcs, ts.Value)
 	return p
 }
 
