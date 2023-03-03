@@ -24,7 +24,7 @@ func Work() {
 	}
 }
 
-// create a randomly-sized struct (for size classes plot).
+// create a randomly sized struct (to create 'motion' on size classes plot).
 func newStruct() interface{} {
 	nfields := rand.Intn(32)
 	var fields []reflect.StructField
