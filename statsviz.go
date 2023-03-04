@@ -102,8 +102,7 @@ func WithTimeseriesPlot(tsp TimeSeriesPlot) Option {
 	}
 }
 
-// Register registers on the given mux the HTTP handlers required for statsviz
-// endpoint.
+// Register registers on the given mux the HTTP handlers required for statsviz endpoint.
 func (e *Endpoint) Register(mux *http.ServeMux) {
 	mux.Handle(e.root+"/", e.Index())
 	mux.HandleFunc(e.root+"/ws", e.Ws())
