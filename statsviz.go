@@ -76,25 +76,25 @@ func NewEndpoint(opts ...Option) *Endpoint {
 // Option is an Endpoint configuration option.
 type Option func(*Endpoint)
 
-// WithInterval option changes the time interval at which metrics are obtained
-// and sent to the user interface. By default, this interval is one second.
+// WithInterval option changes the interval between successive acquisitions of
+// metrics and their sending to the user interface. By default, the interval is
+// one second.
 func WithInterval(intv time.Duration) Option {
 	return func(e *Endpoint) {
 		e.intv = intv
 	}
 }
 
-// WithRoot option changes the root path at which statsviz endpoint gets served.
-// By default this path is /debug/statviz, WithRoot allows to modify this.
+// WithRoot option changes the root path at which statsviz endpoint is served on
+// the HTTP server. By default this path is /debug/statviz.
 func WithRoot(path string) Option {
 	return func(e *Endpoint) {
 		e.root = path
 	}
 }
 
-// WithTimeseriesPlot adds a new timeseries plot to statsviz user interface
-// tracking an user-provided metric. WithTimeseriesPlot can be called multiple
-// times.
+// WithTimeseriesPlot adds a new timeseries plot to statsviz ui that tracks some
+// user-provided metric. Can be called multiple times.
 func WithTimeseriesPlot(tsp TimeSeriesPlot) Option {
 	return func(e *Endpoint) {
 		e.userPlots = append(e.userPlots,
@@ -102,23 +102,25 @@ func WithTimeseriesPlot(tsp TimeSeriesPlot) Option {
 	}
 }
 
-// Register registers on the given mux the HTTP handlers required for statsviz endpoint.
+// Register registers statviz HTTP handlers on the provided mux.
 func (e *Endpoint) Register(mux *http.ServeMux) {
 	mux.Handle(e.root+"/", e.Index())
 	mux.HandleFunc(e.root+"/ws", e.Ws())
 }
 
 // Index returns the index handler, responding with statsviz user interface HTML
-// page. Use [WithRoot] if you wish statsviz user interface to be served at a
-// path other than /debug/statsviz.
+// page. By default, the returned handler is served at /debug/statsviz. Use
+// [WithRoot] to change that path.
 func (e *Endpoint) Index() http.HandlerFunc {
 	prefix := strings.TrimSuffix(e.root, "/") + "/"
 	assetsFS := http.FileServer(http.FS(static.Assets))
 	return http.StripPrefix(prefix, hijack(assetsFS, e.plots)).ServeHTTP
 }
 
-// Ws returns a handler that upgrades the HTTP connection to the WebSocket
-// protocol and sends application statistics.
+// Ws returns the websocket handler statsviz uses to send application metrics.
+//
+// The underlying net.Conn is used to upgrade the HTTP server connection to the
+// websocket protocol.
 func (e *Endpoint) Ws() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var upgrader = websocket.Upgrader{
@@ -183,7 +185,7 @@ func (e *Endpoint) sendStats(conn *websocket.Conn, frequency time.Duration) erro
 
 	// If the websocket connection is initiated by an already open web ui
 	// (started by a previous process for example) then plotsdef.js won't be
-	// requested. So, call plots.Config manually to ensure that the data
+	// requested. So, call plots.Config() manually to ensure that the data
 	// structures inside 'plots' are correctly initialized.
 	e.plots.Config()
 
