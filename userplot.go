@@ -59,22 +59,21 @@ func (p *TimeSeriesBuilder) YAxisTickSuffix(suffix string) *TimeSeriesBuilder {
 	return p
 }
 
+// TODO(arl) comment all fields
 type TimeSeries struct {
-	Name       string
-	Unitfmt    string
-	StackGroup string
-	HoverOn    string
-	Value      func() float64
+	Name    string
+	Unitfmt string
+	HoverOn string
+	Value   func() float64
 }
 
 // AddTimeSeries adds a time series to the current plot. Plots should hold at least
 // one time series.
 func (p *TimeSeriesBuilder) AddTimeSeries(ts TimeSeries) *TimeSeriesBuilder {
 	p.s.Subplots = append(p.s.Subplots, plot.Subplot{
-		Name:       ts.Name,
-		Unitfmt:    ts.Unitfmt,
-		StackGroup: ts.StackGroup,
-		HoverOn:    ts.HoverOn,
+		Name:    ts.Name,
+		Unitfmt: ts.Unitfmt,
+		HoverOn: ts.HoverOn,
 	})
 	p.funcs = append(p.funcs, ts.Value)
 	return p

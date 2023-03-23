@@ -189,14 +189,14 @@ func TestRegisterDefault(t *testing.T) {
 	testRegister(t, http.DefaultServeMux, "http://example.com/debug/statsviz/")
 }
 
-func Test_hijack(t *testing.T) {
+func Test_intercept(t *testing.T) {
 	// Check that the file server has been 'hijacked'.
 	// 'plotsdef.js' is generated at runtime, it doesn't actually exist, it is generated on the fly.
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/js/plotsdef.js", nil)
 
 	se := NewEndpoint()
-	hijack(se.Index(), se.plots)(w, req)
+	intercept(se.Index(), se.plots.Config())(w, req)
 
 	resp := w.Result()
 	if resp.StatusCode != http.StatusOK {
@@ -214,7 +214,7 @@ func TestContentTypeIsSet(t *testing.T) {
 	// something more specific than "text/plain" because that'd make the page be
 	// rejected in certain 'strict' environments.
 	const root = "/some/root/path"
-	e := NewEndpoint().WithRoot(root)
+	e := NewEndpoint(WithRoot(root))
 	httpfs := e.Index()
 
 	requested := []string{}

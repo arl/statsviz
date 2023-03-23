@@ -108,13 +108,51 @@ func (e *Endpoint) Register(mux *http.ServeMux) {
 	mux.HandleFunc(e.root+"/ws", e.Ws())
 }
 
+// intercept is a middleware that that intercept requests for plotsdef.js, this
+// file is generated on the fly, based on the plots configuration. Other
+// requests are forwarded as-is h.
+func intercept(h http.Handler, cfg *plot.Config) http.HandlerFunc {
+	buf := &bytes.Buffer{}
+	buf.WriteString("export default ")
+	enc := json.NewEncoder(buf)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(cfg); err != nil {
+		panic("unexpected, failure to encode plots definitions: " + err.Error())
+	}
+	buf.WriteString(";")
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "js/plotsdef.js" {
+			w.Header().Add("Content-Length", strconv.Itoa(buf.Len()))
+			w.Header().Add("Content-Type", "text/javascript; charset=utf-8")
+			buf.WriteTo(w)
+			return
+		}
+
+		// Force Content-Type if needed.
+		if ct, ok := contentTypes[r.URL.Path]; ok {
+			w.Header().Add("Content-Type", ct)
+		}
+
+		h.ServeHTTP(w, r)
+	}
+}
+
+// Force Content-Type HTTP header for certain files of some javascript libraries
+// that have no extensions. Otherwise the http fileserver would serve them under
+// "Content-Type = text/plain".
+var contentTypes = map[string]string{
+	"libs/js/popperjs-core2": "text/javascript",
+	"libs/js/tippy.js@6":     "text/javascript",
+}
+
 // Index returns the index handler, responding with statsviz user interface HTML
 // page. By default, the returned handler is served at /debug/statsviz. Use
 // [WithRoot] to change that path.
 func (e *Endpoint) Index() http.HandlerFunc {
 	prefix := strings.TrimSuffix(e.root, "/") + "/"
 	assetsFS := http.FileServer(http.FS(static.Assets))
-	return http.StripPrefix(prefix, hijack(assetsFS, e.plots)).ServeHTTP
+	return http.StripPrefix(prefix, intercept(assetsFS, e.plots.Config())).ServeHTTP
 }
 
 // Ws returns the websocket handler statsviz uses to send application metrics.
@@ -139,43 +177,6 @@ func (e *Endpoint) Ws() http.HandlerFunc {
 		// way anyways.
 		_ = e.sendStats(ws, e.intv)
 	}
-}
-
-// hijack returns a handler that hijacks requests for plotsdef.js, this file is
-// generated dynamically. Other requests are forwarded to h, typically a http
-// file server.
-func hijack(h http.Handler, plots *plot.List) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "js/plotsdef.js" {
-			buf := &bytes.Buffer{}
-			buf.WriteString("export default ")
-			enc := json.NewEncoder(buf)
-			enc.SetIndent("", "  ")
-			if err := enc.Encode(plots.Config()); err != nil {
-				panic("error encoding plots definition: " + err.Error())
-			}
-			buf.WriteString(";")
-			w.Header().Add("Content-Length", strconv.Itoa(buf.Len()))
-			w.Header().Add("Content-Type", "text/javascript; charset=utf-8")
-			buf.WriteTo(w)
-
-			return
-		}
-		// Force Content-Type if needed.
-		if ct, ok := contentTypes[r.URL.Path]; ok {
-			w.Header().Add("Content-Type", ct)
-		}
-
-		h.ServeHTTP(w, r)
-	}
-}
-
-// Force Content-Type HTTP header for certain files of some javascript libraries
-// that have no extensions. Otherwise the http fileserver would serve them under
-// "Content-Type = text/plain".
-var contentTypes = map[string]string{
-	"libs/js/popperjs-core2": "text/javascript",
-	"libs/js/tippy.js@6":     "text/javascript",
 }
 
 // sendStats indefinitely send runtime statistics on the websocket connection.
