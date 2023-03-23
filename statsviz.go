@@ -35,10 +35,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/websocket"
+
 	"github.com/arl/statsviz/internal/plot"
 	"github.com/arl/statsviz/internal/static"
-
-	"github.com/gorilla/websocket"
 )
 
 const (
