@@ -1,7 +1,5 @@
 package plot
 
-// type GetValueFunc func() float64
-
 type ScatterUserPlot struct {
 	Plot  Scatter
 	Funcs []func() float64
