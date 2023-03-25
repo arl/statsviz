@@ -12,6 +12,7 @@ import (
 
 	"github.com/arl/statsviz/internal/static"
 	"github.com/gorilla/websocket"
+	"github.com/stretchr/testify/assert"
 )
 
 func testIndex(t *testing.T, f http.Handler, url string) {
@@ -211,5 +212,48 @@ func Test_hijack(t *testing.T) {
 	contentType := "text/javascript; charset=utf-8"
 	if resp.Header.Get("Content-Type") != contentType {
 		t.Errorf("header[Content-Type] %s, want %s", resp.Header.Get("Content-Type"), contentType)
+	}
+}
+
+func TestGuessContentType(t *testing.T) {
+	is := assert.New(t)
+	type testCase struct {
+		in  string
+		exp string
+	}
+	cases := []testCase{
+		{
+			"js/app.js",
+			"text/javascript",
+		},
+		{
+			in:  "libs/js/tippy.js?asd&fg=h",
+			exp: "text/javascript",
+		},
+		{
+			in:  "libs/js/tippy.js@6",
+			exp: "text/javascript",
+		},
+		{
+			in:  "libs/js/tippy.js@6",
+			exp: "text/javascript",
+		},
+		{
+			in:  "libs/js/popperjs-core2",
+			exp: "text/javascript",
+		},
+		{
+			in:  "libs/css/super-file",
+			exp: "text/css",
+		},
+		{
+			in:  "libs/font.woff2",
+			exp: "font/woff2",
+		},
+	}
+
+	for _, tc := range cases {
+		res := guessContentType(tc.in)
+		is.Equal(tc.exp, res, tc.in)
 	}
 }

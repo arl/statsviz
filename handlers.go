@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/arl/statsviz/internal/static"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -46,8 +45,21 @@ func hijack(h http.Handler) http.HandlerFunc {
 			buf.WriteTo(w)
 			return
 		}
+		writeContentTypeHeaders(r.URL.Path, w)
 		h.ServeHTTP(w, r)
 	}
+}
+
+func writeContentTypeHeaders(url string, w http.ResponseWriter) {
+	t := guessContentType(url)
+	if t == "" {
+		return
+	}
+	h := t
+	if t == "text/javascript" {
+		h += "; charset=utf-8"
+	}
+	w.Header().Add("Content-Type", h)
 }
 
 // Ws is a default Websocket handler, created with NewWsHandler, sending statistics
