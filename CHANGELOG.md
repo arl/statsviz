@@ -1,3 +1,7 @@
+v0.5.2 / 2023-03-29
+==============
+  * Ensure all files have a correct Content-Type (#106)
+
 v0.5.1 / 2022-09-30
 ==============
   * Fix UI on Firefox (#83)

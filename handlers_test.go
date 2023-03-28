@@ -3,6 +3,7 @@ package statsviz
 import (
 	"bytes"
 	"io"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -10,8 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arl/statsviz/internal/static"
 	"github.com/gorilla/websocket"
+
+	"github.com/arl/statsviz/internal/static"
 )
 
 func testIndex(t *testing.T, f http.Handler, url string) {
@@ -211,5 +213,60 @@ func Test_hijack(t *testing.T) {
 	contentType := "text/javascript; charset=utf-8"
 	if resp.Header.Get("Content-Type") != contentType {
 		t.Errorf("header[Content-Type] %s, want %s", resp.Header.Get("Content-Type"), contentType)
+	}
+}
+
+func TestContentTypeIsSet(t *testing.T) {
+	// Check that "Content-Type" headers on the assets we serve are all set to
+	// something more specific than "text/plain" because that'd make the page be
+	// rejected in certain 'strict' environments.
+	const root = "/some/root/path"
+	httpfs := IndexAtRoot(root)
+
+	requested := []string{}
+
+	// While we walk the embedded assets filesystem, control the header on the
+	// http filesystem server.
+	_ = fs.WalkDir(static.Assets, ".", func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() || path == "fs.go" || path == "index.html" {
+			return nil
+		}
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, root+"/"+path, nil)
+
+		httpfs(w, r)
+		res := w.Result()
+		if res.StatusCode != 200 && path != "index.html" {
+			t.Errorf("GET %q returned HTTP %d, want 200", path, res.StatusCode)
+			return nil
+		}
+
+		ct := w.HeaderMap.Get("Content-Type")
+		if ct == "" || strings.Contains(ct, "text/plain") {
+			t.Errorf(`GET %q has incorrect header "Content-Type = %s"`, path, ct)
+			return nil
+		}
+
+		if testing.Verbose() {
+			t.Logf("%q Content-Type %q", path, ct)
+		}
+		requested = append(requested, path)
+		return nil
+	})
+
+	// Verify that all files in contentTypes map have been requested. This is to
+	// keep the map aligned with the actual content of the static/ dir.
+	for path := range contentTypes {
+		found := false
+		for i := range requested {
+			if requested[i] == path {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("contentTypes[%v] matches no files in the static/ dir", path)
+		}
 	}
 }
