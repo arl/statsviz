@@ -46,8 +46,21 @@ func hijack(h http.Handler) http.HandlerFunc {
 			buf.WriteTo(w)
 			return
 		}
+		// Force Content-Type if needed.
+		if ct, ok := contentTypes[r.URL.Path]; ok {
+			w.Header().Add("Content-Type", ct)
+		}
+
 		h.ServeHTTP(w, r)
 	}
+}
+
+// Force Content-Type HTTP header for certain files of some javascript libraries
+// that have no extensions. Otherwise the http fileserver would serve them under
+// "Content-Type = text/plain".
+var contentTypes = map[string]string{
+	"libs/js/popperjs-core2": "text/javascript",
+	"libs/js/tippy.js@6":     "text/javascript",
 }
 
 // Ws is a default Websocket handler, created with NewWsHandler, sending statistics
