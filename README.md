@@ -1,9 +1,9 @@
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=round-square)](https://pkg.go.dev/github.com/arl/statsviz)
-[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
-[![codecov](https://codecov.io/gh/arl/statsviz/branch/main/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
 [![Latest tag](https://img.shields.io/github/tag/arl/statsviz.svg)](https://github.com/arl/statsviz/tag/) 
 
-[![Foresight](https://github.com/arl/statsviz/raw/readme-docs/sponsor/fo-badge.s.png)](https://statsviz.app.runforesight.com/)
+[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
+[![codecov](https://codecov.io/gh/arl/statsviz/branch/main/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
+
 [![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-linux/badge.svg)](https://github.com/arl/statsviz/actions)
 [![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-others/badge.svg)](https://github.com/arl/statsviz/actions)
 # Statsviz
@@ -18,32 +18,25 @@ Visualise Go program runtime metrics data in real time: heap, objects, goroutine
 
 <hr>
 
-_Special thanks to_ my **sponsors:**
-
-<table cellpadding="5">
-<tbody align="center">
-<tr>
-
-  <b> Foresight: Increase CI/CD Health & Test Performance </b>
-  <a href="https://www.runforesight.com/?utm_source=statsviz&utm_medium=sponsorship">
-<img align="right" width="200" alt="Foresight" src="https://www.thundra.io/hubfs/RunForesight/GitHub%20Sponsorship%20banners/github-actions-observability.png">
-</a>
-
-<br /> 
-   Foresight provides full visibility and deep insights into the health and performance of your tests and CI pipelines. Assess the risk of code changes, deal with flaky tests, see workflow and test trends over time, and improve the contributing experience with Foresight.
-  
-</tr>
-</tbody>
-</table>
-
-<br/><hr/>
-
+- [Statsviz](#statsviz)
   - [Usage](#usage)
   - [How does that work?](#how-does-that-work)
   - [Documentation](#documentation)
     - [Go API](#go-api)
     - [User interface](#user-interface)
       - [Plots](#plots)
+        - [Heap (global)](#heap-global)
+        - [Heap (details)](#heap-details)
+        - [Live Objects in Heap](#live-objects-in-heap)
+        - [Live Bytes in Heap](#live-bytes-in-heap)
+        - [MSpan/MCache](#mspanmcache)
+        - [Goroutines](#goroutines)
+        - [Size Classes](#size-classes)
+        - [Stop-the-world Pause Latencies](#stop-the-world-pause-latencies)
+        - [Time Goroutines Spend in 'Runnable'](#time-goroutines-spend-in-runnable)
+        - [Starting Size of Goroutines Stacks](#starting-size-of-goroutines-stacks)
+        - [Goroutine Scheduling Events](#goroutine-scheduling-events)
+        - [CGO Calls](#cgo-calls)
   - [Examples](#examples)
   - [Questions / Troubleshooting](#questions--troubleshooting)
   - [Contributing](#contributing)
