@@ -1,3 +1,5 @@
+import * as theme from "./theme.js";
+
 var infoIcon = {
     'width': 470,
     'height': 530,
@@ -39,8 +41,11 @@ const newLayoutObject = (cfg) => {
         margin: {
             t: 80,
         },
-        paper_bgcolor: '#f8f8f8',
-        plot_bgcolor: '#ffffdd',
+        paper_bgcolor: cfg.layout.paper_bgcolor,
+        plot_bgcolor: cfg.layout.plot_bgcolor,
+        font: {
+            color: cfg.layout.font_color
+        },
         width: 630,
         height: 450,
         hovermode: 'x',
@@ -61,7 +66,7 @@ const newLayoutObject = (cfg) => {
         showlegend: true,
         legend: {
             "orientation": "h"
-        },
+        }
     };
 
     if (layout.yaxis.tickmode == "array") {
@@ -93,6 +98,19 @@ const handleInfoButton = (gd, ev) => {
     }
     button.setAttribute('data-val', !val);
 }
+
+const themeColors = {
+    light: {
+        paper_bgcolor: '#f8f8f8',
+        plot_bgcolor: '#ffffdd',
+        font_color: '#434343'
+    },
+    dark: {
+        paper_bgcolor: '#181a1c',
+        plot_bgcolor: '#282a2c',
+        font_color: '#fff'
+    }
+};
 
 /*
     Plot configuration object:
@@ -159,9 +177,14 @@ class Plot {
      */
 
     constructor(cfg) {
+        cfg.layout.paper_bgcolor = themeColors[theme.getThemeMode()].paper_bgcolor;
+        cfg.layout.plot_bgcolor = themeColors[theme.getThemeMode()].plot_bgcolor;
+        cfg.layout.font_color = themeColors[theme.getThemeMode()].font_color;
+
         this._cfg = cfg;
         this._updateCount = 0;
         this._dataTemplate = [];
+        this._lastData = [{ x: new Date() }];
 
         if (['scatter', 'bar'].includes(this._cfg.type)) {
             this._cfg.subplots.forEach(subplot => {
@@ -198,7 +221,7 @@ class Plot {
         this._plotIdx = idx;
         // Pass a single data with no data to create an empty plot, this removes
         // the 'bad time formatting' warning at startup.
-        Plotly.newPlot(this._htmlElt, [{ x: new Date() }], this._plotlyLayout, this._plotlyConfig);
+        Plotly.newPlot(this._htmlElt, this._lastData, this._plotlyLayout, this._plotlyConfig);
         if (this._cfg.type == 'heatmap') {
             this._installHeatmapTooltip();
         }
@@ -275,6 +298,7 @@ class Plot {
     }
 
     update(xrange, data, shapes) {
+        this._lastData = this._extractData(data);
         this._updateCount++;
         if (this._cfg.updateFreq == 0 || (this._updateCount % this._cfg.updateFreq == 0)) {
             // Update layout with vertical shapes if necessary.
@@ -285,8 +309,22 @@ class Plot {
             // Move the xaxis time range.
             this._plotlyLayout.xaxis.range = xrange;
 
-            Plotly.react(this._htmlElt, this._extractData(data), this._plotlyLayout, this._plotlyConfig);
+            Plotly.react(this._htmlElt, this._lastData, this._plotlyLayout, this._plotlyConfig);
         }
+    }
+
+    /**
+     * update theme color and immediately force plot redraw to apply the new theme
+     */
+    updateTheme() {
+        this._cfg.layout.paper_bgcolor = themeColors[theme.getThemeMode()].paper_bgcolor;
+        this._cfg.layout.plot_bgcolor = themeColors[theme.getThemeMode()].plot_bgcolor;
+        this._cfg.layout.font_color = themeColors[theme.getThemeMode()].font_color;
+
+        this._plotlyLayout = newLayoutObject(this._cfg);
+        this._plotlyConfig = newConfigObject(this._cfg);
+
+        Plotly.react(this._htmlElt, this._lastData, this._plotlyLayout);
     }
 };
 
