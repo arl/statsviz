@@ -4,6 +4,19 @@ body {
     margin: 0;
 }
 
+nav.navbar {
+    background-color: #f8f9fa;
+}
+
+body.dark-theme {
+    color: white;
+    background-color: #282a2c;
+}
+
+body.dark-theme nav.navbar span.action svg {
+    color: lightgray;
+}
+
 #header {
     text-align: center;
 }

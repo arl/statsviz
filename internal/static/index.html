@@ -20,7 +20,7 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #84afce;">
+    <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-xxl">
             <a class="navbar-brand" href="#">Statsviz</a>
             <button class="navbar-toggler" type="button">
@@ -45,8 +45,11 @@
                 <option value="300">5 minute</option>
                 <option value="600">10 minutes</option>
               </select>
-            <span title="play/pause">
+            <span class="action" title="play/pause">
                 <input id="play_pause" type="checkbox" data-toggle="toggle" data-onstyle="default" data-on="<i class='fa fa-play'></i>" data-off="<i class='fa fa-pause'></i>" data-size="mini" data-bs-toggle="tooltip">
+            </span>
+            <span class="action" title="color theme">
+                <input id="color_theme_sw" type="checkbox" data-toggle="toggle" data-onstyle="default" data-on="<i class='fa fa-circle-half-stroke'></i>" data-off="<i class='fa fa-circle-half-stroke'></i>" data-size="mini" data-bs-toggle="tooltip">
             </span>
         </div>
     </nav>

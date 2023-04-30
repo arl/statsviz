@@ -1,5 +1,6 @@
 import * as stats from './stats.js';
 import * as plot from "./plot.js";
+import * as theme from "./theme.js";
 import PlotsDef from './plotsdef.js';
 
 const buildWebsocketURI = () => {
@@ -90,7 +91,6 @@ const configurePlots = (plotdefs) => {
 }
 
 const attachPlots = () => {
-    let row = null;
     let plotsDiv = $('#plots');
     plotsDiv.empty();
 
@@ -124,3 +124,22 @@ const updatePlots = () => {
         }
     });
 }
+
+const updatePlotsLayout = () => {
+    plots.forEach(plot => {
+        plot.updateTheme();
+    });
+}
+
+theme.updateThemeMode();
+
+/**
+ * Change color theme when the user presses the theme switch button
+ */
+$('#color_theme_sw').change(() => {
+    const themeMode = theme.getThemeMode();
+    const newTheme = themeMode === "dark" && "light" || "dark";
+    localStorage.setItem("theme-mode", newTheme);    
+    theme.updateThemeMode();
+    updatePlotsLayout();
+});
