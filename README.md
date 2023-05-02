@@ -51,7 +51,7 @@ Download the latest version:
     go get github.com/arl/statsviz@latest
 
 
-Register statsviz endpoint on your server [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) (preferred method):
+Register Statsviz endpoint on your server [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) (preferred method):
 
 ```go
 mux := http.NewServeMux()
@@ -64,7 +64,7 @@ Or register on `http.DefaultServeMux`:
 statsviz.RegisterDefault()
 ```
 
-By default statsviz is served at `/debug/statsviz/`.
+By default Statsviz is served at `/debug/statsviz/`.
 
 If your application is not already running an HTTP server, you need to start
 one. Add `"net/http"` and `"log"` to your imports and the following code to your
@@ -83,11 +83,11 @@ Then open your browser at http://localhost:6060/debug/statsviz/.
 
 Statsviz serves 2 HTTP endpoints:
 
- - The first one (`/debug/statsviz`) serves a web page with statsviz
+ - The first one (`/debug/statsviz`) serves a web page with Statsviz
 user interface, showing initially empty plots.
 
  - The second HTTP handler (`/debug/statsviz/ws`) listens for a WebSocket
-connection that will be initiated by statsviz web page as soon as it's loaded in
+connection that will be initiated by Statsviz web page as soon as it's loaded in
 your browser.
 
 That's it, now your application sends all [runtime/metrics](https://pkg.go.dev/runtime/metrics) 
@@ -181,7 +181,7 @@ Check out the [_example](./_example/README.md) directory to see various ways to 
  - wrap HTTP handler behind a middleware
  - register the web page at `/foo/bar` instead of `/debug/statviz`
  - use `https://` rather than `http://`
- - register statsviz handlers with various Go HTTP libraries/frameworks:
+ - register Statsviz handlers with various Go HTTP libraries/frameworks:
    - [fasthttp](https://github.com/valyala/fasthttp)
    - [gin](https://github.com/gin-gonic/gin)
    - and many others thanks to awesome contributors!
