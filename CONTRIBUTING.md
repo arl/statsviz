@@ -29,6 +29,12 @@ The user interface aims to be simple, light and minimal.
 Assets are located in the `internal/static` directory and are embedded with
 [`go:embed`](https://pkg.go.dev/embed).
 
+Depending on what your modifications are, it's always a good idea to check that
+some of the examples in [./_example](./_example/) work with your modifications
+to statsviz. To do so `cd` to the directory of the example and run:
+
+    go mod edit -replace=github.com/arl/statsviz=../../
+
 
 ## Documentation
 
@@ -38,12 +44,12 @@ are welcome!
 
 ## Examples
 
-There are many Go libraries to handle HTTP routing.
+There are many Go libraries to handle HTTP requests, routing, etc..
 
 Feel free to add an example to show how to register statsviz with your favourite
 library.
 
-Please add a directory under `./_example`. For instance, if you want to add an
+To do so, please add a directory under `./_example`. For instance, if you want to add an
 example showing how to register statsviz within library `foobar`:
 
  - create a directory `./_example/foobar/`
@@ -54,5 +60,6 @@ example showing how to register statsviz within library `foobar`:
  - the code should be `gofmt`ed
  - the example should compile and run
  - when ran, statsviz interface should be accessible at http://localhost:8080/debug/statsviz
+
 
 Thank you!
