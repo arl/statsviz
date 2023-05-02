@@ -16,7 +16,7 @@ const (
 
 var (
 	ErrNoTimeSeries  = errors.New("user plot must have at least one time series")
-	ErrEmptyPlotName = errors.New("user plot name must not be empty")
+	ErrEmptyPlotName = errors.New("user plot name can't be empty")
 )
 
 type ErrReservedPlotName string
