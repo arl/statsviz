@@ -184,7 +184,7 @@ Check out the [_example](./_example/README.md) directory to see various ways to 
  - register statsviz handlers with various Go HTTP libraries/frameworks:
    - [fasthttp](https://github.com/valyala/fasthttp)
    - [gin](https://github.com/gin-gonic/gin)
-   - and many others thanks to many awesome contributors!
+   - and many others thanks to awesome contributors!
 
 
 ## Questions / Troubleshooting
