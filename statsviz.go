@@ -1,7 +1,7 @@
 // Package statsviz allows to visualise Go program runtime metrics data in real
 // time: heap, objects, goroutines, GC pauses, scheduler, etc. in your browser.
 //
-// Create a statsviz [Endpoint] and register it with your server [http.ServeMux]
+// Create a Statsviz [Endpoint] and register it with your server [http.ServeMux]
 // (preferred method):
 //
 //	mux := http.NewServeMux()
@@ -85,7 +85,7 @@ func WithInterval(intv time.Duration) Option {
 	}
 }
 
-// WithRoot option changes the root path at which statsviz endpoint is served on
+// WithRoot option changes the root path at which Statsviz endpoint is served on
 // the HTTP server. By default this path is /debug/statviz.
 func WithRoot(path string) Option {
 	return func(e *Endpoint) {
@@ -93,7 +93,7 @@ func WithRoot(path string) Option {
 	}
 }
 
-// WithTimeseriesPlot adds a new timeseries plot to statsviz ui that tracks some
+// WithTimeseriesPlot adds a new timeseries plot to Statsviz ui that tracks some
 // user-provided metric. Can be called multiple times.
 func WithTimeseriesPlot(tsp TimeSeriesPlot) Option {
 	return func(e *Endpoint) {
@@ -146,7 +146,7 @@ var contentTypes = map[string]string{
 	"libs/js/tippy.js@6":     "text/javascript",
 }
 
-// Index returns the index handler, responding with statsviz user interface HTML
+// Index returns the index handler, responding with Statsviz user interface HTML
 // page. By default, the returned handler is served at /debug/statsviz. Use
 // [WithRoot] to change that path.
 func (e *Endpoint) Index() http.HandlerFunc {
@@ -155,7 +155,7 @@ func (e *Endpoint) Index() http.HandlerFunc {
 	return http.StripPrefix(prefix, intercept(assetsFS, e.plots.Config())).ServeHTTP
 }
 
-// Ws returns the websocket handler statsviz uses to send application metrics.
+// Ws returns the websocket handler Statsviz uses to send application metrics.
 //
 // The underlying net.Conn is used to upgrade the HTTP server connection to the
 // websocket protocol.
