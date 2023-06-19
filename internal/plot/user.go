@@ -25,5 +25,5 @@ func (up UserPlot) Layout() interface{} {
 		return up.Heatmap.Plot
 	}
 
-	panic("unreeachable")
+	panic("unreachable")
 }
