@@ -12,19 +12,21 @@ type (
 	}
 
 	Scatter struct {
-		Name       string `json:"name"`
+		Name       string        `json:"name"`
+		Title      string        `json:"title"`
+		Type       string        `json:"type"`
+		UpdateFreq int           `json:"updateFreq"`
+		InfoText   string        `json:"infoText"`
+		Events     string        `json:"events"`
+		Layout     ScatterLayout `json:"layout"`
+		Subplots   []Subplot     `json:"subplots"`
+	}
+	ScatterLayout struct {
+		Yaxis ScatterYAxis `json:"yaxis"`
+	}
+	ScatterYAxis struct {
 		Title      string `json:"title"`
-		Type       string `json:"type"`
-		UpdateFreq int    `json:"updateFreq"`
-		InfoText   string `json:"infoText"`
-		Events     string `json:"events"`
-		Layout     struct {
-			Yaxis struct {
-				Title      string `json:"title"`
-				TickSuffix string `json:"ticksuffix"`
-			} `json:"yaxis"`
-		} `json:"layout"`
-		Subplots []Subplot `json:"subplots"`
+		TickSuffix string `json:"ticksuffix"`
 	}
 
 	Subplot struct {
@@ -36,26 +38,27 @@ type (
 	}
 
 	Heatmap struct {
-		Name       string `json:"name"`
-		Title      string `json:"title"`
-		Type       string `json:"type"`
-		UpdateFreq int    `json:"updateFreq"`
-		InfoText   string `json:"infoText"`
-		Events     string `json:"events"`
-		Layout     struct {
-			Yaxis struct {
-				Title    string    `json:"title"`
-				TickMode string    `json:"tickmode"`
-				TickVals []float64 `json:"tickvals"`
-				TickText []float64 `json:"ticktext"`
-			} `json:"yaxis"`
-		} `json:"layout"`
+		Name       string          `json:"name"`
+		Title      string          `json:"title"`
+		Type       string          `json:"type"`
+		UpdateFreq int             `json:"updateFreq"`
+		InfoText   string          `json:"infoText"`
+		Events     string          `json:"events"`
+		Layout     HeatmapLayout   `json:"layout"`
 		Colorscale []WeightedColor `json:"colorscale"`
 		Buckets    []float64       `json:"buckets"`
 		CustomData []float64       `json:"custom_data"`
 		Hover      HeapmapHover    `json:"hover"`
 	}
-
+	HeatmapLayout struct {
+		YAxis HeatmapYaxis `json:"yaxis"`
+	}
+	HeatmapYaxis struct {
+		Title    string    `json:"title"`
+		TickMode string    `json:"tickmode"`
+		TickVals []float64 `json:"tickvals"`
+		TickText []float64 `json:"ticktext"`
+	}
 	HeapmapHover struct {
 		YName string `json:"yname"`
 		YUnit string `json:"yunit"` // 'duration', 'bytes' or custom

@@ -649,11 +649,15 @@ func (p *sizeClasses) layout(samples []metrics.Sample) interface{} {
 			ZName: "objects",
 		},
 		InfoText: `This heatmap shows the distribution of size classes, using <b>/gc/heap/allocs-by-size</b> and <b>/gc/heap/frees-by-size</b>.`,
+		Layout: HeatmapLayout{
+			YAxis: HeatmapYaxis{
+				Title:    "size class",
+				TickMode: "array",
+				TickVals: []float64{1, 9, 17, 25, 31, 37, 43, 50, 58, 66},
+				TickText: []float64{1 << 4, 1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15},
+			},
+		},
 	}
-	h.Layout.Yaxis.Title = "size class"
-	h.Layout.Yaxis.TickMode = "array"
-	h.Layout.Yaxis.TickVals = []float64{1, 9, 17, 25, 31, 37, 43, 50, 58, 66}
-	h.Layout.Yaxis.TickText = []float64{1 << 4, 1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15}
 	return h
 }
 
@@ -710,14 +714,15 @@ func (p *gcpauses) layout(samples []metrics.Sample) interface{} {
 			YUnit: "duration",
 			ZName: "pauses",
 		},
+		Layout: HeatmapLayout{
+			YAxis: HeatmapYaxis{
+				Title:    "pause duration",
+				TickMode: "array",
+				TickVals: []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86},
+				TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
+			},
+		},
 		InfoText: `This heatmap shows the distribution of individual GC-related stop-the-world pause latencies, uses <b>/gc/pauses:seconds</b>,.`,
-	}
-	h.Layout.Yaxis.Title = "pause duration"
-	h.Layout.Yaxis.TickMode = "array"
-	h.Layout.Yaxis.TickVals = []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86}
-	ticks := []float64{-7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5}
-	for _, tick := range ticks {
-		h.Layout.Yaxis.TickText = append(h.Layout.Yaxis.TickText, math.Pow(10, tick))
 	}
 	return h
 }
@@ -770,14 +775,15 @@ func (p *runnableTime) layout(samples []metrics.Sample) interface{} {
 			YUnit: "duration",
 			ZName: "goroutines",
 		},
+		Layout: HeatmapLayout{
+			YAxis: HeatmapYaxis{
+				Title:    "duration",
+				TickMode: "array",
+				TickVals: []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86},
+				TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
+			},
+		},
 		InfoText: `This heatmap shows the distribution of the time goroutines have spent in the scheduler in a runnable state before actually running, uses <b>/sched/latencies:seconds</b>.`,
-	}
-	h.Layout.Yaxis.Title = "duration"
-	h.Layout.Yaxis.TickMode = "array"
-	h.Layout.Yaxis.TickVals = []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86}
-	ticks := []float64{-7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5}
-	for _, tick := range ticks {
-		h.Layout.Yaxis.TickText = append(h.Layout.Yaxis.TickText, math.Pow(10, tick))
 	}
 
 	return h
