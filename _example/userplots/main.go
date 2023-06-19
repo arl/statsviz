@@ -26,15 +26,17 @@ func scatterPlot() statsviz.TimeSeriesPlot {
 	}
 
 	// Build a new plot, showing both time series at once.
-	plot, err := statsviz.NewTimeSeriesPlot("sin").
-		Title("Sinusoide user plot").
-		Type(statsviz.Scatter).
-		Tooltip(`This tooltip describe the plot that shows a nice sinusoide time series.<br>
-This accepts html tags like <b>bold</b> and <i>italic</i>`).
-		YAxisTitle("y unit").
-		AddTimeSeries(sin).
-		Build()
-
+	plot, err := statsviz.TimeSeriesPlotConfig{
+		Name:  "sin",
+		Title: "Sinusoide",
+		Type:  statsviz.Scatter,
+		InfoText: `This tooltip describe the plot that shows a nice sinusoide time series.<br>
+This accepts html tags like <b>bold</b> and <i>italic</i>`,
+		YAxisTitle: "y unit",
+		Series: []statsviz.TimeSeries{
+			sin,
+		},
+	}.Build()
 	if err != nil {
 		log.Fatalf("failed to build timeseries plot: %v", err)
 	}
@@ -62,15 +64,18 @@ func barPlot() statsviz.TimeSeriesPlot {
 	}
 
 	// Build a new plot, showing both time series at once.
-	plot, err := statsviz.NewTimeSeriesPlot("users").
-		Title("Users").
-		Type(statsviz.Bar).
-		Tooltip("This plot shows, in real-time, the count of <b>user logged in</b> and <b>user registered</b> events.").
-		YAxisTitle("users").
-		AddTimeSeries(logins).
-		AddTimeSeries(signins).
-		Build()
-
+	plot, err := statsviz.TimeSeriesPlotConfig{
+		Name:  "users",
+		Title: "Users",
+		Type:  statsviz.Bar,
+		InfoText: `This plot shows, in real-time, the count of <b>user logged in</b> and <b>user registered</b> events.<br>
+This accepts html tags like <b>bold</b> and <i>italic</i>`,
+		YAxisTitle: "users",
+		Series: []statsviz.TimeSeries{
+			logins,
+			signins,
+		},
+	}.Build()
 	if err != nil {
 		log.Fatalf("failed to build timeseries plot: %v", err)
 	}
