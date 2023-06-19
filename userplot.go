@@ -10,8 +10,8 @@ import (
 type TimeSeriesType string
 
 const (
-	Scatter TimeSeriesType = "scatter"
-	Bar     TimeSeriesType = "bar"
+	Scatter TimeSeriesType = "scatter" // Scatter is a time series plot made of lines.
+	Bar     TimeSeriesType = "bar"     // Bar is a time series plot made of bars.
 )
 
 var (
@@ -25,40 +25,6 @@ func (e ErrReservedPlotName) Error() string {
 	return fmt.Sprintf("%q is a reserved plot name", string(e))
 }
 
-type TimeSeriesBuilder struct {
-	s     plot.Scatter
-	funcs []func() float64 // one func per time series
-}
-
-func NewTimeSeriesPlot(name string) *TimeSeriesBuilder {
-	return &TimeSeriesBuilder{s: plot.Scatter{Name: name}}
-}
-
-func (p *TimeSeriesBuilder) Title(title string) *TimeSeriesBuilder {
-	p.s.Title = title
-	return p
-}
-
-func (p *TimeSeriesBuilder) Type(typ TimeSeriesType) *TimeSeriesBuilder {
-	p.s.Type = string(typ)
-	return p
-}
-
-func (p *TimeSeriesBuilder) Tooltip(tooltip string) *TimeSeriesBuilder {
-	p.s.InfoText = tooltip
-	return p
-}
-
-func (p *TimeSeriesBuilder) YAxisTitle(title string) *TimeSeriesBuilder {
-	p.s.Layout.Yaxis.Title = title
-	return p
-}
-
-func (p *TimeSeriesBuilder) YAxisTickSuffix(suffix string) *TimeSeriesBuilder {
-	p.s.Layout.Yaxis.TickSuffix = suffix
-	return p
-}
-
 // TODO(arl) comment all fields
 type TimeSeries struct {
 	Name    string
@@ -67,36 +33,61 @@ type TimeSeries struct {
 	Value   func() float64
 }
 
-// AddTimeSeries adds a time series to the current plot. Plots should hold at least
-// one time series.
-func (p *TimeSeriesBuilder) AddTimeSeries(ts TimeSeries) *TimeSeriesBuilder {
-	p.s.Subplots = append(p.s.Subplots, plot.Subplot{
-		Name:    ts.Name,
-		Unitfmt: ts.Unitfmt,
-		HoverOn: ts.HoverOn,
-	})
-	p.funcs = append(p.funcs, ts.Value)
-	return p
+type TimeSeriesPlotConfig struct {
+	Name       string         // Name is the plot name, it's mandatory and must be unique.
+	Title      string         // Title is the plot title, shown above the plot.
+	Type       TimeSeriesType // Type is either scatter or bar.
+	InfoText   string         // Tooltip is the html-aware text shown when the user clicks on the plot Info icon.
+	YAxisTitle string         // YAxisTitle is the title of Y axis.
+
+	//  TODO(arl) add link to d3 format page
+	YAxisTickSuffix string       // YAxisTickSuffix is the suffix added to tick values.
+	Series          []TimeSeries // Series contains the time series shown on this plot, there must be at least one.
 }
 
-func (p *TimeSeriesBuilder) Build() (TimeSeriesPlot, error) {
-	if p.s.Name == "" {
-		return TimeSeriesPlot{}, ErrEmptyPlotName
+func (p TimeSeriesPlotConfig) Build() (TimeSeriesPlot, error) {
+	var zero TimeSeriesPlot
+	if p.Name == "" {
+		return zero, ErrEmptyPlotName
 	}
-	if plot.IsReservedPlotName(p.s.Name) {
-		return TimeSeriesPlot{}, ErrReservedPlotName(p.s.Name)
+	if plot.IsReservedPlotName(p.Name) {
+		return zero, ErrReservedPlotName(p.Name)
 	}
-	if len(p.s.Subplots) == 0 {
-		return TimeSeriesPlot{}, ErrNoTimeSeries
+	if len(p.Series) == 0 {
+		return zero, ErrNoTimeSeries
 	}
 
-	up := TimeSeriesPlot{
-		timeseries: &plot.ScatterUserPlot{
-			Plot:  plot.Scatter(p.s),
-			Funcs: p.funcs,
-		},
+	var (
+		subplots []plot.Subplot
+		funcs    []func() float64
+	)
+	for _, ts := range p.Series {
+		subplots = append(subplots, plot.Subplot{
+			Name:    ts.Name,
+			Unitfmt: ts.Unitfmt,
+			HoverOn: ts.HoverOn,
+		})
+		funcs = append(funcs, ts.Value)
 	}
-	return up, nil
+
+	return TimeSeriesPlot{
+		timeseries: &plot.ScatterUserPlot{
+			Plot: plot.Scatter{
+				Name:     p.Name,
+				Title:    p.Title,
+				Type:     string(p.Type),
+				InfoText: p.InfoText,
+				Layout: plot.ScatterLayout{
+					Yaxis: plot.ScatterYAxis{
+						Title:      p.YAxisTitle,
+						TickSuffix: p.YAxisTickSuffix,
+					},
+				},
+				Subplots: subplots,
+			},
+			Funcs: funcs,
+		},
+	}, nil
 }
 
 // TimeSeriesPlot is an opaque type representing a timeseries plot.
