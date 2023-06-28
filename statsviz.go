@@ -1,20 +1,20 @@
 // Package statsviz allows to visualise Go program runtime metrics data in real
 // time: heap, objects, goroutines, GC pauses, scheduler, etc. in your browser.
 //
-// Create an [Endpoint] and register it with your server [http.ServeMux]
+// Create a [Server] and register it with your server [http.ServeMux]
 // (preferred method):
 //
 //	mux := http.NewServeMux()
-//	endpoint := statviz.NewEndpoint()
-//	endpoint.Register(mux)
+//	server := statviz.NewServer()
+//	server.Register(mux)
 //
 // Or register with [http.DefaultServeMux]:
 //
-//	endpoint := statviz.NewEndpoint()
-//	endpoint.Register(http.DefaultServeMux)
+//	server := statviz.NewServer()
+//	server.Register(http.DefaultServeMux)
 //
 // By default Statsviz is served at `/debug/statsviz/`. You can change that, as well
-// as configure other things, using methods of an [Endpoint].
+// as other settings, by passing options to [NewServer].
 //
 // If your application is not already running an HTTP server, you need to start
 // one. Add "net/http" and "log" to your imports and the following code to your
@@ -25,6 +25,9 @@
 //	}()
 //
 // Then open your browser at http://localhost:6060/debug/statsviz/.
+
+// TODO(arl) Keep the README.md updated with that doc.
+
 package statsviz
 
 import (
@@ -46,9 +49,9 @@ const (
 	defaultSendInterval = time.Second
 )
 
-// An Endpoint serves, and consists of, 2 HTTP handlers necessary for Statsviz
+// An Server serves, and consists of, 2 HTTP handlers necessary for Statsviz
 // user interface.
-type Endpoint struct {
+type Server struct {
 	intv  time.Duration // interval between consecutive metrics emission
 	root  string        // http path root
 	plots *plot.List    // plots shown on the user interface
@@ -57,10 +60,10 @@ type Endpoint struct {
 	userPlots []plot.UserPlot
 }
 
-// NewEndpoint constructs a new Statsviz endpoint, pre-configured with default
+// NewServer constructs a new Statsviz Server, pre-configured with default
 // settings or with given options.
-func NewEndpoint(opts ...Option) *Endpoint {
-	e := &Endpoint{
+func NewServer(opts ...Option) *Server {
+	e := &Server{
 		intv: defaultSendInterval,
 		root: defaultRoot,
 	}
@@ -73,37 +76,37 @@ func NewEndpoint(opts ...Option) *Endpoint {
 	return e
 }
 
-// Option is an Endpoint configuration option.
-type Option func(*Endpoint)
+// Option is a Server configuration option.
+type Option func(*Server)
 
 // WithInterval option changes the interval between successive acquisitions of
 // metrics and their sending to the user interface. By default, the interval is
 // one second.
 func WithInterval(intv time.Duration) Option {
-	return func(e *Endpoint) {
+	return func(e *Server) {
 		e.intv = intv
 	}
 }
 
-// WithRoot option changes the root path at which Statsviz endpoint is served on
-// the HTTP server. By default this path is /debug/statviz.
+// WithRoot option changes the root path of the Statsviz user interface. By
+// default, the root path is "/debug/statsviz".
 func WithRoot(path string) Option {
-	return func(e *Endpoint) {
+	return func(e *Server) {
 		e.root = path
 	}
 }
 
-// WithTimeseriesPlot adds a new timeseries plot to Statsviz ui that tracks some
-// user-provided metric. Can be called multiple times.
+// WithTimeseriesPlot adds a new time series plot to Statsviz. Can be called
+// multiple times.
 func WithTimeseriesPlot(tsp TimeSeriesPlot) Option {
-	return func(e *Endpoint) {
+	return func(e *Server) {
 		e.userPlots = append(e.userPlots,
 			plot.UserPlot{Scatter: tsp.timeseries})
 	}
 }
 
 // Register registers statviz HTTP handlers on the provided mux.
-func (e *Endpoint) Register(mux *http.ServeMux) {
+func (e *Server) Register(mux *http.ServeMux) {
 	mux.Handle(e.root+"/", e.Index())
 	mux.HandleFunc(e.root+"/ws", e.Ws())
 }
@@ -149,7 +152,7 @@ var contentTypes = map[string]string{
 // Index returns the index handler, responding with Statsviz user interface HTML
 // page. By default, the returned handler is served at /debug/statsviz. Use
 // [WithRoot] to change that path.
-func (e *Endpoint) Index() http.HandlerFunc {
+func (e *Server) Index() http.HandlerFunc {
 	prefix := strings.TrimSuffix(e.root, "/") + "/"
 	assetsFS := http.FileServer(http.FS(static.Assets))
 	return http.StripPrefix(prefix, intercept(assetsFS, e.plots.Config())).ServeHTTP
@@ -159,7 +162,7 @@ func (e *Endpoint) Index() http.HandlerFunc {
 //
 // The underlying net.Conn is used to upgrade the HTTP server connection to the
 // websocket protocol.
-func (e *Endpoint) Ws() http.HandlerFunc {
+func (e *Server) Ws() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var upgrader = websocket.Upgrader{
 			ReadBufferSize:  1024,
@@ -180,7 +183,7 @@ func (e *Endpoint) Ws() http.HandlerFunc {
 }
 
 // sendStats sends runtime statistics on the websocket connection.
-func (e *Endpoint) sendStats(conn *websocket.Conn, frequency time.Duration) error {
+func (e *Server) sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	tick := time.NewTicker(frequency)
 	defer tick.Stop()
 

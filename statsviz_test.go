@@ -47,17 +47,17 @@ func testIndex(t *testing.T, f http.Handler, url string) {
 func TestIndex(t *testing.T) {
 	t.Parallel()
 
-	se := NewEndpoint()
+	se := NewServer()
 	testIndex(t, se.Index(), "http://example.com/debug/statsviz/")
 }
 
 func TestRoot(t *testing.T) {
 	t.Parallel()
 
-	testIndex(t, NewEndpoint(WithRoot("/debug/")).Index(), "http://example.com/debug/")
-	testIndex(t, NewEndpoint(WithRoot("/debug")).Index(), "http://example.com/debug/")
-	testIndex(t, NewEndpoint(WithRoot("/")).Index(), "http://example.com/")
-	testIndex(t, NewEndpoint(WithRoot("/test/")).Index(), "http://example.com/test/")
+	testIndex(t, NewServer(WithRoot("/debug/")).Index(), "http://example.com/debug/")
+	testIndex(t, NewServer(WithRoot("/debug")).Index(), "http://example.com/debug/")
+	testIndex(t, NewServer(WithRoot("/")).Index(), "http://example.com/")
+	testIndex(t, NewServer(WithRoot("/test/")).Index(), "http://example.com/test/")
 }
 
 func testWs(t *testing.T, f http.Handler, URL string) {
@@ -113,7 +113,7 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 func TestWs(t *testing.T) {
 	t.Parallel()
 
-	testWs(t, NewEndpoint().Ws(), "http://example.com/debug/statsviz/ws")
+	testWs(t, NewServer().Ws(), "http://example.com/debug/statsviz/ws")
 }
 
 func TestWsCantUpgrade(t *testing.T) {
@@ -121,7 +121,7 @@ func TestWsCantUpgrade(t *testing.T) {
 
 	req := httptest.NewRequest("GET", url, nil)
 	w := httptest.NewRecorder()
-	NewEndpoint().Ws()(w, req)
+	NewServer().Ws()(w, req)
 
 	if w.Result().StatusCode != http.StatusBadRequest {
 		t.Errorf("responded %v to %q with non-websocket-upgradable conn, want %v", w.Result().StatusCode, url, http.StatusBadRequest)
@@ -139,7 +139,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		NewEndpoint().Register(mux)
+		NewServer().Register(mux)
 		testRegister(t, mux, "http://example.com/debug/statsviz/")
 	})
 
@@ -147,7 +147,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		NewEndpoint(WithRoot("")).Register(mux)
+		NewServer(WithRoot("")).Register(mux)
 
 		testRegister(t, mux, "http://example.com/")
 	})
@@ -156,7 +156,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		NewEndpoint(WithRoot("/path/to/statsviz")).Register(mux)
+		NewServer(WithRoot("/path/to/statsviz")).Register(mux)
 
 		testRegister(t, mux, "http://example.com/path/to/statsviz/")
 	})
@@ -165,7 +165,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		NewEndpoint(
+		NewServer(
 			WithRoot("/root/to/statsviz"),
 			WithInterval(100*time.Millisecond),
 		).Register(mux)
@@ -177,7 +177,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		NewEndpoint(
+		NewServer(
 			WithRoot("/root/to/statsviz"),
 			WithInterval(0),
 		).Register(mux)
@@ -185,7 +185,7 @@ func TestRegister(t *testing.T) {
 }
 
 func TestRegisterDefault(t *testing.T) {
-	NewEndpoint().Register(http.DefaultServeMux)
+	NewServer().Register(http.DefaultServeMux)
 	testRegister(t, http.DefaultServeMux, "http://example.com/debug/statsviz/")
 }
 
@@ -195,7 +195,7 @@ func Test_intercept(t *testing.T) {
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/js/plotsdef.js", nil)
 
-	se := NewEndpoint()
+	se := NewServer()
 	intercept(se.Index(), se.plots.Config())(w, req)
 
 	resp := w.Result()
@@ -214,7 +214,7 @@ func TestContentTypeIsSet(t *testing.T) {
 	// something more specific than "text/plain" because that'd make the page be
 	// rejected in certain 'strict' environments.
 	const root = "/some/root/path"
-	e := NewEndpoint(WithRoot(root))
+	e := NewServer(WithRoot(root))
 	httpfs := e.Index()
 
 	requested := []string{}
