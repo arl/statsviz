@@ -64,16 +64,4 @@ type (
 		YUnit string `json:"yunit"` // 'duration', 'bytes' or custom
 		ZName string `json:"zname"`
 	}
-
-	Axis struct {
-		Title string
-		Unit  Unit
-	}
-
-	Unit struct {
-		TickSuffix string
-		UnitFmt    string
-	}
 )
-
-var Bytes = Unit{TickSuffix: "B", UnitFmt: "%{y:.4s}B"}
