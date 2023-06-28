@@ -17,8 +17,8 @@ func main() {
 	// Create a Gorilla router.
 	r := mux.NewRouter()
 
-	// Create statsviz endpoint and register the handlers on the router.
-	ep := statsviz.NewEndpoint()
+	// Create statsviz server and register the handlers on the router.
+	ep := statsviz.NewServer()
 	r.Methods("GET").Path("/debug/statsviz/ws").Name("GET /debug/statsviz/ws").HandlerFunc(ep.Ws())
 	r.Methods("GET").PathPrefix("/debug/statsviz/").Name("GET /debug/statsviz/").Handler(ep.Index())
 

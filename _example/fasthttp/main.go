@@ -29,8 +29,8 @@ func main() {
 		fmt.Fprintf(ctx, "Hello, world!")
 	})
 
-	// Create statsviz endpoint.
-	ep := statsviz.NewEndpoint()
+	// Create statsviz server.
+	ep := statsviz.NewServer()
 
 	// Register the endpoint handlers on the fasthttp router.
 	r.GET("/debug/statsviz/{filepath:*}", fasthttpadaptor.NewFastHTTPHandler(ep.Index()))

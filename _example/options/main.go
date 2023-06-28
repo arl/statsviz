@@ -15,7 +15,7 @@ func main() {
 
 	// Serve statsviz user interface from /foo/bar instead of /debug/statsviz
 	// and send metrics every 250 milliseconds instead of 1 second.
-	ep := statsviz.NewEndpoint(
+	ep := statsviz.NewServer(
 		statsviz.WithRoot("/foo/bar"),
 		statsviz.WithInterval(250*time.Millisecond),
 	)

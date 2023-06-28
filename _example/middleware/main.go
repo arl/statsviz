@@ -32,8 +32,8 @@ func main() {
 
 	const statsvizRoot = "/debug/statsviz"
 
-	// Create statsviz endpoint.
-	ep := statsviz.NewEndpoint()
+	// Create statsviz server.
+	ep := statsviz.NewServer()
 
 	mux := http.NewServeMux()
 	mux.Handle(statsvizRoot+"/", basicAuth(ep.Index(), "statsviz", "rocks", ""))

@@ -13,8 +13,8 @@ func main() {
 	// Force the GC to work to make the plots "move".
 	go example.Work()
 
-	// Create statsviz endpoint.
-	ep := statsviz.NewEndpoint()
+	// Create statsviz server.
+	ep := statsviz.NewServer()
 
 	// Register the endpoint handlers on the default mux.
 	ep.Register(http.DefaultServeMux)

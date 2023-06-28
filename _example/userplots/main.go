@@ -88,8 +88,8 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// Create statsviz endpoint with 2 additional, user-provided plots.
-	ep := statsviz.NewEndpoint(
+	// Create statsviz server with 2 additional, user-provided plots.
+	ep := statsviz.NewServer(
 		statsviz.WithTimeseriesPlot(scatterPlot()),
 		statsviz.WithTimeseriesPlot(barPlot()),
 	)

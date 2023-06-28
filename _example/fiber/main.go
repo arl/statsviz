@@ -33,8 +33,8 @@ func main() {
 		return c.SendString("Hello, World 👋!")
 	})
 
-	// Create statsviz endpoint.
-	ep := statsviz.NewEndpoint()
+	// Create statsviz server.
+	ep := statsviz.NewServer()
 
 	// Register the endpoint handlers.
 	app.Use("/debug/statsviz", adaptor.HTTPHandler(ep.Index()))
