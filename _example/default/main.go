@@ -14,10 +14,10 @@ func main() {
 	go example.Work()
 
 	// Create statsviz server.
-	ep := statsviz.NewServer()
+	ss := statsviz.NewServer()
 
-	// Register the endpoint handlers on the default mux.
-	ep.Register(http.DefaultServeMux)
+	// Register Statsviz server on the default mux.
+	ss.Register(http.DefaultServeMux)
 
 	fmt.Println("Point your browser to http://localhost:8080/debug/statsviz/")
 	log.Fatal(http.ListenAndServe(":8080", nil))

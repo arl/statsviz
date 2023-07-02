@@ -14,12 +14,12 @@ func main() {
 	go example.Work()
 
 	// Create statsviz server.
-	ep := statsviz.NewServer()
+	ss := statsviz.NewServer()
 
-	ws := ep.Ws()
-	index := ep.Index()
+	ws := ss.Ws()
+	index := ss.Index()
 
-	// Register the endpoint handlers on gin router.
+	// Register Statsviz server on the gin router.
 	router := gin.New()
 	router.GET("/debug/statsviz/*filepath", func(context *gin.Context) {
 		if context.Param("filepath") == "/ws" {

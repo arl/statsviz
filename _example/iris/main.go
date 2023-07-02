@@ -23,7 +23,8 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Create statsviz server and register it with the mux.
-	statsviz.NewServer().Register(mux)
+	ss := statsviz.NewServer()
+	ss.Register(mux)
 
 	fmt.Println("Point your browser to http://localhost:8088/debug/statsviz\n")
 

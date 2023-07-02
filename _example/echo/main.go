@@ -20,7 +20,8 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Create statsviz server and register it with the mux.
-	statsviz.NewServer().Register(mux)
+	ss := statsviz.NewServer()
+	ss.Register(mux)
 
 	// Use echo WrapHandler to wrap statsviz ServeMux as echo HandleFunc
 	e.GET("/debug/statsviz/", echo.WrapHandler(mux))
