@@ -6,12 +6,12 @@
 // HTTP server's [http.ServeMux] (preferred method):
 //
 //	mux := http.NewServeMux()
-//	ss := statviz.NewServer()
+//	ss := statviz.Server{}
 //	ss.Register(mux)
 //
 // Alternatively, you can register with [http.DefaultServeMux]:
 //
-//	ss := statviz.NewServer()
+//	ss := statviz.Server{}
 //	s.Register(http.DefaultServeMux)
 //
 // By default, Statsviz is served at `/debug/statsviz/`. You can change this and
@@ -55,6 +55,8 @@ const (
 //     visualize runtime metrics on your browser.
 //   - The Ws handler establishes a WebSocket connection allowing the connected
 //     browser to receive metrics updates from the server.
+//
+// The zero value if a valid Server.
 type Server struct {
 	intv      time.Duration // interval between consecutive metrics emission
 	root      string        // HTTP path root
@@ -107,6 +109,11 @@ func WithTimeseriesPlot(tsp TimeSeriesPlot) Option {
 
 // Register registers the Statsviz HTTP handlers on the provided mux.
 func (s *Server) Register(mux *http.ServeMux) {
+	if s.plots == nil {
+		// s is the zero value.
+		s = NewServer()
+	}
+
 	mux.Handle(s.root+"/", s.Index())
 	mux.HandleFunc(s.root+"/ws", s.Ws())
 }

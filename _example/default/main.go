@@ -14,7 +14,7 @@ func main() {
 	go example.Work()
 
 	// Create statsviz server.
-	ss := statsviz.NewServer()
+	ss := statsviz.Server{}
 
 	// Register Statsviz server on the default mux.
 	ss.Register(http.DefaultServeMux)
