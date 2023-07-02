@@ -1,34 +1,34 @@
-// Package statsviz allows to visualise Go program runtime metrics data in real
-// time: heap, objects, goroutines, GC pauses, scheduler, etc. in your browser.
+// Package statsviz allows visualizing Go program runtime metrics data in real
+// time, including heap, objects, goroutines, GC pauses, scheduler and much
+// more, in your browser.
 //
-// Create a [Server] and register it with your server [http.ServeMux]
-// (preferred method):
+// To use Statsviz, create a new Statsviz [Server] and register it with your
+// HTTP server's [http.ServeMux] (preferred method):
 //
 //	mux := http.NewServeMux()
-//	server := statviz.NewServer()
-//	server.Register(mux)
+//	ss := statviz.NewServer()
+//	ss.Register(mux)
 //
-// Or register with [http.DefaultServeMux]:
+// Alternatively, you can register with [http.DefaultServeMux]:
 //
-//	server := statviz.NewServer()
-//	server.Register(http.DefaultServeMux)
+//	ss := statviz.NewServer()
+//	s.Register(http.DefaultServeMux)
 //
-// By default Statsviz is served at `/debug/statsviz/`. You can change that, as well
-// as other settings, by passing options to [NewServer].
+// By default, Statsviz is served at `/debug/statsviz/`. You can change this and
+// other settings by passing some [Option] to [NewServer].
 //
 // If your application is not already running an HTTP server, you need to start
-// one. Add "net/http" and "log" to your imports and the following code to your
-// main function:
+// one. Add "net/http" and "log" to your imports, and use the following code in
+// your main function:
 //
 //	go func() {
 //	    log.Println(http.ListenAndServe("localhost:6060", nil))
 //	}()
 //
-// Then open your browser at http://localhost:6060/debug/statsviz/.
-
-// TODO(arl) Keep the README.md updated with that doc.
-
+// Then open your browser and visit http://localhost:6060/debug/statsviz/.
 package statsviz
+
+// TODO(arl) Make sure to keep the README.md file updated with this documentation.
 
 import (
 	"bytes"
@@ -49,78 +49,78 @@ const (
 	defaultSendInterval = time.Second
 )
 
-// An Server serves, and consists of, 2 HTTP handlers necessary for Statsviz
-// user interface.
+// Server is the core component of Statsviz. It collects and periodically
+// updates metrics data and provides two essential HTTP handlers:
+//   - the Index handler serves Statsviz user interface, allowing you to
+//     visualize runtime metrics on your browser.
+//   - The Ws handler establishes a WebSocket connection allowing the connected
+//     browser to receive metrics updates from the server.
 type Server struct {
-	intv  time.Duration // interval between consecutive metrics emission
-	root  string        // http path root
-	plots *plot.List    // plots shown on the user interface
-
-	// user plots
+	intv      time.Duration // interval between consecutive metrics emission
+	root      string        // HTTP path root
+	plots     *plot.List    // plots shown on the user interface
 	userPlots []plot.UserPlot
 }
 
-// NewServer constructs a new Statsviz Server, pre-configured with default
-// settings or with given options.
+// NewServer constructs a new Statsviz Server with default settings or given
+// options, if any.
 func NewServer(opts ...Option) *Server {
-	e := &Server{
+	s := &Server{
 		intv: defaultSendInterval,
 		root: defaultRoot,
 	}
 
 	for _, opt := range opts {
-		opt(e)
+		opt(s)
 	}
 
-	e.plots = plot.NewList(e.userPlots)
-	return e
+	s.plots = plot.NewList(s.userPlots)
+	return s
 }
 
-// Option is a Server configuration option.
+// Option is a configuration option for the Server.
 type Option func(*Server)
 
-// WithInterval option changes the interval between successive acquisitions of
-// metrics and their sending to the user interface. By default, the interval is
-// one second.
+// WithInterval changes the interval between successive acquisitions of metrics
+// and their sending to the user interface. The default interval is one second.
 func WithInterval(intv time.Duration) Option {
-	return func(e *Server) {
-		e.intv = intv
+	return func(s *Server) {
+		s.intv = intv
 	}
 }
 
-// WithRoot option changes the root path of the Statsviz user interface. By
-// default, the root path is "/debug/statsviz".
+// WithRoot changes the root path of the Statsviz user interface. The default
+// root path is "/debug/statsviz".
 func WithRoot(path string) Option {
-	return func(e *Server) {
-		e.root = path
+	return func(s *Server) {
+		s.root = path
 	}
 }
 
-// WithTimeseriesPlot adds a new time series plot to Statsviz. Can be called
-// multiple times.
+// WithTimeseriesPlot adds a new time series plot to Statsviz. This function can
+// be called multiple times.
 func WithTimeseriesPlot(tsp TimeSeriesPlot) Option {
-	return func(e *Server) {
-		e.userPlots = append(e.userPlots,
-			plot.UserPlot{Scatter: tsp.timeseries})
+	return func(s *Server) {
+		s.userPlots = append(s.userPlots, plot.UserPlot{Scatter: tsp.timeseries})
 	}
 }
 
-// Register registers statviz HTTP handlers on the provided mux.
-func (e *Server) Register(mux *http.ServeMux) {
-	mux.Handle(e.root+"/", e.Index())
-	mux.HandleFunc(e.root+"/ws", e.Ws())
+// Register registers the Statsviz HTTP handlers on the provided mux.
+func (s *Server) Register(mux *http.ServeMux) {
+	mux.Handle(s.root+"/", s.Index())
+	mux.HandleFunc(s.root+"/ws", s.Ws())
 }
 
-// intercept is a middleware that that intercept requests for plotsdef.js, this
-// file is generated on the fly, based on the plots configuration. Other
-// requests are forwarded as-is h.
+// intercept is a middleware that intercepts requests for plotsdef.js, which is
+// generated dynamically based on the plots configuration. Other requests are
+// forwarded as-is.
 func intercept(h http.Handler, cfg *plot.Config) http.HandlerFunc {
 	buf := &bytes.Buffer{}
 	buf.WriteString("export default ")
 	enc := json.NewEncoder(buf)
 	enc.SetIndent("", "  ")
 	if err := enc.Encode(cfg); err != nil {
-		panic("unexpected, failure to encode plots definitions: " + err.Error())
+		panic("unexpected failure to encode plot definitions: " + err.Error())
 	}
 	buf.WriteString(";")
 
@@ -141,28 +141,27 @@ func intercept(h http.Handler, cfg *plot.Config) http.HandlerFunc {
 	}
 }
 
-// Force Content-Type HTTP header for certain files of some javascript libraries
-// that have no extensions. Otherwise the http fileserver would serve them under
-// "Content-Type = text/plain".
+// contentTypes forces the Content-Type HTTP header for certain files of some
+// JavaScript libraries that have no extensions. Otherwise, the HTTP file server
+// would serve them with "Content-Type: text/plain".
 var contentTypes = map[string]string{
 	"libs/js/popperjs-core2": "text/javascript",
 	"libs/js/tippy.js@6":     "text/javascript",
 }
 
-// Index returns the index handler, responding with Statsviz user interface HTML
-// page. By default, the returned handler is served at /debug/statsviz. Use
-// [WithRoot] to change that path.
-func (e *Server) Index() http.HandlerFunc {
-	prefix := strings.TrimSuffix(e.root, "/") + "/"
+// Index returns the index handler, which responds with the Statsviz user
+// interface HTML page. By default, the handler is served at the path specified
+// by the root. Use [WithRoot] to change the path.
+func (s *Server) Index() http.HandlerFunc {
+	prefix := strings.TrimSuffix(s.root, "/") + "/"
 	assetsFS := http.FileServer(http.FS(static.Assets))
-	return http.StripPrefix(prefix, intercept(assetsFS, e.plots.Config())).ServeHTTP
+	return http.StripPrefix(prefix, intercept(assetsFS, s.plots.Config())).ServeHTTP
 }
 
-// Ws returns the websocket handler Statsviz uses to send application metrics.
-//
-// The underlying net.Conn is used to upgrade the HTTP server connection to the
-// websocket protocol.
-func (e *Server) Ws() http.HandlerFunc {
+// Ws returns the WebSocket handler used by Statsviz to send application
+// metrics. The underlying net.Conn is used to upgrade the HTTP server
+// connection to the WebSocket protocol.
+func (s *Server) Ws() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var upgrader = websocket.Upgrader{
 			ReadBufferSize:  1024,
@@ -175,30 +174,29 @@ func (e *Server) Ws() http.HandlerFunc {
 		}
 		defer ws.Close()
 
-		// Explicitly ignore this error. This happens if/when the other end
-		// connection closes for example. We can't handle it in any meaningful
-		// way anyways.
-		_ = e.sendStats(ws, e.intv)
+		// Ignore this error. This happens when the other end connection closes,
+		// for example. We can't handle it in any meaningful way anyways.
+		_ = s.sendStats(ws, s.intv)
 	}
 }
 
-// sendStats sends runtime statistics on the websocket connection.
-func (e *Server) sendStats(conn *websocket.Conn, frequency time.Duration) error {
+// sendStats sends runtime statistics over the WebSocket connection.
+func (s *Server) sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	tick := time.NewTicker(frequency)
 	defer tick.Stop()
 
-	// If the websocket connection is initiated by an already open web ui
-	// (started by a previous process for example) then plotsdef.js won't be
-	// requested. So, call plots.Config() manually to ensure that the data
-	// structures inside 'plots' are correctly initialized.
-	e.plots.Config()
+	// If the WebSocket connection is initiated by an already open web UI
+	// (started by a previous process, for example), then plotsdef.js won't be
+	// requested. Call plots.Config() manually to ensure that s.plots internals
+	// are correctly initialized.
+	s.plots.Config()
 
 	for range tick.C {
 		w, err := conn.NextWriter(websocket.TextMessage)
 		if err != nil {
 			return err
 		}
-		if err := e.plots.WriteValues(w); err != nil {
+		if err := s.plots.WriteValues(w); err != nil {
 			return err
 		}
 		if err := w.Close(); err != nil {
