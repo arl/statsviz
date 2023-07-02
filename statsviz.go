@@ -28,8 +28,6 @@
 // Then open your browser and visit http://localhost:6060/debug/statsviz/.
 package statsviz
 
-// TODO(arl) Make sure to keep the README.md file updated with this documentation.
-
 import (
 	"bytes"
 	"encoding/json"

@@ -14,7 +14,7 @@
 </p>
 <br/>
 
-Visualise Go program runtime metrics data in real time: heap, objects, goroutines, GC pauses, scheduler, etc. in your browser.
+Visualise Go program runtime metrics data in real time, including heap, objects, goroutines, GC pauses, scheduler and much more, in your browser.
 
 <hr>
 
@@ -51,24 +51,24 @@ Download the latest version:
     go get github.com/arl/statsviz@latest
 
 
-Register Statsviz endpoint on your server [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) (preferred method):
+To use Statsviz, create a new Statsviz [Server](https://pkg.go.dev/github.com/arl/statsviz/#Server) and register it with your HTTP server's [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) (preferred method):
 
 ```go
 mux := http.NewServeMux()
-statsviz.Register(mux)
+ss := statviz.Server{}
+ss.Register(mux)
 ```
 
-Or register on `http.DefaultServeMux`:
+Alternatively, you can register with [http.DefaultServeMux](https://pkg.go.dev/net/http?tab=doc#DefaultServeMux):
 
 ```go
-statsviz.RegisterDefault()
+ss := statviz.Server{}
+s.Register(http.DefaultServeMux)
 ```
 
-By default Statsviz is served at `/debug/statsviz/`.
+By default, Statsviz is served at `/debug/statsviz/`. You can change this and other settings by passing some [Option](https://pkg.go.dev/github.com/arl/statsviz/#Option) to [NewServer](https://pkg.go.dev/github.com/arl/statsviz/#NewServer).
 
-If your application is not already running an HTTP server, you need to start
-one. Add `"net/http"` and `"log"` to your imports and the following code to your
-`main` function:
+If your application is not already running an HTTP server, you need to start one. Add "net/http" and "log" to your imports, and use the following code in your main function:
 
 ```go
 go func() {
@@ -76,22 +76,18 @@ go func() {
 }()
 ```
 
-Then open your browser at http://localhost:6060/debug/statsviz/.
+Then open your browser and visit http://localhost:6060/debug/statsviz/.
 
 
 ## How does that work?
 
-Statsviz serves 2 HTTP endpoints:
+Statsviz serves 2 HTTP handlers:
 
- - The first one (`/debug/statsviz`) serves a web page with Statsviz
-user interface, showing initially empty plots.
+ - The _Index_ handler serves Statsviz user interface at `/debug/statsviz` and allows you to visualize runtime metrics on your browser.
 
- - The second HTTP handler (`/debug/statsviz/ws`) listens for a WebSocket
-connection that will be initiated by Statsviz web page as soon as it's loaded in
-your browser.
+ - The _Ws_ handker establishes a WebSocket connection allowing the connected browser to receive metrics updates from the server.
 
-That's it, now your application sends all [runtime/metrics](https://pkg.go.dev/runtime/metrics) 
-data points to the web page, once per second.
+That's it, now your application sends its [runtime/metrics](https://pkg.go.dev/runtime/metrics) data points, to the web page, once per second.
 
 Data points are stored in-browser in a circular buffer which keep tracks of a
 predefined number of datapoints.
@@ -108,11 +104,12 @@ Check out the API reference on [pkg.go.dev](https://pkg.go.dev/github.com/arl/st
 
 The controls at the top of the page act on all plots:
 
-<img alt="menu" src="https://github.com/arl/statsviz/raw/readme-docs/menu-001.png">
+<img alt="menu" src="https://github.com/arl/statsviz/raw/readme-docs/menu-002.png">
 
  - the groom icon shows/hides the vertical lines representing garbage collections.
  - the time range selector defines the visualized time span.
  - the play/pause icon allows to stop plots from being refreshed.
+ - the light/dark selector allows to switch between light and dark modes.
 
 
 On top of each plot you'll find 2 icons:
