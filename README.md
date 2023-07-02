@@ -24,19 +24,19 @@ Visualise Go program runtime metrics data in real time, including heap, objects,
   - [Documentation](#documentation)
     - [Go API](#go-api)
     - [User interface](#user-interface)
-      - [Plots](#plots)
-        - [Heap (global)](#heap-global)
-        - [Heap (details)](#heap-details)
-        - [Live Objects in Heap](#live-objects-in-heap)
-        - [Live Bytes in Heap](#live-bytes-in-heap)
-        - [MSpan/MCache](#mspanmcache)
-        - [Goroutines](#goroutines)
-        - [Size Classes](#size-classes)
-        - [Stop-the-world Pause Latencies](#stop-the-world-pause-latencies)
-        - [Time Goroutines Spend in 'Runnable'](#time-goroutines-spend-in-runnable)
-        - [Starting Size of Goroutines Stacks](#starting-size-of-goroutines-stacks)
-        - [Goroutine Scheduling Events](#goroutine-scheduling-events)
-        - [CGO Calls](#cgo-calls)
+    - [Plots](#plots)
+       - [Heap (global)](#heap-global)
+       - [Heap (details)](#heap-details)
+       - [Live Objects in Heap](#live-objects-in-heap)
+       - [Live Bytes in Heap](#live-bytes-in-heap)
+       - [MSpan/MCache](#mspanmcache)
+       - [Goroutines](#goroutines)
+       - [Size Classes](#size-classes)
+       - [Stop-the-world Pause Latencies](#stop-the-world-pause-latencies)
+       - [Time Goroutines Spend in 'Runnable'](#time-goroutines-spend-in-runnable)
+       - [Starting Size of Goroutines Stacks](#starting-size-of-goroutines-stacks)
+       - [Goroutine Scheduling Events](#goroutine-scheduling-events)
+       - [CGO Calls](#cgo-calls)
   - [Examples](#examples)
   - [Questions / Troubleshooting](#questions--troubleshooting)
   - [Contributing](#contributing)
@@ -120,55 +120,59 @@ On top of each plot you'll find 2 icons:
  - the info icon shows information about the current plot.
 
 
-#### Plots
+### Plots
 
-##### Heap (global)
 
-<img alt="Heap (global) image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-global.png">
+#### Heap (global)
 
-##### Heap (details)
+![Heap (global)](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-global.png)   
 
-<img alt="Heap (details) image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-details.png">
 
-##### Live Objects in Heap
+#### Heap (details)  
 
-<img alt="Live Objects in Heap image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-objects.png">
+![Heap (details)](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-details.png)  
 
-##### Live Bytes in Heap
 
-<img alt="Live Bytes in Heap image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-bytes.png">
+#### Live Objects in Heap
 
-##### MSpan/MCache
+![Live Objects in Heap](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-objects.png)  
 
-<img alt="MSpan/MCache image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/mspan-mcache.png">
 
-##### Goroutines
+#### Live Bytes in Heap
 
-<img alt="Goroutines image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/goroutines.png">
+![Live Bytes in Hea](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-bytes.png)  
 
-##### Size Classes
+#### MSpan/MCache
 
-<img alt="Size Classes image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/size-classes.png">
+![MSpan/MCache](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/mspan-mcache.png)  
 
-##### Stop-the-world Pause Latencies
+#### Goroutines
 
-<img alt="Stop-the-world Pause Latencies image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-pauses.png">
+![Goroutines](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/goroutines.png)  
 
-##### Time Goroutines Spend in 'Runnable'
+#### Size Classes
 
-<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/runnable-time.png">
+![Size Classe](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/size-classes.png)  
 
-##### Starting Size of Goroutines Stacks
+#### Stop-the-world Pause Latencies
 
-<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-stack-size.png">
+![Stop-the-world Pause Latencies](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-pauses.png)  
 
-##### Goroutine Scheduling Events
+#### Time Goroutines Spend in 'Runnable'
 
-<img alt="Time Goroutines Spend in 'Runnable' image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/sched-events.png">
+![Time Goroutines Spend in 'Runnable'](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/runnable-time.png)  
 
-##### CGO Calls
+#### Starting Size of Goroutines Stacks
 
-<img alt="CGO Calls image" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cgo.png">
+![Starting Size of Goroutines Stacks](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-stack-size.png)  
+
+#### Goroutine Scheduling Events
+
+![Goroutine Scheduling Events](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/sched-events.png)  
+
+#### CGO Calls  
+
+![CGO Calls](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cgo.png)  
 
 
 ## Examples
