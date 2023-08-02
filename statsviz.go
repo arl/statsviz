@@ -120,20 +120,21 @@ func (s *Server) Register(mux *http.ServeMux) {
 // generated dynamically based on the plots configuration. Other requests are
 // forwarded as-is.
 func intercept(h http.Handler, cfg *plot.Config) http.HandlerFunc {
-	buf := &bytes.Buffer{}
+	buf := bytes.Buffer{}
 	buf.WriteString("export default ")
-	enc := json.NewEncoder(buf)
+	enc := json.NewEncoder(&buf)
 	enc.SetIndent("", "  ")
 	if err := enc.Encode(cfg); err != nil {
 		panic("unexpected failure to encode plot definitions: " + err.Error())
 	}
 	buf.WriteString(";")
+	plotsdefjs := buf.Bytes()
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "js/plotsdef.js" {
 			w.Header().Add("Content-Length", strconv.Itoa(buf.Len()))
 			w.Header().Add("Content-Type", "text/javascript; charset=utf-8")
-			buf.WriteTo(w)
+			w.Write(plotsdefjs)
 			return
 		}
 
