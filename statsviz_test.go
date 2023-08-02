@@ -236,7 +236,7 @@ func TestContentTypeIsSet(t *testing.T) {
 			return nil
 		}
 
-		ct := w.HeaderMap.Get("Content-Type")
+		ct := res.Header.Get("Content-Type")
 		if ct == "" || strings.Contains(ct, "text/plain") {
 			t.Errorf(`GET %q has incorrect header "Content-Type = %s"`, path, ct)
 			return nil
