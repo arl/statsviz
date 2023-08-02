@@ -63,6 +63,7 @@ const newLayoutObject = (cfg) => {
             ticktext: copyArrayOrNull(cfg.layout.yaxis.ticktext),
             tickvals: copyArrayOrNull(cfg.layout.yaxis.tickvals),
             title: cfg.layout.yaxis.title,
+            ticksuffix: cfg.layout.yaxis.ticksuffix,
             fixedrange: true,
         },
         showlegend: true,
