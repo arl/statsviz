@@ -34,15 +34,28 @@ type TimeSeries struct {
 }
 
 type TimeSeriesPlotConfig struct {
-	Name       string         // Name is the plot name, it's mandatory and must be unique.
-	Title      string         // Title is the plot title, shown above the plot.
-	Type       TimeSeriesType // Type is either scatter or bar.
-	InfoText   string         // Tooltip is the html-aware text shown when the user clicks on the plot Info icon.
-	YAxisTitle string         // YAxisTitle is the title of Y axis.
+	// Name is the plot name, it must be unique.
+	Name string
 
-	//  TODO(arl) add link to d3 format page
-	YAxisTickSuffix string       // YAxisTickSuffix is the suffix added to tick values.
-	Series          []TimeSeries // Series contains the time series shown on this plot, there must be at least one.
+	// Title is the plot title, shown above the plot.
+	Title string
+
+	// Type is either scatter or bar.
+	Type TimeSeriesType
+
+	// Tooltip is the html-aware text shown when the user clicks on the plot
+	// Info icon.
+	InfoText string
+
+	// YAxisTitle is the title of Y axis.
+	YAxisTitle string
+
+	// YAxisTickSuffix is the suffix added to tick values.
+	YAxisTickSuffix string
+
+	// Series contains the time series shown on this plot, there must be at
+	// least one.
+	Series []TimeSeries
 }
 
 func (p TimeSeriesPlotConfig) Build() (TimeSeriesPlot, error) {
