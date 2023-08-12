@@ -7,32 +7,67 @@ import (
 	"github.com/arl/statsviz/internal/plot"
 )
 
+// TimeSeriesType describes the type of a time series plot.
 type TimeSeriesType string
 
 const (
-	Scatter TimeSeriesType = "scatter" // Scatter is a time series plot made of lines.
-	Bar     TimeSeriesType = "bar"     // Bar is a time series plot made of bars.
+	// Scatter is a time series plot made of lines.
+	Scatter TimeSeriesType = "scatter"
+
+	// Bar is a time series plot made of bars.
+	Bar TimeSeriesType = "bar"
 )
 
 var (
-	ErrNoTimeSeries  = errors.New("user plot must have at least one time series")
+	// ErrNoTimeSeries is returned when a user plot has no time series.
+	ErrNoTimeSeries = errors.New("user plot must have at least one time series")
+
+	// ErrEmptyPlotName is returned when a user plot has an empty name.
 	ErrEmptyPlotName = errors.New("user plot name can't be empty")
 )
 
+// ErrReservedPlotName is returned when a reserved plot name is used for a user plot.
 type ErrReservedPlotName string
 
 func (e ErrReservedPlotName) Error() string {
 	return fmt.Sprintf("%q is a reserved plot name", string(e))
 }
 
-// TODO(arl) comment all fields
+// HoverOnType describes the type of hover effect on a time series plot.
+type HoverOnType string
+
+const (
+	// HoverOnPoints specifies that the hover effects highlights individual
+	// points.
+	HoverOnPoints HoverOnType = "points"
+
+	// HoverOnPoints specifies that the hover effects highlights filled regions.
+	HoverOnFills HoverOnType = "fills"
+
+	// HoverOnPointsAndFills specifies that the hover effects highlights both
+	// points and filled regions.
+	HoverOnPointsAndFills HoverOnType = "points+fills"
+)
+
+// A TimeSeries describes a single time series of a plot.
 type TimeSeries struct {
-	Name    string
+	// Name is the name identifying this time series in the user interface.
+	Name string
+
+	// UnitFmt is the d3-format string used to format the numbers of this time
+	// series in the user interface. See https://github.com/d3/d3-format
 	Unitfmt string
-	HoverOn string
-	Value   func() float64
+
+	// HoverOn configures whether the hover effect highlights individual points
+	// or do they highlight filled regions, or both. Defaults to HoverOnFills.
+	HoverOn HoverOnType
+
+	// GetValue specifies the function called to get the value of this time
+	// series.
+	GetValue func() float64
 }
 
+// TimeSeriesPlotConfig describes the configuration of a time series plot.
 type TimeSeriesPlotConfig struct {
 	// Name is the plot name, it must be unique.
 	Name string
@@ -58,6 +93,7 @@ type TimeSeriesPlotConfig struct {
 	Series []TimeSeries
 }
 
+// Build validates the configuration and builds a time series plot for it
 func (p TimeSeriesPlotConfig) Build() (TimeSeriesPlot, error) {
 	var zero TimeSeriesPlot
 	if p.Name == "" {
@@ -75,12 +111,21 @@ func (p TimeSeriesPlotConfig) Build() (TimeSeriesPlot, error) {
 		funcs    []func() float64
 	)
 	for _, ts := range p.Series {
+		switch ts.HoverOn {
+		case "":
+			ts.HoverOn = HoverOnFills
+		case HoverOnPoints, HoverOnFills, HoverOnPointsAndFills:
+			// ok
+		default:
+			return zero, fmt.Errorf("invalid HoverOn value %s", ts.HoverOn)
+		}
+
 		subplots = append(subplots, plot.Subplot{
 			Name:    ts.Name,
 			Unitfmt: ts.Unitfmt,
-			HoverOn: ts.HoverOn,
+			HoverOn: string(ts.HoverOn),
 		})
-		funcs = append(funcs, ts.Value)
+		funcs = append(funcs, ts.GetValue)
 	}
 
 	return TimeSeriesPlot{
@@ -104,6 +149,7 @@ func (p TimeSeriesPlotConfig) Build() (TimeSeriesPlot, error) {
 }
 
 // TimeSeriesPlot is an opaque type representing a timeseries plot.
+// A plot can be created with TimeSeriesPlotConfig.Build().
 type TimeSeriesPlot struct {
 	timeseries *plot.ScatterUserPlot
 }

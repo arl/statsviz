@@ -18,7 +18,7 @@ func scatterPlot() statsviz.TimeSeriesPlot {
 	sine := statsviz.TimeSeries{
 		Name:    "short sin",
 		Unitfmt: "%{y:.4s}B",
-		Value: func() float64 {
+		GetValue: func() float64 {
 			val += 0.5
 			return math.Sin(val)
 		},
@@ -46,7 +46,7 @@ func barPlot() statsviz.TimeSeriesPlot {
 	logins := statsviz.TimeSeries{
 		Name:    "user logins",
 		Unitfmt: "%{y:.4s}",
-		Value: func() float64 {
+		GetValue: func() float64 {
 			return 1_000*rand.Float64() + 2_000
 		},
 	}
@@ -55,7 +55,7 @@ func barPlot() statsviz.TimeSeriesPlot {
 	signins := statsviz.TimeSeries{
 		Name:    "user signins",
 		Unitfmt: "%{y:.4s}",
-		Value: func() float64 {
+		GetValue: func() float64 {
 			return 100*rand.Float64() + 150
 		},
 	}
