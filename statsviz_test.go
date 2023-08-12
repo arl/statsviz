@@ -54,10 +54,10 @@ func TestIndex(t *testing.T) {
 func TestRoot(t *testing.T) {
 	t.Parallel()
 
-	testIndex(t, NewServer(WithRoot("/debug/")).Index(), "http://example.com/debug/")
-	testIndex(t, NewServer(WithRoot("/debug")).Index(), "http://example.com/debug/")
-	testIndex(t, NewServer(WithRoot("/")).Index(), "http://example.com/")
-	testIndex(t, NewServer(WithRoot("/test/")).Index(), "http://example.com/test/")
+	testIndex(t, NewServer(Root("/debug/")).Index(), "http://example.com/debug/")
+	testIndex(t, NewServer(Root("/debug")).Index(), "http://example.com/debug/")
+	testIndex(t, NewServer(Root("/")).Index(), "http://example.com/")
+	testIndex(t, NewServer(Root("/test/")).Index(), "http://example.com/test/")
 }
 
 func testWs(t *testing.T, f http.Handler, URL string) {
@@ -147,7 +147,9 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		NewServer(WithRoot("")).Register(mux)
+		NewServer(
+			Root(""),
+		).Register(mux)
 
 		testRegister(t, mux, "http://example.com/")
 	})
@@ -156,7 +158,9 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		NewServer(WithRoot("/path/to/statsviz")).Register(mux)
+		NewServer(
+			Root("/path/to/statsviz"),
+		).Register(mux)
 
 		testRegister(t, mux, "http://example.com/path/to/statsviz/")
 	})
@@ -166,27 +170,27 @@ func TestRegister(t *testing.T) {
 
 		mux := http.NewServeMux()
 		NewServer(
-			WithRoot("/root/to/statsviz"),
-			WithInterval(100*time.Millisecond),
+			Root("/path/to/statsviz"),
+			SendFrequency(100*time.Millisecond),
 		).Register(mux)
 
-		testRegister(t, mux, "http://example.com/root/to/statsviz/")
+		testRegister(t, mux, "http://example.com/path/to/statsviz/")
 	})
 
 	t.Run("non-positive frequency", func(t *testing.T) {
 		t.Parallel()
 
-		mux := http.NewServeMux()
 		NewServer(
-			WithRoot("/root/to/statsviz"),
-			WithInterval(0),
-		).Register(mux)
+			Root("/path/to/statsviz"),
+			SendFrequency(0),
+		).Register(http.NewServeMux())
 	})
 }
 
 func TestRegisterDefault(t *testing.T) {
-	NewServer().Register(http.DefaultServeMux)
-	testRegister(t, http.DefaultServeMux, "http://example.com/debug/statsviz/")
+	mux := http.DefaultServeMux
+	Register(mux)
+	testRegister(t, mux, "http://example.com/debug/statsviz/")
 }
 
 func Test_intercept(t *testing.T) {
@@ -214,8 +218,8 @@ func TestContentTypeIsSet(t *testing.T) {
 	// something more specific than "text/plain" because that'd make the page be
 	// rejected in certain 'strict' environments.
 	const root = "/some/root/path"
-	e := NewServer(WithRoot(root))
-	httpfs := e.Index()
+	s := NewServer(Root(root))
+	httpfs := s.Index()
 
 	requested := []string{}
 
