@@ -33,11 +33,11 @@ func main() {
 	const statsvizRoot = "/debug/statsviz"
 
 	// Create statsviz server.
-	ss := statsviz.NewServer()
+	srv := statsviz.NewServer()
 
 	mux := http.NewServeMux()
-	mux.Handle(statsvizRoot+"/", basicAuth(ss.Index(), "statsviz", "rocks", ""))
-	mux.HandleFunc(statsvizRoot+"/ws", ss.Ws())
+	mux.Handle(statsvizRoot+"/", basicAuth(srv.Index(), "statsviz", "rocks", ""))
+	mux.HandleFunc(statsvizRoot+"/ws", srv.Ws())
 
 	fmt.Println("Point your browser to http://localhost:8090/debug/statsviz/")
 	fmt.Println("Basic auth user:     statsviz")

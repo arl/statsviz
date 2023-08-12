@@ -30,11 +30,11 @@ func main() {
 	})
 
 	// Create statsviz server.
-	ss := statsviz.NewServer()
+	srv := statsviz.NewServer()
 
 	// Register Statsviz server on the fasthttp router.
-	r.GET("/debug/statsviz/{filepath:*}", fasthttpadaptor.NewFastHTTPHandler(ss.Index()))
-	ws.HandleFunc("/debug/statsviz/ws", ss.Ws())
+	r.GET("/debug/statsviz/{filepath:*}", fasthttpadaptor.NewFastHTTPHandler(srv.Index()))
+	ws.HandleFunc("/debug/statsviz/ws", srv.Ws())
 
 	// Server start
 	go http.Serve(m.Match(cmux.HTTP1HeaderField("Upgrade", "websocket")), ws)

@@ -82,14 +82,11 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// Create statsviz server with 2 additional plots, user-provided plots.
-	ss := statsviz.NewServer(
-		statsviz.WithTimeseriesPlot(scatterPlot()),
-		statsviz.WithTimeseriesPlot(barPlot()),
+	// Register statsviz handlers with 2 additional plots, user-provided plots.
+	statsviz.Register(mux,
+		statsviz.TimeseriesPlot(scatterPlot()),
+		statsviz.TimeseriesPlot(barPlot()),
 	)
-
-	// Register Statsviz server on the mux.
-	ss.Register(mux)
 
 	fmt.Println("Point your browser to http://localhost:8093/debug/statsviz/")
 	log.Fatal(http.ListenAndServe(":8093", mux))

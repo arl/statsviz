@@ -14,10 +14,10 @@ func main() {
 	go example.Work()
 
 	// Create statsviz server.
-	ss := statsviz.NewServer()
+	srv := statsviz.NewServer()
 
-	ws := ss.Ws()
-	index := ss.Index()
+	ws := srv.Ws()
+	index := srv.Index()
 
 	// Register Statsviz server on the gin router.
 	router := gin.New()

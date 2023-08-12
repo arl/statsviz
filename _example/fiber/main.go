@@ -34,11 +34,11 @@ func main() {
 	})
 
 	// Create statsviz server.
-	ss := statsviz.NewServer()
+	srv := statsviz.NewServer()
 
 	// Register Statsviz server on the fasthttp router.
-	app.Use("/debug/statsviz", adaptor.HTTPHandler(ss.Index()))
-	ws.HandleFunc("/debug/statsviz/ws", ss.Ws())
+	app.Use("/debug/statsviz", adaptor.HTTPHandler(srv.Index()))
+	ws.HandleFunc("/debug/statsviz/ws", srv.Ws())
 
 	fmt.Println("Point your browser to http://localhost:8093/debug/statsviz/")
 
