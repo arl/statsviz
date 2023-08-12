@@ -16,7 +16,7 @@ func main() {
 	go example.Work()
 
 	// Create statsviz server.
-	srv := statsviz.NewServer()
+	srv, _ := statsviz.NewServer()
 
 	// Create a chi router and register statsviz http handlers.
 	r := chi.NewRouter()

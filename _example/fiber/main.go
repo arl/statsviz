@@ -34,7 +34,7 @@ func main() {
 	})
 
 	// Create statsviz server.
-	srv := statsviz.NewServer()
+	srv, err := statsviz.NewServer()
 
 	// Register Statsviz server on the fasthttp router.
 	app.Use("/debug/statsviz", adaptor.HTTPHandler(srv.Index()))

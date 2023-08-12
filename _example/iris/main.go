@@ -23,9 +23,9 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Register Statsviz handlers on the mux.
-	statsviz.Register(mux)
+	_ = statsviz.Register(mux)
 
-	fmt.Println("Point your browser to http://localhost:8088/debug/statsviz\n")
+	fmt.Println("Point your browser to http://localhost:8088/debug/statsviz")
 
 	// NewHost puts the http server for statsviz under the control of iris but
 	// iris won't touch its handlers.

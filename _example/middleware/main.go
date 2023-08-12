@@ -33,7 +33,7 @@ func main() {
 	const statsvizRoot = "/debug/statsviz"
 
 	// Create statsviz server.
-	srv := statsviz.NewServer()
+	srv, _ := statsviz.NewServer()
 
 	mux := http.NewServeMux()
 	mux.Handle(statsvizRoot+"/", basicAuth(srv.Index(), "statsviz", "rocks", ""))

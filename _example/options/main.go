@@ -18,7 +18,7 @@ func main() {
 	// Register Statsviz server on the mux, serving the user interface from
 	// /foo/bar instead of /debug/statsviz and send metrics every 250
 	// milliseconds instead of the default of once per second.
-	statsviz.Register(mux,
+	_ = statsviz.Register(mux,
 		statsviz.Root("/foo/bar"),
 		statsviz.SendFrequency(250*time.Millisecond),
 	)

@@ -83,7 +83,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Register statsviz handlers with 2 additional plots, user-provided plots.
-	statsviz.Register(mux,
+	_ = statsviz.Register(mux,
 		statsviz.TimeseriesPlot(scatterPlot()),
 		statsviz.TimeseriesPlot(barPlot()),
 	)

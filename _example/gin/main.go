@@ -14,7 +14,7 @@ func main() {
 	go example.Work()
 
 	// Create statsviz server.
-	srv := statsviz.NewServer()
+	srv, err := statsviz.NewServer()
 
 	ws := srv.Ws()
 	index := srv.Index()
