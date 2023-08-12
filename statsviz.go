@@ -31,6 +31,7 @@ package statsviz
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -50,13 +51,18 @@ const (
 // Register registers the Statsviz HTTP handlers on the default server mux.
 //
 // Deprecated: use Register(http.DefaultServeMux) instead.
-func RegisterDefault(opts ...Option) {
-	NewServer(opts...).Register(http.DefaultServeMux)
+func RegisterDefault(opts ...Option) error {
+	return Register(http.DefaultServeMux)
 }
 
 // Register registers the Statsviz HTTP handlers on the provided mux.
-func Register(mux *http.ServeMux, opts ...Option) {
-	NewServer(opts...).Register(mux)
+func Register(mux *http.ServeMux, opts ...Option) error {
+	srv, err := NewServer(opts...)
+	if err != nil {
+		return err
+	}
+	srv.Register(mux)
+	return nil
 }
 
 // Server is the core component of Statsviz. It collects and periodically
@@ -76,44 +82,56 @@ type Server struct {
 
 // NewServer constructs a new Statsviz Server with the provided options, or the
 // default settings.
-func NewServer(opts ...Option) *Server {
+//
+// Note that once the server is created, its HTTP handlers needs to be registered
+// with some HTTP server. You can either use the Register method or register yourself
+// the Index and Ws handlers.
+func NewServer(opts ...Option) (*Server, error) {
 	s := &Server{
 		intv: defaultSendInterval,
 		root: defaultRoot,
 	}
 
 	for _, opt := range opts {
-		opt(s)
+		if err := opt(s); err != nil {
+			return nil, err
+		}
 	}
 
 	s.plots = plot.NewList(s.userPlots)
-	return s
+	return s, nil
 }
 
 // Option is a configuration option for the Server.
-type Option func(*Server)
+type Option func(*Server) error
 
 // SendFrequency changes the interval between successive acquisitions of metrics
 // and their sending to the user interface. The default interval is one second.
 func SendFrequency(intv time.Duration) Option {
-	return func(s *Server) {
+	return func(s *Server) error {
+		if intv <= 0 {
+			return fmt.Errorf("frequency must be a positive integer")
+		}
 		s.intv = intv
+		return nil
 	}
 }
 
 // Root changes the root path of the Statsviz user interface.
 // The default is "/debug/statsviz".
 func Root(path string) Option {
-	return func(s *Server) {
+	return func(s *Server) error {
 		s.root = path
+		return nil
 	}
 }
 
 // TimeseriesPlot adds a new time series plot to Statsviz. This options can
 // be added multiple times.
 func TimeseriesPlot(tsp TimeSeriesPlot) Option {
-	return func(s *Server) {
+	return func(s *Server) error {
 		s.userPlots = append(s.userPlots, plot.UserPlot{Scatter: tsp.timeseries})
+		return nil
 	}
 }
 
