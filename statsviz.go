@@ -1,17 +1,16 @@
-// Package statsviz allows visualizing Go program runtime metrics data in real
-// time, including heap, objects, goroutines, GC pauses, scheduler and much
-// more, in your browser.
+// Package statsviz allows visualizing Go runtime metrics data in real time in
+// your browser.
 //
-// To use Statsviz, create a new Statsviz [Server] and register it with your
-// HTTP server's [http.ServeMux] (preferred method):
+// Register a Statsviz HTTP handlers with your server's [http.ServeMux]
+// (preferred method):
 //
 //	mux := http.NewServeMux()
-//	ss := statviz.Server{}
+//	ss := statsviz.Server{}
 //	ss.Register(mux)
 //
 // Alternatively, you can register with [http.DefaultServeMux]:
 //
-//	ss := statviz.Server{}
+//	ss := statsviz.Server{}
 //	s.Register(http.DefaultServeMux)
 //
 // By default, Statsviz is served at `/debug/statsviz/`. You can change this and
