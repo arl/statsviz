@@ -1,11 +1,12 @@
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=round-square)](https://pkg.go.dev/github.com/arl/statsviz)
-[![Latest tag](https://img.shields.io/github/tag/arl/statsviz.svg)](https://github.com/arl/statsviz/tag/) 
+[![Latest tag](https://img.shields.io/github/tag/arl/statsviz.svg)](https://github.com/arl/statsviz/tag/)
 
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 [![codecov](https://codecov.io/gh/arl/statsviz/branch/main/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
 
 [![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-linux/badge.svg)](https://github.com/arl/statsviz/actions)
 [![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-others/badge.svg)](https://github.com/arl/statsviz/actions)
+
 # Statsviz
 
 <p align="center">
@@ -14,7 +15,7 @@
 </p>
 <br/>
 
-Visualise Go program runtime metrics data in real time, including heap, objects, goroutines, GC pauses, scheduler and much more, in your browser.
+Visualize real time plots of your Go program runtime metrics, including heap, objects, goroutines, GC pauses, scheduler and more, in your browser.
 
 <hr>
 
@@ -25,73 +26,73 @@ Visualise Go program runtime metrics data in real time, including heap, objects,
     - [Go API](#go-api)
     - [User interface](#user-interface)
     - [Plots](#plots)
-       - [Heap (global)](#heap-global)
-       - [Heap (details)](#heap-details)
-       - [Live Objects in Heap](#live-objects-in-heap)
-       - [Live Bytes in Heap](#live-bytes-in-heap)
-       - [MSpan/MCache](#mspanmcache)
-       - [Goroutines](#goroutines)
-       - [Size Classes](#size-classes)
-       - [Stop-the-world Pause Latencies](#stop-the-world-pause-latencies)
-       - [Time Goroutines Spend in 'Runnable'](#time-goroutines-spend-in-runnable)
-       - [Starting Size of Goroutines Stacks](#starting-size-of-goroutines-stacks)
-       - [Goroutine Scheduling Events](#goroutine-scheduling-events)
-       - [CGO Calls](#cgo-calls)
+      - [Heap (global)](#heap-global)
+      - [Heap (details)](#heap-details)
+      - [Live Objects in Heap](#live-objects-in-heap)
+      - [Live Bytes in Heap](#live-bytes-in-heap)
+      - [MSpan/MCache](#mspanmcache)
+      - [Goroutines](#goroutines)
+      - [Size Classes](#size-classes)
+      - [Stop-the-world Pause Latencies](#stop-the-world-pause-latencies)
+      - [Time Goroutines Spend in 'Runnable'](#time-goroutines-spend-in-runnable)
+      - [Starting Size of Goroutines Stacks](#starting-size-of-goroutines-stacks)
+      - [Goroutine Scheduling Events](#goroutine-scheduling-events)
+      - [CGO Calls](#cgo-calls)
   - [Examples](#examples)
   - [Questions / Troubleshooting](#questions--troubleshooting)
+  - [Updating from pre-v1 to v1](#updating-from-pre-v1-to-v1)
   - [Contributing](#contributing)
   - [Changelog](#changelog)
   - [License](#license)
 
-
-## Usage
+## Install
 
 Download the latest version:
 
-    go get github.com/arl/statsviz@latest
+```
+go get github.com/arl/statsviz@latest
+```
 
+## Usage
 
-To use Statsviz, create a new Statsviz [Server](https://pkg.go.dev/github.com/arl/statsviz/#Server) and register it with your HTTP server's [http.ServeMux](https://pkg.go.dev/net/http?tab=doc#ServeMux) (preferred method):
+Register `Statsviz` HTTP handlers with your application `http.ServeMux`.
 
 ```go
 mux := http.NewServeMux()
-ss := statviz.Server{}
-ss.Register(mux)
-```
+statsviz.Register(mux)
 
-Alternatively, you can register with [http.DefaultServeMux](https://pkg.go.dev/net/http?tab=doc#DefaultServeMux):
-
-```go
-ss := statviz.Server{}
-s.Register(http.DefaultServeMux)
-```
-
-By default, Statsviz is served at `/debug/statsviz/`. You can change this and other settings by passing some [Option](https://pkg.go.dev/github.com/arl/statsviz/#Option) to [NewServer](https://pkg.go.dev/github.com/arl/statsviz/#NewServer).
-
-If your application is not already running an HTTP server, you need to start one. Add "net/http" and "log" to your imports, and use the following code in your main function:
-
-```go
 go func() {
-    log.Println(http.ListenAndServe("localhost:6060", nil))
+    log.Println(http.ListenAndServe("localhost:6060", mux))
 }()
 ```
 
-Then open your browser and visit http://localhost:6060/debug/statsviz/.
+Open your browser at http://address:port/debug/statsviz
 
+## Advanced Usage
+
+For more control over to serve Statsviz UI from your program, you can call `statsviz.NewServer`.
+
+```go
+srv := statsviz.NewServer()
+
+// Do what you want with the UI handler
+srv.Index()
+
+// And the Websocket handler
+srv.Ws()
+```
+
+Checkout the [Examples](_example) directory.
 
 ## How does that work?
 
-Statsviz serves 2 HTTP handlers:
+The call to `statsviz.Register` registers 2 HTTP handlers within the given `http.ServeMux`:
 
- - The _Index_ handler serves Statsviz user interface at `/debug/statsviz` and allows you to visualize runtime metrics on your browser.
+- the `Index` handler serves Statsviz user interface at `/debug/statsviz` at the address served by your program.
 
- - The _Ws_ handker establishes a WebSocket connection allowing the connected browser to receive metrics updates from the server.
+- The `Ws` serves a Websocket endpoint. When the browser connects to that endpoint, [runtime/metrics](https://pkg.go.dev/runtime/metrics) are sent to the browser, once per second.
 
-That's it, now your application sends its [runtime/metrics](https://pkg.go.dev/runtime/metrics) data points, to the web page, once per second.
-
-Data points are stored in-browser in a circular buffer which keep tracks of a
-predefined number of datapoints.
-
+Data points are in a browser-side circular-buffer.
 
 ## Documentation
 
@@ -99,99 +100,93 @@ predefined number of datapoints.
 
 Check out the API reference on [pkg.go.dev](https://pkg.go.dev/github.com/arl/statsviz#section-documentation).
 
-
 ### User interface
 
-The controls at the top of the page act on all plots:
+Controls at the top of the page act on all plots:
 
 <img alt="menu" src="https://github.com/arl/statsviz/raw/readme-docs/menu-002.png">
 
- - the groom icon shows/hides the vertical lines representing garbage collections.
- - the time range selector defines the visualized time span.
- - the play/pause icon allows to stop plots from being refreshed.
- - the light/dark selector allows to switch between light and dark modes.
+- the groom shows/hides the vertical lines representing garbage collections.
+- the time range selector defines the visualized time span.
+- the play/pause icons stops and resume the refresh of the plots.
+- the light/dark selector switches between light and dark modes.
 
-
-On top of each plot you'll find 2 icons:
+On top of each plot there are 2 icons:
 
 <img alt="menu" src="https://github.com/arl/statsviz/raw/readme-docs/plot.menu-001.png">
 
- - the camera icon downloads the plot as a PNG image.
- - the info icon shows information about the current plot.
-
+- the camera downloads a PNG image of the plot.
+- the info icon shows details about the metrics displayed.
 
 ### Plots
 
-
 #### Heap (global)
 
-![Heap (global)](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-global.png)   
+<img width="50%" alt="heap-global" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-global.png">
 
+#### Heap (details)
 
-#### Heap (details)  
-
-![Heap (details)](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-details.png)  
-
+<img width="50%" alt="heap-details" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-details.png">
 
 #### Live Objects in Heap
 
-![Live Objects in Heap](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-objects.png)  
-
+<img width="50%" alt="live-objects" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-objects.png">
 
 #### Live Bytes in Heap
 
-![Live Bytes in Hea](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-bytes.png)  
+<img width="50%" alt="live-bytes" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-bytes.png">
 
 #### MSpan/MCache
 
-![MSpan/MCache](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/mspan-mcache.png)  
+<img width="50%" alt="mspan-mcache" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/mspan-mcache.png">
 
 #### Goroutines
 
-![Goroutines](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/goroutines.png)  
+<img width="50%" alt="goroutines" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/goroutines.png">
 
 #### Size Classes
 
-![Size Classe](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/size-classes.png)  
+<img width="50%" alt="size-classes" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/size-classes.png">
 
 #### Stop-the-world Pause Latencies
 
-![Stop-the-world Pause Latencies](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-pauses.png)  
+<img width="50%" alt="gc-pauses" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-pauses.png">
 
 #### Time Goroutines Spend in 'Runnable'
 
-![Time Goroutines Spend in 'Runnable'](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/runnable-time.png)  
+<img width="50%" alt="runnable-time" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/runnable-time.png">
 
 #### Starting Size of Goroutines Stacks
 
-![Starting Size of Goroutines Stacks](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-stack-size.png)  
+<img width="50%" alt="gc-stack-size" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-stack-size.png">
 
 #### Goroutine Scheduling Events
 
-![Goroutine Scheduling Events](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/sched-events.png)  
+<img width="50%" alt="sched-events" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/sched-events.png">
 
-#### CGO Calls  
+#### CGO Calls
 
-![CGO Calls](https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cgo.png)  
-
+<img width="50%" alt="cgo" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cgo.png">
 
 ## Examples
 
-Check out the [_example](./_example/README.md) directory to see various ways to use Statsviz, such as:
- - use of `http.DefaultServeMux` or your own `http.ServeMux`
- - wrap HTTP handler behind a middleware
- - register the web page at `/foo/bar` instead of `/debug/statviz`
- - use `https://` rather than `http://`
- - register Statsviz handlers with various Go HTTP libraries/frameworks:
-   - [fasthttp](https://github.com/valyala/fasthttp)
-   - [gin](https://github.com/gin-gonic/gin)
-   - and many others thanks to awesome contributors!
+Check out the [\_example](./_example/README.md) directory to see various ways to use Statsviz, such as:
 
+- use of `http.DefaultServeMux` or your own `http.ServeMux`
+- wrap HTTP handler behind a middleware
+- register the web page at `/foo/bar` instead of `/debug/statsviz`
+- use `https://` rather than `http://`
+- register Statsviz handlers with various Go HTTP libraries/frameworks:
+  - [echo](https://github.com/labstack/echo/)
+  - [fasthttp](https://github.com/valyala/fasthttp)
+  - [fiber](https://github.com/gofiber/fiber/)
+  - [gin](https://github.com/gin-gonic/gin)
+  - and many others thanks to many contributors!
 
 ## Questions / Troubleshooting
 
 Use the [discussions](https://github.com/arl/statsviz/discussions) section for questions.  
-Or come to say hi and ask a live question on [#statsviz channel on Gopher's slack](https://gophers.slack.com/archives/C043DU4NZ9D). 
+Or come to say hi and ask a live question on [#statsviz channel on Gopher's slack](https://gophers.slack.com/archives/C043DU4NZ9D).
 
 ## Contributing
 
@@ -199,12 +194,10 @@ Please use [issues](https://github.com/arl/statsviz/issues/new/choose) for bugs 
 Pull-requests are always welcome!  
 More details in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md).
 
-
 ## License
 
- See [MIT License](LICENSE)
+See [MIT License](LICENSE)
