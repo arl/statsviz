@@ -30,14 +30,12 @@ func main() {
 	// Force the GC to work to make the plots "move".
 	go example.Work()
 
-	const statsvizRoot = "/debug/statsviz"
-
 	// Create statsviz server.
 	srv, _ := statsviz.NewServer()
 
 	mux := http.NewServeMux()
-	mux.Handle(statsvizRoot+"/", basicAuth(srv.Index(), "statsviz", "rocks", ""))
-	mux.HandleFunc(statsvizRoot+"/ws", srv.Ws())
+	mux.Handle("/debug/statsviz/", basicAuth(srv.Index(), "statsviz", "rocks", ""))
+	mux.HandleFunc("/debug/statsviz/ws", srv.Ws())
 
 	fmt.Println("Point your browser to http://localhost:8090/debug/statsviz/")
 	fmt.Println("Basic auth user:     statsviz")
