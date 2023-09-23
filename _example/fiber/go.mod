@@ -1,6 +1,6 @@
 module example/fiber
 
-go 1.17
+go 1.19
 
 require (
 	github.com/arl/statsviz v0.5.1
