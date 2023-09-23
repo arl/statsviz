@@ -1,3 +1,7 @@
+Unreleased
+==============
+  * Add light/dark mode selector (#108)
+
 v0.5.2 / 2023-03-29
 ==============
   * Ensure all files have a correct Content-Type (#106)
