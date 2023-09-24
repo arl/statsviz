@@ -3,7 +3,7 @@ package plot
 type (
 	Config struct {
 		// Series contains the plots we want to show and how we want to show them.
-		Series []interface{} `json:"series"`
+		Series []any `json:"series"`
 		// Events contains a list of 'events time series' names. Series with
 		// these names must be sent alongside other series. An event time series
 		// is just made of timestamps with no associated value, each of which

@@ -10,14 +10,14 @@ import (
 // Wwork loops forever, generating allocations of various sizes, in order to
 // create artificial work for a nice 'demo effect'.
 func Work() {
-	m := make(map[int64]interface{})
+	m := make(map[int64]any)
 	tick := time.NewTicker(30 * time.Millisecond)
 	clearTick := time.NewTicker(1 * time.Second)
 
 	for {
 		select {
 		case <-clearTick.C:
-			m = make(map[int64]interface{})
+			m = make(map[int64]any)
 		case ts := <-tick.C:
 			m[ts.UnixNano()] = newStruct()
 		}
@@ -25,7 +25,7 @@ func Work() {
 }
 
 // create a randomly sized struct (to create 'motion' on size classes plot).
-func newStruct() interface{} {
+func newStruct() any {
 	nfields := rand.Intn(32)
 	var fields []reflect.StructField
 	for i := 0; i < nfields; i++ {

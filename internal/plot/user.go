@@ -15,7 +15,7 @@ type UserPlot struct {
 	Heatmap *HeatmapUserPlot
 }
 
-func (up UserPlot) Layout() interface{} {
+func (up UserPlot) Layout() any {
 	switch {
 	case (up.Scatter != nil) == (up.Heatmap != nil):
 		panic("userplot must be a timeseries or a heatmap")

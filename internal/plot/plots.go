@@ -46,8 +46,8 @@ func IsReservedPlotName(name string) bool {
 type runtimeMetric interface {
 	name() string
 	isEnabled() bool
-	layout([]metrics.Sample) interface{}
-	values([]metrics.Sample) interface{}
+	layout([]metrics.Sample) any
+	values([]metrics.Sample) any
 }
 
 // List holds all the plots that statsviz knows about. Some plots might be
@@ -101,7 +101,7 @@ func (pl *List) Config() *Config {
 				makeCGOPlot(pl.idxs),
 			}
 
-		layouts := make([]interface{}, 0, len(pl.rtPlots))
+		layouts := make([]any, 0, len(pl.rtPlots))
 		for i := range pl.rtPlots {
 			if pl.rtPlots[i].isEnabled() {
 				layouts = append(layouts, pl.rtPlots[i].layout(pl.samples))
@@ -135,7 +135,7 @@ func (pl *List) WriteValues(w io.Writer) error {
 	gcStats := debug.GCStats{}
 	debug.ReadGCStats(&gcStats)
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	for _, p := range pl.rtPlots {
 		if p.isEnabled() {
 			m[p.name()] = p.values(pl.samples)
@@ -202,7 +202,7 @@ func makeHeapGlobalPlot(idxs map[string]int) *heapGlobal {
 func (p *heapGlobal) name() string    { return "heap-global" }
 func (p *heapGlobal) isEnabled() bool { return p.enabled }
 
-func (p *heapGlobal) layout(_ []metrics.Sample) interface{} {
+func (p *heapGlobal) layout(_ []metrics.Sample) any {
 	s := Scatter{
 		Name:   p.name(),
 		Title:  "Heap (global)",
@@ -237,7 +237,7 @@ func (p *heapGlobal) layout(_ []metrics.Sample) interface{} {
 	return s
 }
 
-func (p *heapGlobal) values(samples []metrics.Sample) interface{} {
+func (p *heapGlobal) values(samples []metrics.Sample) any {
 	heapObjects := samples[p.idxobj].Value.Uint64()
 	heapUnused := samples[p.idxunused].Value.Uint64()
 
@@ -296,7 +296,7 @@ func makeHeapDetailsPlot(idxs map[string]int) *heapDetails {
 func (p *heapDetails) name() string    { return "heap-details" }
 func (p *heapDetails) isEnabled() bool { return p.enabled }
 
-func (p *heapDetails) layout(_ []metrics.Sample) interface{} {
+func (p *heapDetails) layout(_ []metrics.Sample) any {
 	s := Scatter{
 		Name:   p.name(),
 		Title:  "Heap (details)",
@@ -330,7 +330,7 @@ func (p *heapDetails) layout(_ []metrics.Sample) interface{} {
 	return s
 }
 
-func (p *heapDetails) values(samples []metrics.Sample) interface{} {
+func (p *heapDetails) values(samples []metrics.Sample) any {
 	heapObjects := samples[p.idxobj].Value.Uint64()
 	heapUnused := samples[p.idxunused].Value.Uint64()
 
@@ -374,7 +374,7 @@ func makeLiveObjectsPlot(idxs map[string]int) *liveObjects {
 func (p *liveObjects) name() string    { return "live-objects" }
 func (p *liveObjects) isEnabled() bool { return p.enabled }
 
-func (p *liveObjects) layout(_ []metrics.Sample) interface{} {
+func (p *liveObjects) layout(_ []metrics.Sample) any {
 	s := Scatter{
 		Name:   p.name(),
 		Title:  "Live Objects in Heap",
@@ -393,7 +393,7 @@ func (p *liveObjects) layout(_ []metrics.Sample) interface{} {
 	return s
 }
 
-func (p *liveObjects) values(samples []metrics.Sample) interface{} {
+func (p *liveObjects) values(samples []metrics.Sample) any {
 	gcHeapObjects := samples[p.idxobjects].Value.Uint64()
 	return []uint64{
 		gcHeapObjects,
@@ -429,7 +429,7 @@ func makeLiveBytesPlot(idxs map[string]int) *liveBytes {
 func (p *liveBytes) name() string    { return "live-bytes" }
 func (p *liveBytes) isEnabled() bool { return p.enabled }
 
-func (p *liveBytes) layout(_ []metrics.Sample) interface{} {
+func (p *liveBytes) layout(_ []metrics.Sample) any {
 	s := Scatter{
 		Name:   p.name(),
 		Title:  "Live Bytes in Heap",
@@ -448,7 +448,7 @@ func (p *liveBytes) layout(_ []metrics.Sample) interface{} {
 	return s
 }
 
-func (p *liveBytes) values(samples []metrics.Sample) interface{} {
+func (p *liveBytes) values(samples []metrics.Sample) any {
 	allocBytes := samples[p.idxallocs].Value.Uint64()
 	freedBytes := samples[p.idxfrees].Value.Uint64()
 	return []uint64{
@@ -493,7 +493,7 @@ func makeMSpanMCachePlot(idxs map[string]int) *mspanMcache {
 func (p *mspanMcache) name() string    { return "mspan-mcache" }
 func (p *mspanMcache) isEnabled() bool { return p.enabled }
 
-func (p *mspanMcache) layout(_ []metrics.Sample) interface{} {
+func (p *mspanMcache) layout(_ []metrics.Sample) any {
 	s := Scatter{
 		Name:   p.name(),
 		Title:  "MSpan/MCache",
@@ -528,7 +528,7 @@ func (p *mspanMcache) layout(_ []metrics.Sample) interface{} {
 	return s
 }
 
-func (p *mspanMcache) values(samples []metrics.Sample) interface{} {
+func (p *mspanMcache) values(samples []metrics.Sample) any {
 	mspanInUse := samples[p.idxmspanInuse].Value.Uint64()
 	mspanSys := samples[p.idxmspanFree].Value.Uint64()
 	mcacheInUse := samples[p.idxmcacheInuse].Value.Uint64()
@@ -564,7 +564,7 @@ func makeGoroutinesPlot(idxs map[string]int) *goroutines {
 func (p *goroutines) name() string    { return "goroutines" }
 func (p *goroutines) isEnabled() bool { return p.enabled }
 
-func (p *goroutines) layout(_ []metrics.Sample) interface{} {
+func (p *goroutines) layout(_ []metrics.Sample) any {
 	s := Scatter{
 		Name:   p.name(),
 		Title:  "Goroutines",
@@ -583,7 +583,7 @@ func (p *goroutines) layout(_ []metrics.Sample) interface{} {
 	return s
 }
 
-func (p *goroutines) values(samples []metrics.Sample) interface{} {
+func (p *goroutines) values(samples []metrics.Sample) any {
 	return []uint64{samples[p.idxgs].Value.Uint64()}
 }
 
@@ -617,7 +617,7 @@ func makeSizeClassesPlot(idxs map[string]int) *sizeClasses {
 func (p *sizeClasses) name() string    { return "size-classes" }
 func (p *sizeClasses) isEnabled() bool { return p.enabled }
 
-func (p *sizeClasses) layout(samples []metrics.Sample) interface{} {
+func (p *sizeClasses) layout(samples []metrics.Sample) any {
 	// Perform a sanity check on the number of buckets on the 'allocs' and
 	// 'frees' size classes histograms. Statsviz plots a single histogram based
 	// on those 2 so we want them to have the same number of buckets, which
@@ -661,7 +661,7 @@ func (p *sizeClasses) layout(samples []metrics.Sample) interface{} {
 	return h
 }
 
-func (p *sizeClasses) values(samples []metrics.Sample) interface{} {
+func (p *sizeClasses) values(samples []metrics.Sample) any {
 	allocsBySize := samples[p.idxallocs].Value.Float64Histogram()
 	freesBySize := samples[p.idxfrees].Value.Float64Histogram()
 
@@ -696,7 +696,7 @@ func makeGCPausesPlot(idxs map[string]int) *gcpauses {
 func (p *gcpauses) name() string    { return "gc-pauses" }
 func (p *gcpauses) isEnabled() bool { return p.enabled }
 
-func (p *gcpauses) layout(samples []metrics.Sample) interface{} {
+func (p *gcpauses) layout(samples []metrics.Sample) any {
 	gcpauses := samples[p.idxgcpauses].Value.Float64Histogram()
 	p.histfactor = downsampleFactor(len(gcpauses.Buckets), maxBuckets)
 	buckets := downsampleBuckets(gcpauses, p.histfactor)
@@ -727,7 +727,7 @@ func (p *gcpauses) layout(samples []metrics.Sample) interface{} {
 	return h
 }
 
-func (p *gcpauses) values(samples []metrics.Sample) interface{} {
+func (p *gcpauses) values(samples []metrics.Sample) any {
 	gcpauses := samples[p.idxgcpauses].Value.Float64Histogram()
 	return downsampleCounts(gcpauses, p.histfactor, p.counts[:])
 }
@@ -757,7 +757,7 @@ func makeRunnableTime(idxs map[string]int) *runnableTime {
 func (p *runnableTime) name() string    { return "runnable-time" }
 func (p *runnableTime) isEnabled() bool { return p.enabled }
 
-func (p *runnableTime) layout(samples []metrics.Sample) interface{} {
+func (p *runnableTime) layout(samples []metrics.Sample) any {
 	schedlat := samples[p.idxschedlat].Value.Float64Histogram()
 	p.histfactor = downsampleFactor(len(schedlat.Buckets), maxBuckets)
 	buckets := downsampleBuckets(schedlat, p.histfactor)
@@ -789,7 +789,7 @@ func (p *runnableTime) layout(samples []metrics.Sample) interface{} {
 	return h
 }
 
-func (p *runnableTime) values(samples []metrics.Sample) interface{} {
+func (p *runnableTime) values(samples []metrics.Sample) any {
 	schedlat := samples[p.idxschedlat].Value.Float64Histogram()
 
 	return downsampleCounts(schedlat, p.histfactor, p.counts[:])
@@ -826,7 +826,7 @@ func makeSchedEvents(idxs map[string]int) *schedEvents {
 func (p *schedEvents) name() string    { return "sched-events" }
 func (p *schedEvents) isEnabled() bool { return p.enabled }
 
-func (p *schedEvents) layout(_ []metrics.Sample) interface{} {
+func (p *schedEvents) layout(_ []metrics.Sample) any {
 	s := Scatter{
 		Name:   p.name(),
 		Title:  "Goroutine Scheduling Events",
@@ -854,7 +854,7 @@ func (p *schedEvents) layout(_ []metrics.Sample) interface{} {
 // changes. See https://github.com/golang/go/blob/go1.18.4/src/runtime/runtime2.go#L502-L504
 const currentGtrackingPeriod = 8
 
-func (p *schedEvents) values(samples []metrics.Sample) interface{} {
+func (p *schedEvents) values(samples []metrics.Sample) any {
 	schedlat := samples[p.idxschedlat].Value.Float64Histogram()
 	gomaxprocs := samples[p.idxGomaxprocs].Value.Uint64()
 
@@ -904,7 +904,7 @@ func makeCGOPlot(idxs map[string]int) *cgo {
 func (p *cgo) name() string    { return "cgo" }
 func (p *cgo) isEnabled() bool { return p.enabled }
 
-func (p *cgo) layout(_ []metrics.Sample) interface{} {
+func (p *cgo) layout(_ []metrics.Sample) any {
 	s := Scatter{
 		Name:  p.name(),
 		Title: "CGO Calls",
@@ -923,7 +923,7 @@ func (p *cgo) layout(_ []metrics.Sample) interface{} {
 	return s
 }
 
-func (p *cgo) values(samples []metrics.Sample) interface{} {
+func (p *cgo) values(samples []metrics.Sample) any {
 	go2c := samples[p.idxgo2c].Value.Uint64()
 	curgo2c := go2c - p.lastgo2c
 	if p.lastgo2c == math.MaxUint64 {
@@ -958,7 +958,7 @@ func makeGCStackSize(idxs map[string]int) *gcStackSize {
 func (p *gcStackSize) name() string    { return "gc-stack-size" }
 func (p *gcStackSize) isEnabled() bool { return p.enabled }
 
-func (p *gcStackSize) layout(_ []metrics.Sample) interface{} {
+func (p *gcStackSize) layout(_ []metrics.Sample) any {
 	s := Scatter{
 		Name:  p.name(),
 		Title: "Starting Size of Goroutines Stacks",
@@ -976,7 +976,7 @@ func (p *gcStackSize) layout(_ []metrics.Sample) interface{} {
 	return s
 }
 
-func (p *gcStackSize) values(samples []metrics.Sample) interface{} {
+func (p *gcStackSize) values(samples []metrics.Sample) any {
 	stackSize := samples[p.idxstack].Value.Uint64()
 	return []uint64{stackSize}
 }

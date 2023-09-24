@@ -11,7 +11,7 @@ func TestUnusedRuntimeMetrics(t *testing.T) {
 	// just informative.
 	for _, m := range metrics.All() {
 		if _, ok := usedMetrics[m.Name]; !ok {
-			fmt.Printf("runtime/metric %q is not used", m.Name)
+			fmt.Printf("runtime/metric %q is not used\n", m.Name)
 		}
 	}
 }
