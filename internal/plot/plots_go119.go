@@ -3,9 +3,12 @@
 
 package plot
 
-import (
-	"runtime/metrics"
-)
+import "runtime/metrics"
+
+func init() {
+	registerPlotFunc(makeGCCyclesPlot)
+	registerPlotFunc(makeMemoryClassesPlot)
+}
 
 /*
  * GC cycles
@@ -15,10 +18,6 @@ var _ = registerRuntimePlot("gc-cycles",
 	"/gc/cycles/forced:gc-cycles",
 	"/gc/cycles/total:gc-cycles",
 )
-
-func init() {
-	registerPlotFunc(makeGCCyclesPlot)
-}
 
 type gcCycles struct {
 	enabled bool
@@ -92,4 +91,116 @@ func (p *gcCycles) values(samples []metrics.Sample) any {
 	p.lastAuto = auto
 
 	return ret
+}
+
+/* Memory classes */
+
+/*
+/memory/classes/os-stacks:bytes
+	Stack memory allocated by the underlying operating system.
+	In non-cgo programs this metric is currently zero. This may
+	change in the future.In cgo programs this metric includes
+	OS thread stacks allocated directly from the OS. Currently,
+	this only accounts for one stack in c-shared and c-archive build
+	modes, and other sources of stacks from the OS are not measured.
+	This too may change in the future.
+
+/memory/classes/other:bytes
+	Memory used by execution trace buffers, structures for debugging
+	the runtime, finalizer and profiler specials, and more.
+
+/memory/classes/profiling/buckets:bytes
+	Memory that is used by the stack trace hash map used for
+	profiling.
+
+/memory/classes/total:bytes
+	All memory mapped by the Go runtime into the current process
+	as read-write. Note that this does not include memory mapped
+	by code called via cgo or via the syscall package. Sum of all
+	metrics in /memory/classes.
+*/
+
+/*
+ * mspan mcache
+ */
+var _ = registerRuntimePlot("memory-classes",
+	"/memory/classes/os-stacks:bytes",
+	"/memory/classes/other:bytes",
+	"/memory/classes/profiling/buckets:bytes",
+	"/memory/classes/total:bytes",
+)
+
+type memoryClasses struct {
+	enabled bool
+
+	idxOSStacks    int
+	idxOther       int
+	idxProfBuckets int
+	idxTotal       int
+}
+
+func makeMemoryClassesPlot(idxs map[string]int) runtimeMetric {
+	idxOSStacks, ok1 := idxs["/memory/classes/os-stacks:bytes"]
+	idxOther, ok2 := idxs["/memory/classes/other:bytes"]
+	idxProfBuckets, ok3 := idxs["/memory/classes/profiling/buckets:bytes"]
+	idxTotal, ok4 := idxs["/memory/classes/total:bytes"]
+
+	return &memoryClasses{
+		enabled:        ok1 && ok2 && ok3 && ok4,
+		idxOSStacks:    idxOSStacks,
+		idxOther:       idxOther,
+		idxProfBuckets: idxProfBuckets,
+		idxTotal:       idxTotal,
+	}
+}
+
+func (p *memoryClasses) name() string    { return "memory-classes" }
+func (p *memoryClasses) isEnabled() bool { return p.enabled }
+
+func (p *memoryClasses) layout(_ []metrics.Sample) any {
+	s := Scatter{
+		Name:   p.name(),
+		Title:  "Memory classes",
+		Type:   "scatter",
+		Events: "lastgc",
+		Subplots: []Subplot{
+			{
+				Name:    "os stacks",
+				Unitfmt: "%{y:.4s}B",
+			},
+			{
+				Name:    "other",
+				Unitfmt: "%{y:.4s}B",
+			},
+			{
+				Name:    "profiling buckets",
+				Unitfmt: "%{y:.4s}B",
+			},
+			{
+				Name:    "total",
+				Unitfmt: "%{y:.4s}B",
+			},
+		},
+
+		InfoText: `<i>OS stacks</i> is <b>/memory/classes/os-stacks</b>, stack memory allocated by the underlying operating system.
+<i>Other</i> is <b>/memory/classes/other</b>, memory used by execution trace buffers, structures for debugging the runtime, finalizer and profiler specials, and more.
+<i>Profiling buckets</i> is <b>/memory/classes/profiling/buckets</b>, memory that is used by the stack trace hash map used for profiling.
+<i>Total</i> is <b>/memory/classes/total</b>, all memory mapped by the Go runtime into the current process as read-write.`,
+	}
+	s.Layout.Yaxis.Title = "bytes"
+	s.Layout.Yaxis.TickSuffix = "B"
+	return s
+}
+
+func (p *memoryClasses) values(samples []metrics.Sample) any {
+	osStacks := samples[p.idxOSStacks].Value.Uint64()
+	other := samples[p.idxOther].Value.Uint64()
+	profBuckets := samples[p.idxProfBuckets].Value.Uint64()
+	total := samples[p.idxTotal].Value.Uint64()
+	return []uint64{
+		osStacks,
+		other,
+		profBuckets,
+		total,
+	}
 }
