@@ -123,6 +123,10 @@ On top of each plot there are 2 icons:
 
 <img width="50%" alt="mspan-mcache" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/mspan-mcache.png">
 
+#### Memory classes
+
+<img width="50%" alt="memory-classes" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/memory-classes.png">
+
 #### Goroutines
 
 <img width="50%" alt="goroutines" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/goroutines.png">
@@ -130,6 +134,10 @@ On top of each plot there are 2 icons:
 #### Size Classes
 
 <img width="50%" alt="size-classes" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/size-classes.png">
+
+#### GC Cycles
+
+<img width="50%" alt="gc-cycles" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-cycles.png">
 
 #### Stop-the-world Pause Latencies
 
