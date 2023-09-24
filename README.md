@@ -6,7 +6,6 @@
 [![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-others/badge.svg)](https://github.com/arl/statsviz/actions)
 [![codecov](https://codecov.io/gh/arl/statsviz/branch/main/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
 
-
 # Statsviz
 
 <p align="center">
@@ -33,7 +32,6 @@ Visualize real time plots of your Go program runtime metrics, including heap, ob
   - [Changelog](#changelog)
   - [License](#license)
 
-
 ## Install
 
 Download the latest version:
@@ -41,7 +39,6 @@ Download the latest version:
 ```
 go get github.com/arl/statsviz@latest
 ```
-
 
 ## Usage
 
@@ -58,23 +55,17 @@ go func() {
 
 Open your browser at http://localhost:8080/debug/statsviz
 
-
 ## Advanced Usage
 
 For more control over how to serve Statsviz UI from your program, you can call `statsviz.NewServer`.
 
 ```go
-srv := statsviz.NewServer()
-
-// Do what you want with the UI handler
-srv.Index()
-
-// And the Websocket handler
-srv.Ws()
+srv, _ := statsviz.NewServer() // Error checking ommited for brevity
+srv.Index()                    // Do something with the UI handler
+srv.Ws()                       // Do something with the Websocket handler
 ```
 
-Checkout the [Examples](_example) directory.
-
+Checkout example of usage in the [Examples](_example) directory.
 
 ## How does that work?
 
@@ -85,7 +76,6 @@ The call to `statsviz.Register` registers 2 HTTP handlers within the given `http
 - The `Ws` serves a Websocket endpoint. When the browser connects to that endpoint, [runtime/metrics](https://pkg.go.dev/runtime/metrics) are sent to the browser, once per second.
 
 Data points are in a browser-side circular-buffer.
-
 
 ## Documentation
 
