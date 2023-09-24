@@ -16,10 +16,35 @@ var (
 	usedMetrics map[string]struct{}
 )
 
-var (
-	_ = registerRuntimePlot("lastgc")
-	_ = registerRuntimePlot("timestamp")
-)
+type plotFunc func(idxs map[string]int) runtimeMetric
+
+var plotFuncs []plotFunc
+
+func registerPlotFunc(f plotFunc) {
+	plotFuncs = append(plotFuncs, f)
+}
+
+func init() {
+	// lastgc and timestamp are both special cases.
+
+	// lastgc draws vertical lines represeting GCs on certain plots.
+	registerRuntimePlot("lastgc")
+	// timestamp is the metric is the data for the time axis used on all plots.
+	registerRuntimePlot("timestamp")
+
+	registerPlotFunc(makeHeapGlobalPlot)
+	registerPlotFunc(makeHeapDetailsPlot)
+	registerPlotFunc(makeLiveObjectsPlot)
+	registerPlotFunc(makeLiveBytesPlot)
+	registerPlotFunc(makeMSpanMCachePlot)
+	registerPlotFunc(makeGoroutinesPlot)
+	registerPlotFunc(makeSizeClassesPlot)
+	registerPlotFunc(makeGCPausesPlot)
+	registerPlotFunc(makeRunnableTime)
+	registerPlotFunc(makeGCStackSize)
+	registerPlotFunc(makeSchedEvents)
+	registerPlotFunc(makeCGOPlot)
+}
 
 func registerRuntimePlot(name string, metrics ...string) bool {
 	if names == nil {
@@ -85,21 +110,10 @@ func NewList(userPlots []UserPlot) *List {
 
 func (pl *List) Config() *Config {
 	pl.once.Do(func() {
-		pl.rtPlots =
-			[]runtimeMetric{
-				makeHeapGlobalPlot(pl.idxs),
-				makeHeapDetailsPlot(pl.idxs),
-				makeLiveObjectsPlot(pl.idxs),
-				makeLiveBytesPlot(pl.idxs),
-				makeMSpanMCachePlot(pl.idxs),
-				makeGoroutinesPlot(pl.idxs),
-				makeSizeClassesPlot(pl.idxs),
-				makeGCPausesPlot(pl.idxs),
-				makeRunnableTime(pl.idxs),
-				makeGCStackSize(pl.idxs),
-				makeSchedEvents(pl.idxs),
-				makeCGOPlot(pl.idxs),
-			}
+		pl.rtPlots = make([]runtimeMetric, 0, len(plotFuncs))
+		for _, f := range plotFuncs {
+			pl.rtPlots = append(pl.rtPlots, f(pl.idxs))
+		}
 
 		layouts := make([]any, 0, len(pl.rtPlots))
 		for i := range pl.rtPlots {
@@ -114,7 +128,6 @@ func (pl *List) Config() *Config {
 		}
 
 		// User plots go at the back of the list for now.
-		// TODO(arl) We might improve this in the future.
 		for i := range pl.userPlots {
 			pl.cfg.Series = append(pl.cfg.Series, pl.userPlots[i].Layout())
 		}
@@ -184,7 +197,7 @@ type heapGlobal struct {
 	idxreleased int
 }
 
-func makeHeapGlobalPlot(idxs map[string]int) *heapGlobal {
+func makeHeapGlobalPlot(idxs map[string]int) runtimeMetric {
 	idxobj, ok1 := idxs["/memory/classes/heap/objects:bytes"]
 	idxunused, ok2 := idxs["/memory/classes/heap/unused:bytes"]
 	idxfree, ok3 := idxs["/memory/classes/heap/free:bytes"]
@@ -274,7 +287,7 @@ type heapDetails struct {
 	idxgoal     int
 }
 
-func makeHeapDetailsPlot(idxs map[string]int) *heapDetails {
+func makeHeapDetailsPlot(idxs map[string]int) runtimeMetric {
 	idxobj, ok1 := idxs["/memory/classes/heap/objects:bytes"]
 	idxunused, ok2 := idxs["/memory/classes/heap/unused:bytes"]
 	idxfree, ok3 := idxs["/memory/classes/heap/free:bytes"]
@@ -362,7 +375,7 @@ type liveObjects struct {
 	idxobjects int
 }
 
-func makeLiveObjectsPlot(idxs map[string]int) *liveObjects {
+func makeLiveObjectsPlot(idxs map[string]int) runtimeMetric {
 	idxobjects, ok := idxs["/gc/heap/objects:objects"]
 
 	return &liveObjects{
@@ -415,7 +428,7 @@ type liveBytes struct {
 	idxfrees  int
 }
 
-func makeLiveBytesPlot(idxs map[string]int) *liveBytes {
+func makeLiveBytesPlot(idxs map[string]int) runtimeMetric {
 	idxallocs, ok1 := idxs["/gc/heap/allocs:bytes"]
 	idxfrees, ok2 := idxs["/gc/heap/frees:bytes"]
 
@@ -475,7 +488,7 @@ type mspanMcache struct {
 	idxmcacheFree  int
 }
 
-func makeMSpanMCachePlot(idxs map[string]int) *mspanMcache {
+func makeMSpanMCachePlot(idxs map[string]int) runtimeMetric {
 	idxmspanInuse, ok1 := idxs["/memory/classes/metadata/mspan/inuse:bytes"]
 	idxmspanFree, ok2 := idxs["/memory/classes/metadata/mspan/free:bytes"]
 	idxmcacheInuse, ok3 := idxs["/memory/classes/metadata/mcache/inuse:bytes"]
@@ -552,7 +565,7 @@ type goroutines struct {
 	idxgs int
 }
 
-func makeGoroutinesPlot(idxs map[string]int) *goroutines {
+func makeGoroutinesPlot(idxs map[string]int) runtimeMetric {
 	idxgs, ok := idxs["/sched/goroutines:goroutines"]
 
 	return &goroutines{
@@ -603,7 +616,7 @@ type sizeClasses struct {
 	idxfrees  int
 }
 
-func makeSizeClassesPlot(idxs map[string]int) *sizeClasses {
+func makeSizeClassesPlot(idxs map[string]int) runtimeMetric {
 	idxallocs, ok1 := idxs["/gc/heap/allocs-by-size:bytes"]
 	idxfrees, ok2 := idxs["/gc/heap/frees-by-size:bytes"]
 
@@ -684,7 +697,7 @@ type gcpauses struct {
 	idxgcpauses int
 }
 
-func makeGCPausesPlot(idxs map[string]int) *gcpauses {
+func makeGCPausesPlot(idxs map[string]int) runtimeMetric {
 	idxgcpauses, ok := idxs["/gc/pauses:seconds"]
 
 	return &gcpauses{
@@ -745,7 +758,7 @@ type runnableTime struct {
 	idxschedlat int
 }
 
-func makeRunnableTime(idxs map[string]int) *runnableTime {
+func makeRunnableTime(idxs map[string]int) runtimeMetric {
 	idxschedlat, ok := idxs["/sched/latencies:seconds"]
 
 	return &runnableTime{
@@ -811,7 +824,7 @@ type schedEvents struct {
 	lasttot       uint64
 }
 
-func makeSchedEvents(idxs map[string]int) *schedEvents {
+func makeSchedEvents(idxs map[string]int) runtimeMetric {
 	idxschedlat, ok1 := idxs["/sched/latencies:seconds"]
 	idxGomaxprocs, ok2 := idxs["/sched/gomaxprocs:threads"]
 
@@ -891,7 +904,7 @@ type cgo struct {
 	lastgo2c uint64
 }
 
-func makeCGOPlot(idxs map[string]int) *cgo {
+func makeCGOPlot(idxs map[string]int) runtimeMetric {
 	idxgo2c, ok := idxs["/cgo/go-to-c-calls:calls"]
 
 	return &cgo{
@@ -946,7 +959,7 @@ type gcStackSize struct {
 	idxstack int
 }
 
-func makeGCStackSize(idxs map[string]int) *gcStackSize {
+func makeGCStackSize(idxs map[string]int) runtimeMetric {
 	idxstack, ok := idxs["/gc/stack/starting-size:bytes"]
 
 	return &gcStackSize{
