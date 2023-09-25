@@ -176,8 +176,7 @@ Check out the [\_example](./_example/README.md) directory to see various ways to
 
 ## Questions / Troubleshooting
 
-Use the [discussions](https://github.com/arl/statsviz/discussions) section for questions.  
-Or come to say hi and ask a live question on [#statsviz channel on Gopher's slack](https://gophers.slack.com/archives/C043DU4NZ9D).
+Either use GitHub's [discussions](https://github.com/arl/statsviz/discussions) or come to say hi and ask a live question on [#statsviz channel on Gopher's slack](https://gophers.slack.com/archives/C043DU4NZ9D).
 
 ## Contributing
 
