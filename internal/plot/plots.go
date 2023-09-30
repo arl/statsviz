@@ -23,9 +23,9 @@ func init() {
 	registerPlotFunc(makeSizeClassesPlot)
 	registerPlotFunc(makeGCCyclesPlot)
 	registerPlotFunc(makeGCPausesPlot)
-	registerPlotFunc(makeRunnableTime)
-	registerPlotFunc(makeGCStackSize)
-	registerPlotFunc(makeSchedEvents)
+	registerPlotFunc(makeRunnableTimePlot)
+	registerPlotFunc(makeGCStackSizePlot)
+	registerPlotFunc(makeSchedEventsPlot)
 	registerPlotFunc(makeCGOPlot)
 }
 
@@ -609,7 +609,7 @@ type runnableTime struct {
 	idxschedlat int
 }
 
-func makeRunnableTime(idxs map[string]int) runtimeMetric {
+func makeRunnableTimePlot(idxs map[string]int) runtimeMetric {
 	idxschedlat, ok := idxs["/sched/latencies:seconds"]
 
 	return &runnableTime{
@@ -675,7 +675,7 @@ type schedEvents struct {
 	lasttot       uint64
 }
 
-func makeSchedEvents(idxs map[string]int) runtimeMetric {
+func makeSchedEventsPlot(idxs map[string]int) runtimeMetric {
 	idxschedlat, ok1 := idxs["/sched/latencies:seconds"]
 	idxGomaxprocs, ok2 := idxs["/sched/gomaxprocs:threads"]
 
@@ -810,7 +810,7 @@ type gcStackSize struct {
 	idxstack int
 }
 
-func makeGCStackSize(idxs map[string]int) runtimeMetric {
+func makeGCStackSizePlot(idxs map[string]int) runtimeMetric {
 	idxstack, ok := idxs["/gc/stack/starting-size:bytes"]
 
 	return &gcStackSize{
