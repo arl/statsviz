@@ -125,15 +125,17 @@ func (pl *List) WriteValues(w io.Writer) error {
 	gcStats := debug.GCStats{}
 	debug.ReadGCStats(&gcStats)
 
-	m := make(map[string]any)
+	m := map[string]any{
+		// javascript timestampts are in milliseconds
+		"lastgc":    []int64{gcStats.LastGC.UnixMilli()},
+		"timestamp": time.Now().UnixMilli(),
+	}
+
 	for _, p := range pl.rtPlots {
 		if p.isEnabled() {
 			m[p.name()] = p.values(pl.samples)
 		}
 	}
-	// In javascript, timestamps are in ms.
-	m["lastgc"] = []int64{gcStats.LastGC.UnixMilli()}
-	m["timestamp"] = time.Now().UnixMilli()
 
 	for i := range pl.userPlots {
 		up := &pl.userPlots[i]
