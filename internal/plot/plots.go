@@ -3,6 +3,7 @@ package plot
 import (
 	"math"
 	"runtime/metrics"
+	"time"
 )
 
 func init() {
@@ -23,6 +24,7 @@ func init() {
 	registerPlotFunc(makeSizeClassesPlot)
 	registerPlotFunc(makeGCCyclesPlot)
 	registerPlotFunc(makeGCPausesPlot)
+	registerPlotFunc(makeCPUClassesGCPlot)
 	registerPlotFunc(makeRunnableTimePlot)
 	registerPlotFunc(makeGCStackSizePlot)
 	registerPlotFunc(makeSchedEventsPlot)
@@ -1009,6 +1011,134 @@ func (p *memoryClasses) values(samples []metrics.Sample) any {
 		osStacks,
 		other,
 		profBuckets,
+		total,
+	}
+}
+
+/*
+* cpu classes (gc)
+ */
+var _ = registerRuntimePlot("cpu-classes-gc",
+	"/cpu/classes/gc/mark/assist:cpu-seconds",
+	"/cpu/classes/gc/mark/dedicated:cpu-seconds",
+	"/cpu/classes/gc/mark/idle:cpu-seconds",
+	"/cpu/classes/gc/pause:cpu-seconds",
+	"/cpu/classes/gc/total:cpu-seconds",
+)
+
+type cpuClassesGC struct {
+	enabled bool
+
+	idxMarkAssist    int
+	idxMarkDedicated int
+	idxMarkIdle      int
+	idxPause         int
+	idxTotal         int
+
+	lastTime time.Time
+
+	lastMarkAssist    float64
+	lastMarkDedicated float64
+	lastMarkIdle      float64
+	lastPause         float64
+	lastTotal         float64
+}
+
+func makeCPUClassesGCPlot(idxs map[string]int) runtimeMetric {
+	idxMarkAssist, ok1 := idxs["/cpu/classes/gc/mark/assist:cpu-seconds"]
+	idxMarkDedicated, ok2 := idxs["/cpu/classes/gc/mark/dedicated:cpu-seconds"]
+	idxMarkIdle, ok3 := idxs["/cpu/classes/gc/mark/idle:cpu-seconds"]
+	idxPause, ok4 := idxs["/cpu/classes/gc/pause:cpu-seconds"]
+	idxTotal, ok5 := idxs["/cpu/classes/gc/total:cpu-seconds"]
+
+	return &cpuClassesGC{
+		enabled:          ok1 && ok2 && ok3 && ok4 && ok5,
+		idxMarkAssist:    idxMarkAssist,
+		idxMarkDedicated: idxMarkDedicated,
+		idxMarkIdle:      idxMarkIdle,
+		idxPause:         idxPause,
+		idxTotal:         idxTotal,
+	}
+}
+
+func (p *cpuClassesGC) name() string    { return "cpu-classes-gc" }
+func (p *cpuClassesGC) isEnabled() bool { return p.enabled }
+
+func (p *cpuClassesGC) layout(_ []metrics.Sample) any {
+	s := Scatter{
+		Name:   p.name(),
+		Title:  "CPU classes (GC)",
+		Type:   "scatter",
+		Events: "lastgc",
+		Subplots: []Subplot{
+			{
+				Name:    "mark assist",
+				Unitfmt: "%{y:.4s}s",
+			},
+			{
+				Name:    "mark dedicated",
+				Unitfmt: "%{y:.4s}s",
+			},
+			{
+				Name:    "mark idle",
+				Unitfmt: "%{y:.4s}s",
+			},
+			{
+				Name:    "pause",
+				Unitfmt: "%{y:.4s}s",
+			},
+			{
+				Name:    "total",
+				Unitfmt: "%{y:.4s}s",
+			},
+		},
+
+		InfoText: `Raw metrics provided by the runtime are cumulative, they're converted to rates by Statsviz so as to be more easily comparable and readable.
+All this metrics are overestimates, and not directly comparable to system CPU time measurements. Compare only with other /cpu/classes metrics.
+
+<i>mark assist</i> is <b>/cpu/classes/gc/mark/assist</b>, estimated total CPU time goroutines spent performing GC tasks to assist the GC and prevent it from falling behind the application.
+<i>mark dedicated</i> is <b>/cpu/classes/gc/mark/dedicated</b>, Estimated total CPU time spent performing GC tasks on processors (as defined by GOMAXPROCS) dedicated to those tasks.
+<i>mark idle</i> is <b>/cpu/classes/gc/mark/idle</b>, estimated total CPU time spent performing GC tasks on spare CPU resources that the Go scheduler could not otherwise find a use for.
+<i>pause</i> is <b>/cpu/classes/gc/pause</b>, estimated total CPU time spent with the application paused by the GC.
+<i>total</i> is <b>/cpu/classes/gc/total</b>, estimated total CPU time spent performing GC tasks.`,
+	}
+	s.Layout.Yaxis.Title = "cpu/seconds per unit of time"
+	s.Layout.Yaxis.TickSuffix = "s"
+	return s
+}
+
+func (p *cpuClassesGC) values(samples []metrics.Sample) any {
+	if p.lastTime.IsZero() {
+		p.lastTime = time.Now()
+		p.lastMarkAssist = samples[p.idxMarkAssist].Value.Float64()
+		p.lastMarkDedicated = samples[p.idxMarkDedicated].Value.Float64()
+		p.lastMarkIdle = samples[p.idxMarkIdle].Value.Float64()
+		p.lastPause = samples[p.idxPause].Value.Float64()
+		p.lastTotal = samples[p.idxTotal].Value.Float64()
+
+		return []float64{0, 0, 0, 0, 0}
+	}
+
+	t := time.Since(p.lastTime).Seconds()
+
+	markAssist := (samples[p.idxMarkAssist].Value.Float64() - p.lastMarkAssist) / t
+	markDedicated := (samples[p.idxMarkDedicated].Value.Float64() - p.lastMarkDedicated) / t
+	markIdle := (samples[p.idxMarkIdle].Value.Float64() - p.lastMarkIdle) / t
+	pause := (samples[p.idxPause].Value.Float64() - p.lastPause) / t
+	total := (samples[p.idxTotal].Value.Float64() - p.lastTotal) / t
+
+	p.lastMarkAssist = samples[p.idxMarkAssist].Value.Float64()
+	p.lastMarkDedicated = samples[p.idxMarkDedicated].Value.Float64()
+	p.lastMarkIdle = samples[p.idxMarkIdle].Value.Float64()
+	p.lastPause = samples[p.idxPause].Value.Float64()
+	p.lastTotal = samples[p.idxTotal].Value.Float64()
+	p.lastTime = time.Now()
+
+	return []float64{
+		markAssist,
+		markDedicated,
+		markIdle,
+		pause,
 		total,
 	}
 }
