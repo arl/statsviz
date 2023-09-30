@@ -103,6 +103,8 @@ On top of each plot there are 2 icons:
 
 ### Plots
 
+Depending on your go version, some plots may not be available.
+
 #### Heap (global)
 
 <img width="50%" alt="heap-global" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-global.png">
@@ -142,6 +144,10 @@ On top of each plot there are 2 icons:
 #### Stop-the-world Pause Latencies
 
 <img width="50%" alt="gc-pauses" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-pauses.png">
+
+#### CPU Classes (GC)
+
+<img width="50%" alt="cpu-classes-gc" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cpu-classes-gc.png">
 
 #### Time Goroutines Spend in 'Runnable'
 
