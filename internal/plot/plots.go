@@ -22,6 +22,7 @@ func init() {
 	registerPlotFunc(makeMemoryClassesPlot)
 	registerPlotFunc(makeGoroutinesPlot)
 	registerPlotFunc(makeSizeClassesPlot)
+	registerPlotFunc(makeGCScanPlot)
 	registerPlotFunc(makeGCCyclesPlot)
 	registerPlotFunc(makeGCPausesPlot)
 	registerPlotFunc(makeCPUClassesGCPlot)
@@ -1218,6 +1219,82 @@ func (p *mutexWait) values(samples []metrics.Sample) any {
 
 	return []float64{
 		mutexWait,
+	}
+}
+
+/*
+ * gc scan
+ */
+var _ = registerRuntimePlot("gc-scan",
+	"/gc/scan/globals:bytes",
+	"/gc/scan/heap:bytes",
+	"/gc/scan/stack:bytes",
+	"/gc/scan/total:bytes",
+)
+
+type gcScan struct {
+	enabled bool
+
+	idxGlobals int
+	idxHeap    int
+	idxStack   int
+}
+
+func makeGCScanPlot(idxs map[string]int) runtimeMetric {
+	idxGlobals, ok1 := idxs["/gc/scan/globals:bytes"]
+	idxHeap, ok2 := idxs["/gc/scan/heap:bytes"]
+	idxStack, ok3 := idxs["/gc/scan/stack:bytes"]
+
+	return &gcScan{
+		enabled:    ok1 && ok2 && ok3,
+		idxGlobals: idxGlobals,
+		idxHeap:    idxHeap,
+		idxStack:   idxStack,
+	}
+}
+
+func (p *gcScan) name() string    { return "gc-scan" }
+func (p *gcScan) isEnabled() bool { return p.enabled }
+
+func (p *gcScan) layout(_ []metrics.Sample) any {
+	s := Scatter{
+		Name:   p.name(),
+		Title:  "GC Scan",
+		Type:   "scatter",
+		Events: "lastgc",
+		Subplots: []Subplot{
+			{
+				Name:    "scannable globals",
+				Unitfmt: "%{y:.4s}B",
+			},
+			{
+				Name:    "scannable heap",
+				Unitfmt: "%{y:.4s}B",
+			},
+			{
+				Name:    "scanned stack",
+				Unitfmt: "%{y:.4s}B",
+			},
+		},
+		InfoText: `This plot shows the amount of memory that is scannable by the GC.
+<i>scannable globals</i> is <b>/gc/scan/globals</b>, the total amount of global variable space that is scannable.
+<i>scannable heap</i> is <b>/gc/scan/heap</b>, the total amount of heap space that is scannable.
+<i>scanned stack</i> is <b>/gc/scan/stack</b>, the number of bytes of stack that were scanned last GC cycle.
+`,
+	}
+	s.Layout.Yaxis.TickSuffix = "B"
+	s.Layout.Yaxis.Title = "bytes"
+	return s
+}
+
+func (p *gcScan) values(samples []metrics.Sample) any {
+	globals := samples[p.idxGlobals].Value.Uint64()
+	heap := samples[p.idxHeap].Value.Uint64()
+	stack := samples[p.idxStack].Value.Uint64()
+	return []uint64{
+		globals,
+		heap,
+		stack,
 	}
 }
 
