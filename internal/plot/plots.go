@@ -721,6 +721,7 @@ func (p *schedEvents) layout(_ []metrics.Sample) any {
 // changes. See https://github.com/golang/go/blob/go1.18.4/src/runtime/runtime2.go#L502-L504
 const currentGtrackingPeriod = 8
 
+// TODO show scheduling events per seconds
 func (p *schedEvents) values(samples []metrics.Sample) any {
 	schedlat := samples[p.idxschedlat].Value.Float64Histogram()
 	gomaxprocs := samples[p.idxGomaxprocs].Value.Uint64()
@@ -790,6 +791,7 @@ func (p *cgo) layout(_ []metrics.Sample) any {
 	return s
 }
 
+// TODO show cgo calls per second
 func (p *cgo) values(samples []metrics.Sample) any {
 	go2c := samples[p.idxgo2c].Value.Uint64()
 	curgo2c := go2c - p.lastgo2c
@@ -1102,7 +1104,7 @@ All this metrics are overestimates, and not directly comparable to system CPU ti
 <i>pause</i> is <b>/cpu/classes/gc/pause</b>, estimated total CPU time spent with the application paused by the GC.
 <i>total</i> is <b>/cpu/classes/gc/total</b>, estimated total CPU time spent performing GC tasks.`,
 	}
-	s.Layout.Yaxis.Title = "cpu/seconds per unit of time"
+	s.Layout.Yaxis.Title = "cpu-seconds per seconds"
 	s.Layout.Yaxis.TickSuffix = "s"
 	return s
 }
@@ -1194,7 +1196,7 @@ func (p *mutexWait) layout(_ []metrics.Sample) any {
 
 This metric is useful for identifying global changes in lock contention. Collect a mutex or block profile using the runtime/pprof package for more detailed contention data.`,
 	}
-	s.Layout.Yaxis.Title = "seconds per unit of time"
+	s.Layout.Yaxis.Title = "seconds per seconds"
 	s.Layout.Yaxis.TickSuffix = "s"
 	return s
 }
