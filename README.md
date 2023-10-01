@@ -149,9 +149,13 @@ Depending on your go version, some plots may not be available.
 
 <img width="50%" alt="cpu-classes-gc" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cpu-classes-gc.png">
 
-#### Time Goroutines Spend in 'Runnable'
+#### Time Goroutines Spend in 'Runnable' state
 
 <img width="50%" alt="runnable-time" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/runnable-time.png">
+
+#### Time Goroutines Spend Blocked on Mutexes
+
+<img width="50%" alt="mutex-wait" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/mutex-wait.png">
 
 #### Starting Size of Goroutines Stacks
 
