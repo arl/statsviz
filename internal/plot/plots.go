@@ -26,6 +26,7 @@ func init() {
 	registerPlotFunc(makeGCPausesPlot)
 	registerPlotFunc(makeCPUClassesGCPlot)
 	registerPlotFunc(makeRunnableTimePlot)
+	registerPlotFunc(makeMutexWaitPlot)
 	registerPlotFunc(makeGCStackSizePlot)
 	registerPlotFunc(makeSchedEventsPlot)
 	registerPlotFunc(makeCGOPlot)
@@ -630,7 +631,7 @@ func (p *runnableTime) layout(samples []metrics.Sample) any {
 
 	h := Heatmap{
 		Name:       p.name(),
-		Title:      "Time Goroutines Spend in 'Runnable'",
+		Title:      "Time Goroutines Spend in 'Runnable' state",
 		Type:       "heatmap",
 		UpdateFreq: 5,
 		Colorscale: GreenShades,
@@ -1145,6 +1146,76 @@ func (p *cpuClassesGC) values(samples []metrics.Sample) any {
 		markIdle,
 		pause,
 		total,
+	}
+}
+
+/*
+* mutex wait
+ */
+var _ = registerRuntimePlot("mutex-wait",
+	"/sync/mutex/wait/total:seconds",
+)
+
+type mutexWait struct {
+	enabled      bool
+	idxMutexWait int
+
+	lastTime      time.Time
+	lastMutexWait float64
+}
+
+func makeMutexWaitPlot(idxs map[string]int) runtimeMetric {
+	idxMutexWait, ok := idxs["/cpu/classes/gc/mark/assist:cpu-seconds"]
+
+	return &mutexWait{
+		enabled:      ok,
+		idxMutexWait: idxMutexWait,
+	}
+}
+
+func (p *mutexWait) name() string    { return "mutex-wait" }
+func (p *mutexWait) isEnabled() bool { return p.enabled }
+
+func (p *mutexWait) layout(_ []metrics.Sample) any {
+	s := Scatter{
+		Name:   p.name(),
+		Title:  "Time Goroutines Spend Blocked on Mutexes",
+		Type:   "scatter",
+		Events: "lastgc",
+		Subplots: []Subplot{
+			{
+				Name:    "mutex wait",
+				Unitfmt: "%{y:.4s}s",
+			},
+		},
+
+		InfoText: `Cumulative metrics are converted to rates by Statsviz so as to be more easily comparable and readable.
+<i>mutex wait</i> is <b>/sync/mutex/wait/total</b>, approximate cumulative time goroutines have spent blocked on a sync.Mutex or sync.RWMutex.
+
+This metric is useful for identifying global changes in lock contention. Collect a mutex or block profile using the runtime/pprof package for more detailed contention data.`,
+	}
+	s.Layout.Yaxis.Title = "seconds per unit of time"
+	s.Layout.Yaxis.TickSuffix = "s"
+	return s
+}
+
+func (p *mutexWait) values(samples []metrics.Sample) any {
+	if p.lastTime.IsZero() {
+		p.lastTime = time.Now()
+		p.lastMutexWait = samples[p.idxMutexWait].Value.Float64()
+
+		return []float64{0}
+	}
+
+	t := time.Since(p.lastTime).Seconds()
+
+	mutexWait := (samples[p.idxMutexWait].Value.Float64() - p.lastMutexWait) / t
+
+	p.lastMutexWait = samples[p.idxMutexWait].Value.Float64()
+	p.lastTime = time.Now()
+
+	return []float64{
+		mutexWait,
 	}
 }
 
