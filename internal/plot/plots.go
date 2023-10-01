@@ -793,8 +793,6 @@ func (p *cgo) values(samples []metrics.Sample) any {
 	go2c := samples[p.idxgo2c].Value.Uint64()
 	curgo2c := go2c - p.lastgo2c
 	if p.lastgo2c == math.MaxUint64 {
-		// We don't want a big spike at statsviz launch in case the process has
-		// been running for some time and curgo2c is high.
 		curgo2c = 0
 	}
 	p.lastgo2c = go2c
@@ -1007,6 +1005,7 @@ func (p *memoryClasses) values(samples []metrics.Sample) any {
 	other := samples[p.idxOther].Value.Uint64()
 	profBuckets := samples[p.idxProfBuckets].Value.Uint64()
 	total := samples[p.idxTotal].Value.Uint64()
+
 	return []uint64{
 		osStacks,
 		other,
@@ -1093,7 +1092,7 @@ func (p *cpuClassesGC) layout(_ []metrics.Sample) any {
 			},
 		},
 
-		InfoText: `Raw metrics provided by the runtime are cumulative, they're converted to rates by Statsviz so as to be more easily comparable and readable.
+		InfoText: `Cumulative metrics are converted to rates by Statsviz so as to be more easily comparable and readable.
 All this metrics are overestimates, and not directly comparable to system CPU time measurements. Compare only with other /cpu/classes metrics.
 
 <i>mark assist</i> is <b>/cpu/classes/gc/mark/assist</b>, estimated total CPU time goroutines spent performing GC tasks to assist the GC and prevent it from falling behind the application.
@@ -1108,30 +1107,36 @@ All this metrics are overestimates, and not directly comparable to system CPU ti
 }
 
 func (p *cpuClassesGC) values(samples []metrics.Sample) any {
+	curMarkAssist := samples[p.idxMarkAssist].Value.Float64()
+	curMarkDedicated := samples[p.idxMarkDedicated].Value.Float64()
+	curMarkIdle := samples[p.idxMarkIdle].Value.Float64()
+	curPause := samples[p.idxPause].Value.Float64()
+	curTotal := samples[p.idxTotal].Value.Float64()
+
 	if p.lastTime.IsZero() {
+		p.lastMarkAssist = curMarkAssist
+		p.lastMarkDedicated = curMarkDedicated
+		p.lastMarkIdle = curMarkIdle
+		p.lastPause = curPause
+		p.lastTotal = curTotal
 		p.lastTime = time.Now()
-		p.lastMarkAssist = samples[p.idxMarkAssist].Value.Float64()
-		p.lastMarkDedicated = samples[p.idxMarkDedicated].Value.Float64()
-		p.lastMarkIdle = samples[p.idxMarkIdle].Value.Float64()
-		p.lastPause = samples[p.idxPause].Value.Float64()
-		p.lastTotal = samples[p.idxTotal].Value.Float64()
 
 		return []float64{0, 0, 0, 0, 0}
 	}
 
 	t := time.Since(p.lastTime).Seconds()
 
-	markAssist := (samples[p.idxMarkAssist].Value.Float64() - p.lastMarkAssist) / t
-	markDedicated := (samples[p.idxMarkDedicated].Value.Float64() - p.lastMarkDedicated) / t
-	markIdle := (samples[p.idxMarkIdle].Value.Float64() - p.lastMarkIdle) / t
-	pause := (samples[p.idxPause].Value.Float64() - p.lastPause) / t
-	total := (samples[p.idxTotal].Value.Float64() - p.lastTotal) / t
+	markAssist := (curMarkAssist - p.lastMarkAssist) / t
+	markDedicated := (curMarkDedicated - p.lastMarkDedicated) / t
+	markIdle := (curMarkIdle - p.lastMarkIdle) / t
+	pause := (curPause - p.lastPause) / t
+	total := (curTotal - p.lastTotal) / t
 
-	p.lastMarkAssist = samples[p.idxMarkAssist].Value.Float64()
-	p.lastMarkDedicated = samples[p.idxMarkDedicated].Value.Float64()
-	p.lastMarkIdle = samples[p.idxMarkIdle].Value.Float64()
-	p.lastPause = samples[p.idxPause].Value.Float64()
-	p.lastTotal = samples[p.idxTotal].Value.Float64()
+	p.lastMarkAssist = curMarkAssist
+	p.lastMarkDedicated = curMarkDedicated
+	p.lastMarkIdle = curMarkIdle
+	p.lastPause = curPause
+	p.lastTotal = curTotal
 	p.lastTime = time.Now()
 
 	return []float64{
