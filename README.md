@@ -137,6 +137,10 @@ Depending on your go version, some plots may not be available.
 
 <img width="50%" alt="size-classes" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/size-classes.png">
 
+#### GC Scan
+
+<img width="50%" alt="gc-scan" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-scan.png">
+
 #### GC Cycles
 
 <img width="50%" alt="gc-cycles" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-cycles.png">
