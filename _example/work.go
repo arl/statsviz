@@ -3,6 +3,7 @@ package example
 import (
 	"math/rand"
 	"reflect"
+	"runtime"
 	"strconv"
 	"time"
 )
@@ -13,11 +14,13 @@ func Work() {
 	m := make(map[int64]any)
 	tick := time.NewTicker(30 * time.Millisecond)
 	clearTick := time.NewTicker(1 * time.Second)
-
 	for {
 		select {
 		case <-clearTick.C:
 			m = make(map[int64]any)
+			if rand.Intn(100) < 5 {
+				runtime.GC()
+			}
 		case ts := <-tick.C:
 			m[ts.UnixNano()] = newStruct()
 		}
