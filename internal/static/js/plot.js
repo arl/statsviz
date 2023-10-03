@@ -189,17 +189,7 @@ class Plot {
         this._dataTemplate = [];
         this._lastData = [{ x: new Date() }];
 
-        if (['scatter', 'bar'].includes(this._cfg.type)) {
-            this._cfg.subplots.forEach(subplot => {
-                this._dataTemplate.push({
-                    type: this._cfg.type,
-                    x: null,
-                    y: null,
-                    name: subplot.name,
-                    hovertemplate: `<b>${subplot.unitfmt}</b>`,
-                })
-            });
-        } else if (this._cfg.type == 'heatmap') {
+        if (this._cfg.type == 'heatmap') {
             this._dataTemplate.push({
                 type: 'heatmap',
                 x: null,
@@ -208,6 +198,16 @@ class Plot {
                 showlegend: false,
                 colorscale: this._cfg.colorscale,
                 custom_data: this._cfg.custom_data,
+            });
+        } else {
+            this._cfg.subplots.forEach(subplot => {
+                this._dataTemplate.push({
+                    type: this._cfg.type,
+                    x: null,
+                    y: null,
+                    name: subplot.name,
+                    hovertemplate: `<b>${subplot.unitfmt}</b>`,
+                })
             });
         }
 
@@ -282,7 +282,11 @@ class Plot {
 
     _extractData(data) {
         const serie = data.series.get(this._cfg.name);
-        if (['scatter', 'bar'].includes(this._cfg.type)) {
+        if (this._cfg.type == 'heatmap') {
+            this._dataTemplate[0].x = data.times;
+            this._dataTemplate[0].z = serie;
+            this._dataTemplate[0].hoverinfo = 'none';
+        } else {
             for (let i = 0; i < this._dataTemplate.length; i++) {
                 this._dataTemplate[i].x = data.times;
                 this._dataTemplate[i].y = serie[i];
@@ -292,10 +296,6 @@ class Plot {
                     color: this._cfg.subplots[i].color,
                 };
             }
-        } else if (this._cfg.type == 'heatmap') {
-            this._dataTemplate[0].x = data.times;
-            this._dataTemplate[0].z = serie;
-            this._dataTemplate[0].hoverinfo = 'none';
         }
         return this._dataTemplate;
     }
