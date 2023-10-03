@@ -258,16 +258,16 @@ class Plot {
                 }
 
                 return `
-                    <div class="tooltip-table tooltip-style">
-                    <div class="tooltip-row">
-                    <div class="tooltip-label">${hover.yname}</div>
-                    <div class="tooltip-value">${bucket}</div>
-                    </div>
-                    <div class="tooltip-row">
-                    <div class="tooltip-label">${hover.zname}</div>
-                    <div class="tooltip-value">${d.z}</div>
-                    </div>
-                    </div> `;
+<div class="tooltip-table tooltip-style">
+    <div class="tooltip-row">
+        <div class="tooltip-label">${hover.yname}</div>
+        <div class="tooltip-value">${bucket}</div>
+    </div>
+    <div class="tooltip-row">
+        <div class="tooltip-label">${hover.zname}</div>
+        <div class="tooltip-value">${d.z}</div>
+    </div>
+</div> `;
             }
             instance.setContent(data.points.map(pt2txt)[0]);
             instance.show();
@@ -320,9 +320,10 @@ class Plot {
      * update theme color and immediately force plot redraw to apply the new theme
      */
     updateTheme() {
-        this._cfg.layout.paper_bgcolor = themeColors[theme.getThemeMode()].paper_bgcolor;
-        this._cfg.layout.plot_bgcolor = themeColors[theme.getThemeMode()].plot_bgcolor;
-        this._cfg.layout.font_color = themeColors[theme.getThemeMode()].font_color;
+        const themeMode = theme.getThemeMode();
+        this._cfg.layout.paper_bgcolor = themeColors[themeMode].paper_bgcolor;
+        this._cfg.layout.plot_bgcolor = themeColors[themeMode].plot_bgcolor;
+        this._cfg.layout.font_color = themeColors[themeMode].font_color;
 
         this._plotlyLayout = newLayoutObject(this._cfg);
         this._plotlyConfig = newConfigObject(this._cfg);
