@@ -1259,23 +1259,26 @@ func (p *gcScan) name() string    { return "gc-scan" }
 func (p *gcScan) isEnabled() bool { return p.enabled }
 
 func (p *gcScan) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:   p.name(),
 		Title:  "GC Scan",
-		Type:   "scatter",
+		Type:   "bar",
 		Events: "lastgc",
 		Subplots: []Subplot{
 			{
 				Name:    "scannable globals",
 				Unitfmt: "%{y:.4s}B",
+				Type:    "bar",
 			},
 			{
 				Name:    "scannable heap",
 				Unitfmt: "%{y:.4s}B",
+				Type:    "bar",
 			},
 			{
 				Name:    "scanned stack",
 				Unitfmt: "%{y:.4s}B",
+				Type:    "bar",
 			},
 		},
 		InfoText: `This plot shows the amount of memory that is scannable by the GC.
@@ -1283,10 +1286,14 @@ func (p *gcScan) layout(_ []metrics.Sample) any {
 <i>scannable heap</i> is <b>/gc/scan/heap</b>, the total amount of heap space that is scannable.
 <i>scanned stack</i> is <b>/gc/scan/stack</b>, the number of bytes of stack that were scanned last GC cycle.
 `,
+		Layout: ScatterLayout{
+			BarMode: "stack",
+			Yaxis: ScatterYAxis{
+				TickSuffix: "B",
+				Title:      "bytes",
+			},
+		},
 	}
-	s.Layout.Yaxis.TickSuffix = "B"
-	s.Layout.Yaxis.Title = "bytes"
-	return s
 }
 
 func (p *gcScan) values(samples []metrics.Sample) any {
