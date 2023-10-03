@@ -32,6 +32,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -179,13 +181,40 @@ var contentTypes = map[string]string{
 	"libs/js/tippy.js@6":     "text/javascript",
 }
 
+// Returns an FS serving the embedded assets, or the assets directory if
+// STATSVIZ_DEBUG contains the 'asssets' key.
+func assetsFS() http.FileSystem {
+	assets := http.FS(static.Assets)
+
+	vdbg := os.Getenv("STATSVIZ_DEBUG")
+	if vdbg == "" {
+		return assets
+	}
+
+	kvs := strings.Split(vdbg, ";")
+	for _, kv := range kvs {
+		k, v, found := strings.Cut(strings.TrimSpace(kv), "=")
+		if !found {
+			panic("invalid STATSVIZ_DEBUG value: " + kv)
+		}
+		if k == "assets" {
+			dir := filepath.Join(v)
+			return http.Dir(dir)
+		}
+	}
+
+	return assets
+}
+
 // Index returns the index handler, which responds with the Statsviz user
 // interface HTML page. By default, the handler is served at the path specified
 // by the root. Use [WithRoot] to change the path.
 func (s *Server) Index() http.HandlerFunc {
 	prefix := strings.TrimSuffix(s.root, "/") + "/"
-	assetsFS := http.FileServer(http.FS(static.Assets))
-	return http.StripPrefix(prefix, intercept(assetsFS, s.plots.Config())).ServeHTTP
+	assets := http.FileServer(assetsFS())
+	handler := intercept(assets, s.plots.Config())
+
+	return http.StripPrefix(prefix, handler).ServeHTTP
 }
 
 // Ws returns the WebSocket handler used by Statsviz to send application
