@@ -51,6 +51,7 @@ const newLayoutObject = (cfg) => {
         width: 630,
         height: 450,
         hovermode: 'x',
+        barmode: cfg.layout.barmode,
         xaxis: {
             tickformat: '%H:%M:%S',
             type: "date",
@@ -136,7 +137,8 @@ const themeColors = {
                 "text": "bytes"      // yaxis title
             },
             "ticksuffix": "B",       // base unit for ticks
-        }
+        },
+        "barmode": "stack",           // 'stack' or 'group' (only for bar plots)
     },
 
     Layout" for heatmaps:
@@ -292,6 +294,7 @@ class Plot {
                 this._dataTemplate[i].y = serie[i];
                 this._dataTemplate[i].stackgroup = this._cfg.subplots[i].stackgroup;
                 this._dataTemplate[i].hoveron = this._cfg.subplots[i].hoveron;
+                this._dataTemplate[i].type = this._cfg.subplots[i].type || this._cfg.type;
                 this._dataTemplate[i].marker = {
                     color: this._cfg.subplots[i].color,
                 };

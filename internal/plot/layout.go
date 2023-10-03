@@ -22,7 +22,8 @@ type (
 		Subplots   []Subplot     `json:"subplots"`
 	}
 	ScatterLayout struct {
-		Yaxis ScatterYAxis `json:"yaxis"`
+		Yaxis   ScatterYAxis `json:"yaxis"`
+		BarMode string       `json:"barmode"`
 	}
 	ScatterYAxis struct {
 		Title      string `json:"title"`
@@ -35,6 +36,7 @@ type (
 		StackGroup string `json:"stackgroup"`
 		HoverOn    string `json:"hoveron"`
 		Color      string `json:"color"`
+		Type       string `json:"type"`
 	}
 
 	Heatmap struct {
