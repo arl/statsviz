@@ -18,7 +18,7 @@ const newConfigObject = (cfg) => {
             icon: infoIcon,
             val: false,
             click: handleInfoButton,
-        }, ],
+        },],
         toImageButtonOptions: {
             format: 'png',
             filename: cfg.name,
@@ -122,11 +122,11 @@ const themeColors = {
       "title": string,                 // plot title 
       "type": 'scatter'|'bar'|'heatmap' 
       "updateFreq": int,               // datapoints to receive before redrawing the plot. (default: 1)
+      "infoText": string,              // text showed in the plot 'info' tooltip
       "events": "lastgc",              // source of vertical lines (example: 'lastgc')
       "layout": object,                // (depends on plot type)
       "subplots": array,               // describe 'traces', only for 'scatter' or 'bar' plots
       "heatmap": object,               // heatmap details
-      "infoText": string,              // text showed in the plot 'info' tooltip
      }
 
     Layout for 'scatter' and 'bar' plots:
