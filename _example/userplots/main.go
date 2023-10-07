@@ -11,17 +11,30 @@ import (
 	example "github.com/arl/statsviz/_example"
 )
 
-func scatterPlot() statsviz.TimeSeriesPlot {
-	val := 0.
+func main() {
+	go example.Work()
 
+	mux := http.NewServeMux()
+
+	// Register statsviz handlers and 3 addition user plots.
+	if err := statsviz.Register(mux,
+		statsviz.TimeseriesPlot(scatterPlot()),
+		statsviz.TimeseriesPlot(barPlot()),
+		statsviz.TimeseriesPlot(stackedPlot()),
+	); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Point your browser to http://localhost:8093/debug/statsviz/")
+	log.Fatal(http.ListenAndServe(":8093", mux))
+}
+
+func scatterPlot() statsviz.TimeSeriesPlot {
 	// Describe the 'sine' time series.
 	sine := statsviz.TimeSeries{
-		Name:    "short sin",
-		Unitfmt: "%{y:.4s}B",
-		GetValue: func() float64 {
-			val += 0.5
-			return math.Sin(val)
-		},
+		Name:     "short sin",
+		Unitfmt:  "%{y:.4s}B",
+		GetValue: updateSine,
 	}
 
 	// Build a new plot, showing our sine time series
@@ -29,8 +42,8 @@ func scatterPlot() statsviz.TimeSeriesPlot {
 		Name:  "sine",
 		Title: "Sine",
 		Type:  statsviz.Scatter,
-		InfoText: `This tooltip describe the plot that shows a <i>sine</i> time series.<br>
-This accepts HTML tags like <b>bold</b> and <i>italic</i>`,
+		InfoText: `This is an example of a 'scatter' type plot, showing a single time series.<br>
+InfoText field (this) accepts any HTML tags like <b>bold</b>, <i>italic</i>, etc.`,
 		YAxisTitle: "y unit",
 		Series:     []statsviz.TimeSeries{sine},
 	}.Build()
@@ -44,20 +57,16 @@ This accepts HTML tags like <b>bold</b> and <i>italic</i>`,
 func barPlot() statsviz.TimeSeriesPlot {
 	// Describe the 'user logins' time series.
 	logins := statsviz.TimeSeries{
-		Name:    "user logins",
-		Unitfmt: "%{y:.4s}",
-		GetValue: func() float64 {
-			return 1_000*rand.Float64() + 2_000
-		},
+		Name:     "user logins",
+		Unitfmt:  "%{y:.4s}",
+		GetValue: logins,
 	}
 
 	// Describe the 'user signins' time series.
 	signins := statsviz.TimeSeries{
-		Name:    "user signins",
-		Unitfmt: "%{y:.4s}",
-		GetValue: func() float64 {
-			return 100*rand.Float64() + 150
-		},
+		Name:     "user signins",
+		Unitfmt:  "%{y:.4s}",
+		GetValue: signins,
 	}
 
 	// Build a new plot, showing both time series at once.
@@ -65,8 +74,8 @@ func barPlot() statsviz.TimeSeriesPlot {
 		Name:  "users",
 		Title: "Users",
 		Type:  statsviz.Bar,
-		InfoText: `This plot shows the real time count of <i>user login</i> and <i>user signin</i> events.<br>
-This accepts HTML tags like <b>bold</b> and <i>italic</i>`,
+		InfoText: `This is an example of a 'bar' type plot, showing 2 time series.<br>
+InfoText field (this) accepts any HTML tags like <b>bold</b>, <i>italic</i>, etc.`,
 		YAxisTitle: "users",
 		Series:     []statsviz.TimeSeries{logins, signins},
 	}.Build()
@@ -77,17 +86,52 @@ This accepts HTML tags like <b>bold</b> and <i>italic</i>`,
 	return plot
 }
 
-func main() {
-	go example.Work()
+func stackedPlot() statsviz.TimeSeriesPlot {
+	// Describe the 'user logins' time series.
+	logins := statsviz.TimeSeries{
+		Name:     "user logins",
+		Unitfmt:  "%{y:.4s}",
+		Type:     statsviz.Bar,
+		GetValue: logins,
+	}
 
-	mux := http.NewServeMux()
+	// Describe the 'user signins' time series.
+	signins := statsviz.TimeSeries{
+		Name:     "user signins",
+		Unitfmt:  "%{y:.4s}",
+		Type:     statsviz.Bar,
+		GetValue: signins,
+	}
 
-	// Register statsviz handlers with 2 additional plots, user-provided plots.
-	_ = statsviz.Register(mux,
-		statsviz.TimeseriesPlot(scatterPlot()),
-		statsviz.TimeseriesPlot(barPlot()),
-	)
+	// Build a new plot, showing both time series at once.
+	plot, err := statsviz.TimeSeriesPlotConfig{
+		Name:    "users-stack",
+		Title:   "Stacked Users",
+		Type:    statsviz.Bar,
+		BarMode: statsviz.Stack,
+		InfoText: `This is an example of a 'bar' plot showing 2 time series stacked on top of each other with <b>BarMode:Stack</b>.<br>
+InfoText field (this) accepts any HTML tags like <b>bold</b>, <i>italic</i>, etc.`,
+		YAxisTitle: "users",
+		Series:     []statsviz.TimeSeries{logins, signins},
+	}.Build()
+	if err != nil {
+		log.Fatalf("failed to build timeseries plot: %v", err)
+	}
 
-	fmt.Println("Point your browser to http://localhost:8093/debug/statsviz/")
-	log.Fatal(http.ListenAndServe(":8093", mux))
+	return plot
+}
+
+var val = 0.
+
+func updateSine() float64 {
+	val += 0.5
+	return math.Sin(val)
+}
+
+func logins() float64 {
+	return (rand.Float64() + 2) * 1000
+}
+
+func signins() float64 {
+	return (rand.Float64() + 1.5) * 100
 }
