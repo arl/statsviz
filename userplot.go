@@ -18,6 +18,25 @@ const (
 	Bar TimeSeriesType = "bar"
 )
 
+// BarMode determines how bars at the same location are displayed on a bar plot.
+type BarMode string
+
+const (
+	// Stack indicates that bars are stacked on top of one another.
+	Stack BarMode = "stack"
+
+	// Ggroup indicates that bars are plotted next to one another, centered
+	// around the shared location.
+	Group BarMode = "group"
+
+	// Relative indicates that bars are stacked on top of one another, with
+	// negative values below the axis and positive values above.
+	Relative BarMode = "relative"
+
+	// Overlay indicates that bars are plotted over one another.
+	Overlay BarMode = "overlay"
+)
+
 var (
 	// ErrNoTimeSeries is returned when a user plot has no time series.
 	ErrNoTimeSeries = errors.New("user plot must have at least one time series")
@@ -55,12 +74,15 @@ type TimeSeries struct {
 	Name string
 
 	// UnitFmt is the d3-format string used to format the numbers of this time
-	// series in the user interface. See https://github.com/d3/d3-format
+	// series in the user interface. See https://github.com/d3/d3-format.
 	Unitfmt string
 
 	// HoverOn configures whether the hover effect highlights individual points
 	// or do they highlight filled regions, or both. Defaults to HoverOnFills.
 	HoverOn HoverOnType
+
+	// Type is the time series type, either [Scatter] or [Bar]. default: [Scatter].
+	Type TimeSeriesType
 
 	// GetValue specifies the function called to get the value of this time
 	// series.
@@ -75,8 +97,12 @@ type TimeSeriesPlotConfig struct {
 	// Title is the plot title, shown above the plot.
 	Title string
 
-	// Type is either scatter or bar.
+	// Type is either [Scatter] or [Bar]. default: [Scatter].
 	Type TimeSeriesType
+
+	// BarMode is either [Stack], [Group], [Relative] or [Overlay].
+	// default: [Group].
+	BarMode BarMode
 
 	// Tooltip is the html-aware text shown when the user clicks on the plot
 	// Info icon.
@@ -124,6 +150,7 @@ func (p TimeSeriesPlotConfig) Build() (TimeSeriesPlot, error) {
 			Name:    ts.Name,
 			Unitfmt: ts.Unitfmt,
 			HoverOn: string(ts.HoverOn),
+			Type:    string(ts.Type),
 		})
 		funcs = append(funcs, ts.GetValue)
 	}
@@ -136,6 +163,7 @@ func (p TimeSeriesPlotConfig) Build() (TimeSeriesPlot, error) {
 				Type:     string(p.Type),
 				InfoText: p.InfoText,
 				Layout: plot.ScatterLayout{
+					BarMode: string(p.BarMode),
 					Yaxis: plot.ScatterYAxis{
 						Title:      p.YAxisTitle,
 						TickSuffix: p.YAxisTickSuffix,
