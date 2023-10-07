@@ -1,5 +1,12 @@
 Unreleased
 ==============
+  * New plots showing new go1.20/1.21 runtime/metrics:
+    + GC Cycles
+    + GC Scan
+    + Memory classes
+    + CPU classes
+    + Mutex wait
+  * Users can now add their own plots
   * Add light/dark mode selector (#108)
 
 v0.5.2 / 2023-03-29
