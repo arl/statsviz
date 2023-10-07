@@ -8,9 +8,10 @@ Pull-requests are welcome!
 
 ## Go library
 
-The Statsviz Go public API is relatively light so there's not much to do and at the moment
-it's unlikely that the API will change. However some new options can be added to
-`statsviz.Register` without breaking compatibility.
+The Statsviz Go public API is relatively light so there's not much to do and at
+the moment it's unlikely that the API will change. However new options can be
+added to `statsviz.Register` and `statsviz.NewServer` without breaking
+compatibility.
 
 That being said, there may be things to improve in the implementation, any
 contribution is very welcome!

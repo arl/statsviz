@@ -177,7 +177,7 @@ func (p TimeSeriesPlotConfig) Build() (TimeSeriesPlot, error) {
 }
 
 // TimeSeriesPlot is an opaque type representing a timeseries plot.
-// A plot can be created with TimeSeriesPlotConfig.Build().
+// A plot can be created with [TimeSeriesPlotConfig.Build].
 type TimeSeriesPlot struct {
 	timeseries *plot.ScatterUserPlot
 }

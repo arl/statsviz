@@ -5,26 +5,38 @@
 // (preferred method):
 //
 //	mux := http.NewServeMux()
-//	ss := statsviz.Server{}
-//	ss.Register(mux)
+//	statsviz.Register(mux)
 //
 // Alternatively, you can register with [http.DefaultServeMux]:
 //
 //	ss := statsviz.Server{}
 //	s.Register(http.DefaultServeMux)
 //
-// By default, Statsviz is served at `/debug/statsviz/`. You can change this and
-// other settings by passing some [Option] to [NewServer].
+// By default, Statsviz is served at http://host:port/debug/statsviz/. This, and
+// other settings, can be changed by passing some [Option] to [NewServer].
 //
 // If your application is not already running an HTTP server, you need to start
 // one. Add "net/http" and "log" to your imports, and use the following code in
 // your main function:
 //
 //	go func() {
-//	    log.Println(http.ListenAndServe("localhost:6060", nil))
+//	    log.Println(http.ListenAndServe("localhost:8080", nil))
 //	}()
 //
-// Then open your browser and visit http://localhost:6060/debug/statsviz/.
+// Then open your browser and visit http://localhost:8080/debug/statsviz/.
+//
+// # Advanced usage:
+//
+// If you want more control over Statsviz HTTP handlers, examples are:
+//   - you're using some HTTP framework
+//   - you want to place Statsviz handler behind some middleware
+//
+// then use [NewServer] to obtain a [Server] instance. Both the [Server.Index] and
+// [Server.Ws]() methods return [http.HandlerFunc].
+//
+//	srv, err := statsviz.NewServer(); // Create server or handle error
+//	srv.Index()                       // UI (dashboard) http.HandlerFunc
+//	srv.Ws()                          // Websocket http.HandlerFunc
 package statsviz
 
 import (
@@ -49,9 +61,9 @@ const (
 	defaultSendInterval = time.Second
 )
 
-// Register registers the Statsviz HTTP handlers on the default server mux.
+// RegisterDefault registers the Statsviz HTTP handlers on [http.DefaultServeMux].
 //
-// Deprecated: use Register(http.DefaultServeMux) instead.
+// RegisterDefault should not be used in production.
 func RegisterDefault(opts ...Option) error {
 	return Register(http.DefaultServeMux)
 }

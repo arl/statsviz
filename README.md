@@ -22,7 +22,7 @@ Visualize real time plots of your Go program runtime metrics, including heap, ob
   - [Install](#install)
   - [Usage](#usage)
   - [Advanced Usage](#advanced-usage)
-  - [How does that work?](#how-does-that-work)
+  - [How Does That Work?](#how-does-that-work)
   - [Documentation](#documentation)
     - [Go API](#go-api)
     - [User interface](#user-interface)
@@ -32,7 +32,7 @@ Visualize real time plots of your Go program runtime metrics, including heap, ob
   - [Questions / Troubleshooting](#questions--troubleshooting)
   - [Contributing](#contributing)
   - [Changelog](#changelog)
-  - [License](#license)
+  - [License: MIT](#license-mit)
 
 ## Install
 
@@ -41,6 +41,12 @@ Download the latest version:
 ```
 go get github.com/arl/statsviz@latest
 ```
+
+Please note that, as new metrics are added to the `/runtime/metrics` package, new plots are added to Statsviz.
+This also means that the presence of some plots on the dashboard depends on the Go version you're using.
+
+When in doubt, use the latest ;-)
+
 
 ## Usage
 
@@ -57,27 +63,34 @@ go func() {
 
 Open your browser at http://localhost:8080/debug/statsviz
 
+
 ## Advanced Usage
 
-For more control over how to serve Statsviz UI from your program, you can call `statsviz.NewServer`.
+If you want more control over Statsviz HTTP handlers, examples are:
+ - you're using some HTTP framework
+ - you want to place Statsviz handler behind some middleware
+
+then use `statsviz.NewServer` to obtain a `Server` instance. Both the `Index()` and `Ws()` methods return `http.HandlerFunc`.
 
 ```go
-srv, _ := statsviz.NewServer() // Error checking ommited for brevity
-srv.Index()                    // Do something with the UI handler
-srv.Ws()                       // Do something with the Websocket handler
+srv, err := statsviz.NewServer(); // Create server or handle error
+srv.Index()                       // UI (dashboard) http.HandlerFunc
+srv.Ws()                          // Websocket http.HandlerFunc
 ```
 
-Checkout example of usage in the [Examples](_example) directory.
+Please look at examples of usage in the [Examples](_example) directory.
 
-## How does that work?
 
-The call to `statsviz.Register` registers 2 HTTP handlers within the given `http.ServeMux`:
+## How Does That Work?
+
+`statsviz.Register` registers 2 HTTP handlers within the given `http.ServeMux`:
 
 - the `Index` handler serves Statsviz user interface at `/debug/statsviz` at the address served by your program.
 
 - The `Ws` serves a Websocket endpoint. When the browser connects to that endpoint, [runtime/metrics](https://pkg.go.dev/runtime/metrics) are sent to the browser, once per second.
 
 Data points are in a browser-side circular-buffer.
+
 
 ## Documentation
 
@@ -212,6 +225,6 @@ More details in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 See [CHANGELOG.md](./CHANGELOG.md).
 
-## License
+## License: MIT
 
-See [MIT License](LICENSE)
+See [LICENSE](LICENSE)
