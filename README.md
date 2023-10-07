@@ -19,15 +19,17 @@ Visualize real time plots of your Go program runtime metrics, including heap, ob
 <hr>
 
 - [Statsviz](#statsviz)
+  - [Install](#install)
   - [Usage](#usage)
+  - [Advanced Usage](#advanced-usage)
   - [How does that work?](#how-does-that-work)
   - [Documentation](#documentation)
     - [Go API](#go-api)
     - [User interface](#user-interface)
     - [Plots](#plots)
+    - [User Plots](#user-plots)
   - [Examples](#examples)
   - [Questions / Troubleshooting](#questions--troubleshooting)
-  - [Updating from pre-v1 to v1](#updating-from-pre-v1-to-v1)
   - [Contributing](#contributing)
   - [Changelog](#changelog)
   - [License](#license)
@@ -172,6 +174,14 @@ Depending on your go version, some plots may not be available.
 #### CGO Calls
 
 <img width="50%" alt="cgo" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cgo.png">
+
+
+### User Plots
+
+Since `v0.6` you can add your own plots to Statsviz dashboard, in order to easily
+visualize your application metrics next to runtime metrics.
+
+Please see the [userplots example](_example/userplots/main.go).
 
 ## Examples
 
