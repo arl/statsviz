@@ -68,7 +68,11 @@ type List struct {
 	samples []metrics.Sample
 }
 
-func NewList(userPlots []UserPlot) *List {
+func NewList(userPlots []UserPlot) (*List, error) {
+	if name := hasDuplicatePlotNames(userPlots); name != "" {
+		return nil, fmt.Errorf("duplicate plot name %s", name)
+	}
+
 	descs := metrics.All()
 	pl := &List{
 		idxs:      make(map[string]int),
@@ -82,7 +86,7 @@ func NewList(userPlots []UserPlot) *List {
 	}
 	metrics.Read(pl.samples)
 
-	return pl
+	return pl, nil
 }
 
 func (pl *List) Config() *Config {

@@ -99,7 +99,11 @@ func NewServer(opts ...Option) (*Server, error) {
 		}
 	}
 
-	s.plots = plot.NewList(s.userPlots)
+	pl, err := plot.NewList(s.userPlots)
+	if err != nil {
+		return nil, err
+	}
+	s.plots = pl
 	return s, nil
 }
 
