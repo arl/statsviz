@@ -51,7 +51,7 @@ func downsampleBuckets(h *metrics.Float64Histogram, factor int) []float64 {
 
 // downsampleCounts downsamples the counts in the provided histogram, using the
 // given factor. Every 'factor' buckets are merged into one, larger, bucket. If
-// the number of buckets is not divisible by 'factor', then an addtional last
+// the number of buckets is not divisible by 'factor', then an additional last
 // bucket will contain the sum of the counts in all relainbing buckets.
 //
 // Note: slice should be a slice of maxBuckets elements, so that it can be

@@ -18,7 +18,7 @@ export default class Buffer {
     }
     push(pt) {
         if (this._pos >= this._cap) {
-            // move data to the beggining of the buffer, effectively discarding
+            // move data to the beginning of the buffer, effectively discarding
             // the cap-len oldest elements
             this._buf.copyWithin(0, this._cap - this._len);
             this._pos = this._len;
