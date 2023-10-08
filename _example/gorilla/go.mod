@@ -3,7 +3,7 @@ module example/gorilla
 go 1.19
 
 require (
-	github.com/arl/statsviz v0.5.1
+	github.com/arl/statsviz v0.6.0
 	github.com/gorilla/mux v1.8.0
 )
 

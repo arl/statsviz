@@ -3,7 +3,7 @@ module example/chi
 go 1.19
 
 require (
-	github.com/arl/statsviz v0.5.1
+	github.com/arl/statsviz v0.6.0
 	github.com/go-chi/chi v1.5.4
 )
 
