@@ -1,11 +1,13 @@
 module github.com/arl/statsviz
 
-go 1.17
-
-require github.com/gorilla/websocket v1.4.2
+go 1.20
 
 require (
-	github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e // indirect
-	github.com/rogpeppe/go-internal v1.9.0 // indirect
-	gopkg.in/errgo.v2 v2.1.0 // indirect
+	github.com/gorilla/websocket v1.5.0
+	github.com/rogpeppe/go-internal v1.11.0
+)
+
+require (
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
+	golang.org/x/tools v0.1.12 // indirect
 )

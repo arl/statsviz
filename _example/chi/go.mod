@@ -1,9 +1,12 @@
 module example/chi
 
-go 1.16
+go 1.19
 
 require (
 	github.com/arl/statsviz v0.5.1
 	github.com/go-chi/chi v1.5.4
-	github.com/gorilla/websocket v1.5.0 // indirect
 )
+
+require github.com/gorilla/websocket v1.5.0 // indirect
+
+replace github.com/arl/statsviz => ../../

@@ -14,10 +14,13 @@ func main() {
 	// Force the GC to work to make the plots "move".
 	go example.Work()
 
-	// Create a Gorilla router and register statsviz handlers.
+	// Create a Gorilla router.
 	r := mux.NewRouter()
-	r.Methods("GET").Path("/debug/statsviz/ws").Name("GET /debug/statsviz/ws").HandlerFunc(statsviz.Ws)
-	r.Methods("GET").PathPrefix("/debug/statsviz/").Name("GET /debug/statsviz/").Handler(statsviz.Index)
+
+	// Create statsviz server and register the handlers on the router.
+	srv, _ := statsviz.NewServer()
+	r.Methods("GET").Path("/debug/statsviz/ws").Name("GET /debug/statsviz/ws").HandlerFunc(srv.Ws())
+	r.Methods("GET").PathPrefix("/debug/statsviz/").Name("GET /debug/statsviz/").Handler(srv.Index())
 
 	mux := http.NewServeMux()
 	mux.Handle("/", r)

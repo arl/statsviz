@@ -13,17 +13,15 @@ func main() {
 	// Force the GC to work to make the plots "move".
 	go example.Work()
 
-	// Create a serve mux and register statsviz handlers at /foo/bar with a send
-	// frequency of 250ms
 	mux := http.NewServeMux()
 
-	err := statsviz.Register(mux,
+	// Register Statsviz server on the mux, serving the user interface from
+	// /foo/bar instead of /debug/statsviz and send metrics every 250
+	// milliseconds instead of the default of once per second.
+	_ = statsviz.Register(mux,
 		statsviz.Root("/foo/bar"),
 		statsviz.SendFrequency(250*time.Millisecond),
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	log.Println("Point your browser to http://localhost:8092/foo/bar")
 	log.Fatal(http.ListenAndServe(":8092", mux))

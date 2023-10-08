@@ -1,4 +1,6 @@
-package example
+//go:build unix
+
+package statsviz_test
 
 import (
 	"bytes"
@@ -7,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -16,17 +17,21 @@ import (
 )
 
 func TestExamples(t *testing.T) {
+	if testing.Short() {
+		t.Skipf("TestExamples skipped in short mode")
+	}
+
 	p := testscript.Params{
 		Dir: "testdata",
 		Setup: func(env *testscript.Env) error {
-			// Scripts will need statsviz as a dependency.
-			// Tell them where the module is, via an absolute path.
+			// We want to run scripts with the local version of Statsviz.
+			// Provide scripts with statsviz root dir so we can use a
+			// 'go mod -edit replace' directive.
 			wd, err := os.Getwd()
 			if err != nil {
 				return err
 			}
-			modPath := filepath.Dir(wd)
-			env.Setenv("STATSVIZ_MODULE", modPath)
+			env.Setenv("STATSVIZ_ROOT", wd)
 			return nil
 		},
 		Cmds: map[string]func(ts *testscript.TestScript, neg bool, args []string){
@@ -40,7 +45,10 @@ func TestExamples(t *testing.T) {
 	testscript.Run(t, p)
 }
 
-// checkui url [basic_auth_user basic_auth_pwd]
+// checkui requests statsviz url from a script.
+// In a script, run it with:
+//
+//	checkui url [basic_auth_user basic_auth_pwd]
 func checkui(ts *testscript.TestScript, neg bool, args []string) {
 	if len(args) != 1 && len(args) != 3 {
 		ts.Fatalf(`checkui: wrong number of arguments. Call with "checkui URL [BASIC_USER BASIC_PWD]`)
@@ -66,7 +74,7 @@ func checkui(ts *testscript.TestScript, neg bool, args []string) {
 				InsecureSkipVerify: true,
 			},
 		},
-		Timeout: 1 * time.Second,
+		Timeout: 5 * time.Second,
 	}
 
 	// Let 1 second for the server to start and listen.

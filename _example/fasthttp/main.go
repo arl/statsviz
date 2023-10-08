@@ -29,9 +29,12 @@ func main() {
 		fmt.Fprintf(ctx, "Hello, world!")
 	})
 
-	// statsviz
-	r.GET("/debug/statsviz/{filepath:*}", fasthttpadaptor.NewFastHTTPHandler(statsviz.Index))
-	ws.HandleFunc("/debug/statsviz/ws", statsviz.Ws)
+	// Create statsviz server.
+	srv, _ := statsviz.NewServer()
+
+	// Register Statsviz server on the fasthttp router.
+	r.GET("/debug/statsviz/{filepath:*}", fasthttpadaptor.NewFastHTTPHandler(srv.Index()))
+	ws.HandleFunc("/debug/statsviz/ws", srv.Ws())
 
 	// Server start
 	go http.Serve(m.Match(cmux.HTTP1HeaderField("Upgrade", "websocket")), ws)

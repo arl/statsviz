@@ -9,21 +9,26 @@ import (
 // Histograms with more buckets than that are going to be downsampled.
 const maxBuckets = 100
 
-// downsampleFactor computes the downsampling factor to use in
-// downsampleHistogram, given the number of buckets in an histogram and the
-// maximum number of buckets.
-func downsampleFactor(nbuckets, maxbuckets int) int {
-	mod := nbuckets % maxbuckets
+// downsampleFactor computes the downsampling factor to use with
+// downsampleCounts and downsampleBuckets. nstart and nfinal are the number of
+// buckets in the original and final bucket.
+func downsampleFactor(norg, nfinal int) int {
+	mod := norg % nfinal
 	if mod == 0 {
-		return nbuckets / maxbuckets
+		return norg / nfinal
 	}
-	return 1 + nbuckets/maxbuckets
+	return 1 + norg/nfinal
 }
 
-// downsampleBuckets downsamples the buckets in the provided histogram, using
-// the given factor. The first bucket is not considered since we're only
-// interested in upper bounds. If the last bucket is +Inf it gets replaced by a
-// number, based on the 2 previous buckets.
+// downsampleBuckets downsamples the number of buckets in the provided
+// histogram, using the given dividing factor, and returns a slice of bucket
+// widths.
+//
+// Given that metrics.Float64Histogram contains the boundaries of histogram
+// buckets, the first bucket is not even considered since we're only interested
+// in upper bounds. Also, since we can't draw an infinitely large bucket, if h
+// last bucket holds +Inf, the width of the last returned bucket will
+// extrapolated from the previous 2 buckets.
 func downsampleBuckets(h *metrics.Float64Histogram, factor int) []float64 {
 	var ret []float64
 	vals := h.Buckets[1:]
@@ -41,8 +46,8 @@ func downsampleBuckets(h *metrics.Float64Histogram, factor int) []float64 {
 	}
 
 	if len(ret) > 2 && math.IsInf(ret[len(ret)-1], 1) {
-		// Plotly doesn't accept an Inf bucket bound, so in this case we set the
-		// last bound so that the 2 last buckets had the same size.
+		// Plotly doesn't support a +Inf bound for the last bucket. So we make it
+		// so that the last bucket has the same 'width' than the penultimate one.
 		ret[len(ret)-1] = ret[len(ret)-2] - ret[len(ret)-3] + ret[len(ret)-2]
 	}
 

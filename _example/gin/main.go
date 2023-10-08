@@ -13,15 +13,22 @@ func main() {
 	// Force the GC to work to make the plots "move".
 	go example.Work()
 
-	fmt.Println("Point your browser to http://localhost:8085/debug/statsviz/\n\n")
+	// Create statsviz server.
+	srv, _ := statsviz.NewServer()
 
+	ws := srv.Ws()
+	index := srv.Index()
+
+	// Register Statsviz server on the gin router.
 	router := gin.New()
 	router.GET("/debug/statsviz/*filepath", func(context *gin.Context) {
 		if context.Param("filepath") == "/ws" {
-			statsviz.Ws(context.Writer, context.Request)
+			ws(context.Writer, context.Request)
 			return
 		}
-		statsviz.IndexAtRoot("/debug/statsviz").ServeHTTP(context.Writer, context.Request)
+		index(context.Writer, context.Request)
 	})
+
+	fmt.Printf("Point your browser to http://localhost:8085/debug/statsviz/\n\n")
 	router.Run(":8085")
 }

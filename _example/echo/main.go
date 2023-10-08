@@ -18,7 +18,9 @@ func main() {
 	e := echo.New()
 
 	mux := http.NewServeMux()
-	_ = statsviz.Register(mux)
+
+	// Register statsviz handlerson the mux.
+	statsviz.Register(mux)
 
 	// Use echo WrapHandler to wrap statsviz ServeMux as echo HandleFunc
 	e.GET("/debug/statsviz/", echo.WrapHandler(mux))

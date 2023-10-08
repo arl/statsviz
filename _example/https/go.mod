@@ -1,8 +1,7 @@
 module example/https
 
-go 1.16
+go 1.19
 
-require (
-	github.com/arl/statsviz v0.5.1
-	github.com/gorilla/websocket v1.5.0 // indirect
-)
+require github.com/arl/statsviz v0.5.1
+
+require github.com/gorilla/websocket v1.5.0 // indirect

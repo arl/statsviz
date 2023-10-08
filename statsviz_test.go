@@ -44,19 +44,30 @@ func testIndex(t *testing.T, f http.Handler, url string) {
 	}
 }
 
+func newServer(tb testing.TB, opts ...Option) *Server {
+	tb.Helper()
+
+	srv, err := NewServer(opts...)
+	if err != nil {
+		tb.Fatal(err)
+	}
+	return srv
+}
+
 func TestIndex(t *testing.T) {
 	t.Parallel()
 
-	testIndex(t, Index, "http://example.com/debug/statsviz/")
+	srv := newServer(t)
+	testIndex(t, srv.Index(), "http://example.com/debug/statsviz/")
 }
 
-func TestIndexAtRoot(t *testing.T) {
+func TestRoot(t *testing.T) {
 	t.Parallel()
 
-	testIndex(t, IndexAtRoot("/debug/"), "http://example.com/debug/")
-	testIndex(t, IndexAtRoot("/debug"), "http://example.com/debug/")
-	testIndex(t, IndexAtRoot("/"), "http://example.com/")
-	testIndex(t, IndexAtRoot("/test/"), "http://example.com/test/")
+	testIndex(t, newServer(t, Root("/debug/")).Index(), "http://example.com/debug/")
+	testIndex(t, newServer(t, Root("/debug")).Index(), "http://example.com/debug/")
+	testIndex(t, newServer(t, Root("/")).Index(), "http://example.com/")
+	testIndex(t, newServer(t, Root("/test/")).Index(), "http://example.com/test/")
 }
 
 func testWs(t *testing.T, f http.Handler, URL string) {
@@ -112,7 +123,7 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 func TestWs(t *testing.T) {
 	t.Parallel()
 
-	testWs(t, http.HandlerFunc(Ws), "http://example.com/debug/statsviz/ws")
+	testWs(t, newServer(t).Ws(), "http://example.com/debug/statsviz/ws")
 }
 
 func TestWsCantUpgrade(t *testing.T) {
@@ -120,7 +131,7 @@ func TestWsCantUpgrade(t *testing.T) {
 
 	req := httptest.NewRequest("GET", url, nil)
 	w := httptest.NewRecorder()
-	Ws(w, req)
+	newServer(t).Ws()(w, req)
 
 	if w.Result().StatusCode != http.StatusBadRequest {
 		t.Errorf("responded %v to %q with non-websocket-upgradable conn, want %v", w.Result().StatusCode, url, http.StatusBadRequest)
@@ -138,10 +149,7 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		if err := Register(mux); err != nil {
-			t.Fatal(err)
-		}
-
+		newServer(t).Register(mux)
 		testRegister(t, mux, "http://example.com/debug/statsviz/")
 	})
 
@@ -149,9 +157,9 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		if err := Register(mux, Root("")); err != nil {
-			t.Fatal(err)
-		}
+		newServer(t,
+			Root(""),
+		).Register(mux)
 
 		testRegister(t, mux, "http://example.com/")
 	})
@@ -160,50 +168,51 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		if err := Register(mux, Root("/root/to/statsviz")); err != nil {
-			t.Fatal(err)
-		}
+		newServer(t,
+			Root("/path/to/statsviz"),
+		).Register(mux)
 
-		testRegister(t, mux, "http://example.com/root/to/statsviz/")
+		testRegister(t, mux, "http://example.com/path/to/statsviz/")
 	})
 
 	t.Run("root+frequency", func(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		err := Register(mux, Root("/root/to/statsviz"), SendFrequency(100*time.Millisecond))
-		if err != nil {
-			t.Fatal(err)
-		}
+		newServer(t,
+			Root("/path/to/statsviz"),
+			SendFrequency(100*time.Millisecond),
+		).Register(mux)
 
-		testRegister(t, mux, "http://example.com/root/to/statsviz/")
+		testRegister(t, mux, "http://example.com/path/to/statsviz/")
 	})
 
 	t.Run("non-positive frequency", func(t *testing.T) {
 		t.Parallel()
 
-		mux := http.NewServeMux()
-		err := Register(mux, Root("/root/to/statsviz"), SendFrequency(0))
-		if err == nil {
-			t.Fatal(err)
+		if _, err := NewServer(
+			Root("/path/to/statsviz"),
+			SendFrequency(-1),
+		); err == nil {
+			t.Errorf("NewServer() should have errored")
 		}
 	})
 }
 
 func TestRegisterDefault(t *testing.T) {
-	if err := RegisterDefault(); err != nil {
-		t.Fatal(err)
-	}
-
-	testRegister(t, http.DefaultServeMux, "http://example.com/debug/statsviz/")
+	mux := http.DefaultServeMux
+	Register(mux)
+	testRegister(t, mux, "http://example.com/debug/statsviz/")
 }
 
-func Test_hijack(t *testing.T) {
-	// Check that the file server has correctly been hijacked: 'plotsdef.js'
-	// doesn't actually exist, it is generated on the fly.
+func Test_intercept(t *testing.T) {
+	// Check that the file server has been 'hijacked'.
+	// 'plotsdef.js' is generated at runtime, it doesn't actually exist, it is generated on the fly.
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/js/plotsdef.js", nil)
-	hijack(IndexAtRoot("/debug/statsviz/"))(w, req)
+
+	srv := newServer(t)
+	intercept(srv.Index(), srv.plots.Config())(w, req)
 
 	resp := w.Result()
 	if resp.StatusCode != http.StatusOK {
@@ -221,7 +230,8 @@ func TestContentTypeIsSet(t *testing.T) {
 	// something more specific than "text/plain" because that'd make the page be
 	// rejected in certain 'strict' environments.
 	const root = "/some/root/path"
-	httpfs := IndexAtRoot(root)
+	srv := newServer(t, Root(root))
+	httpfs := srv.Index()
 
 	requested := []string{}
 
@@ -242,7 +252,7 @@ func TestContentTypeIsSet(t *testing.T) {
 			return nil
 		}
 
-		ct := w.HeaderMap.Get("Content-Type")
+		ct := res.Header.Get("Content-Type")
 		if ct == "" || strings.Contains(ct, "text/plain") {
 			t.Errorf(`GET %q has incorrect header "Content-Type = %s"`, path, ct)
 			return nil
