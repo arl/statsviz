@@ -3,7 +3,7 @@ module example/gin
 go 1.19
 
 require (
-	github.com/arl/statsviz v0.5.1
+	github.com/arl/statsviz v0.6.0
 	github.com/gin-gonic/gin v1.9.1
 )
 

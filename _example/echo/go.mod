@@ -3,7 +3,7 @@ module example/echo
 go 1.19
 
 require (
-	github.com/arl/statsviz v0.5.1
+	github.com/arl/statsviz v0.6.0
 	github.com/labstack/echo/v4 v4.11.1
 )
 
