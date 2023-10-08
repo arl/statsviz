@@ -1,4 +1,4 @@
-Unreleased
+v0.6.0 / 2023-10-08
 ==============
   * New plots showing new go1.20/go1.21 runtime/metrics: (#111)
     + GC Cycles
