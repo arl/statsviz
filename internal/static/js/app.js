@@ -67,15 +67,18 @@ const connect = () => {
                 timerange = val;
                 updatePlots();
             });
+            setInterval(() => {
+                if (paused || ws.readyState !== WebSocket.OPEN) {
+                    return
+                }
+                updatePlots(PlotsDef.events);
+            }, 1000)
             initDone = true;
-            return;
-        }
-
-        stats.pushData(data);
-        if (paused) {
+            stats.pushData(data);
+            updatePlots(PlotsDef.events);
             return
         }
-        updatePlots(PlotsDef.events);
+        stats.pushData(data);
     }
 }
 
@@ -139,7 +142,7 @@ theme.updateThemeMode();
 $('#color_theme_sw').change(() => {
     const themeMode = theme.getThemeMode();
     const newTheme = themeMode === "dark" && "light" || "dark";
-    localStorage.setItem("theme-mode", newTheme);    
+    localStorage.setItem("theme-mode", newTheme);
     theme.updateThemeMode();
     updatePlotsLayout();
 });
