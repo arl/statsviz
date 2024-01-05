@@ -6,6 +6,7 @@ import (
 	"io"
 	"runtime/debug"
 	"runtime/metrics"
+	"strings"
 	"sync"
 	"time"
 )
@@ -156,6 +157,23 @@ func (pl *List) WriteValues(w io.Writer) error {
 	}
 
 	if err := json.NewEncoder(w).Encode(m); err != nil {
+		// If we fail to encode the metrics values, it's probably because
+		if strings.Contains(err.Error(), "NaN") {
+			for s, a := range m {
+				if v, ok := a.([]float64); ok {
+					for i := range v {
+						if v[i] != v[i] {
+							v[i] = 0
+						}
+					}
+					m[s] = v
+				}
+			}
+			err = json.NewEncoder(w).Encode(m)
+			if err == nil {
+				return nil
+			}
+		}
 		return fmt.Errorf("failed to write/convert metrics values to json: %v", err)
 	}
 	return nil

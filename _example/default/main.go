@@ -14,7 +14,7 @@ func main() {
 	go example.Work()
 
 	// Register a Statsviz server on the default mux.
-	statsviz.Register(http.DefaultServeMux)
+	statsviz.Register(http.DefaultServeMux, statsviz.EnableDataCache())
 
 	fmt.Println("Point your browser to http://localhost:8080/debug/statsviz/")
 	log.Fatal(http.ListenAndServe(":8080", nil))

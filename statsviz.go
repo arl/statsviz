@@ -43,11 +43,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -91,6 +94,13 @@ type Server struct {
 	root      string        // HTTP path root
 	plots     *plot.List    // plots shown on the user interface
 	userPlots []plot.UserPlot
+
+	enablePlotCache bool
+	cacheTime       time.Time
+	plotCache       []byte
+	plotCacheLock   *sync.Mutex
+	idGen           int32
+	mainId          int32
 }
 
 // NewServer constructs a new Statsviz Server with the provided options, or the
@@ -130,6 +140,16 @@ func SendFrequency(intv time.Duration) Option {
 			return fmt.Errorf("frequency must be a positive integer")
 		}
 		s.intv = intv
+		return nil
+	}
+}
+
+// EnableDataCache Multiple web page share data.
+// https://github.com/arl/statsviz/issues/119
+func EnableDataCache() Option {
+	return func(s *Server) error {
+		s.enablePlotCache = true
+		s.plotCacheLock = &sync.Mutex{}
 		return nil
 	}
 }
@@ -265,13 +285,16 @@ func (s *Server) sendStats(conn *websocket.Conn, frequency time.Duration) error 
 	// requested. Call plots.Config() manually to ensure that s.plots internals
 	// are correctly initialized.
 	s.plots.Config()
-
+	//The time interval of tick.C is not precise,
+	//so use id to ensure that data generation
+	//will not cause data loss due to the time interval of tick.C
+	id := atomic.AddInt32(&s.idGen, 1)
 	for range tick.C {
 		w, err := conn.NextWriter(websocket.TextMessage)
 		if err != nil {
 			return err
 		}
-		if err := s.plots.WriteValues(w); err != nil {
+		if err := s.writeData(w, id); err != nil {
 			return err
 		}
 		if err := w.Close(); err != nil {
@@ -280,4 +303,39 @@ func (s *Server) sendStats(conn *websocket.Conn, frequency time.Duration) error 
 	}
 
 	panic("unreachable")
+}
+
+func (s *Server) writeData(w io.WriteCloser, id int32) (err error) {
+	if !s.enablePlotCache {
+		return s.plots.WriteValues(w)
+	}
+	defer func() {
+		if err == nil {
+			_, err = w.Write(s.plotCache)
+		}
+	}()
+	if s.mainId == id || time.Since(s.cacheTime) >= s.intv {
+		s.plotCacheLock.Lock()
+		if s.mainId != id {
+			// double check
+			if time.Since(s.cacheTime) < s.intv {
+				s.plotCacheLock.Unlock()
+				return
+			} else {
+				// change main id to active id
+				s.mainId = id
+			}
+		}
+		buf := bytes.Buffer{}
+		// make s.cacheTime closer to tick.C time
+		start := time.Now()
+		if err = s.plots.WriteValues(&buf); err != nil {
+			s.plotCacheLock.Unlock()
+			return err
+		}
+		s.plotCache = buf.Bytes()
+		s.cacheTime = start
+		s.plotCacheLock.Unlock()
+	}
+	return
 }

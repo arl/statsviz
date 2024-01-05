@@ -70,11 +70,8 @@ func TestRoot(t *testing.T) {
 	testIndex(t, newServer(t, Root("/test/")).Index(), "http://example.com/test/")
 }
 
-func testWs(t *testing.T, f http.Handler, URL string) {
+func testWs(t *testing.T, s *httptest.Server, URL string, number int, checkData func() any, check func(*testing.T, any)) {
 	t.Helper()
-
-	s := httptest.NewServer(f)
-	defer s.Close()
 
 	// Build a "ws://" url using the httptest server URL and the URL argument.
 	u1, err := url.Parse(s.URL)
@@ -97,18 +94,31 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 	defer ws.Close()
 
 	// Check the content of 2 consecutive payloads.
-	for i := 0; i < 2; i++ {
-
-		// Verifies that we've received 1 time series (goroutines) and one
-		// heatmap (sizeClasses).
-		var data struct {
-			Goroutines  []uint64 `json:"goroutines"`
-			SizeClasses []uint64 `json:"size-classes"`
-		}
-		if err := ws.ReadJSON(&data); err != nil {
+	for i := 0; i < number; i++ {
+		data := checkData()
+		if err := ws.ReadJSON(data); err != nil {
 			t.Fatalf("failed reading json from websocket: %v", err)
+			return
 		}
+		check(t, data)
+	}
+}
 
+func TestWs(t *testing.T) {
+	t.Parallel()
+	// Verifies that we've received 1 time series (goroutines) and one
+	// heatmap (sizeClasses).
+	type dataType struct {
+		Goroutines  []uint64 `json:"goroutines"`
+		SizeClasses []uint64 `json:"size-classes"`
+	}
+
+	s := httptest.NewServer(newServer(t).Ws())
+	defer s.Close()
+	testWs(t, s, "http://example.com/debug/statsviz/ws", 2, func() any {
+		return &dataType{}
+	}, func(t *testing.T, data1 any) {
+		data := data1.(*dataType)
 		// The time series must have one and only one element
 		if len(data.Goroutines) != 1 {
 			t.Errorf("len(goroutines) = %d, want 1", len(data.Goroutines))
@@ -117,13 +127,7 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 		if len(data.SizeClasses) <= 1 {
 			t.Errorf("len(sizeClasses) = %d, want > 1", len(data.SizeClasses))
 		}
-	}
-}
-
-func TestWs(t *testing.T) {
-	t.Parallel()
-
-	testWs(t, newServer(t).Ws(), "http://example.com/debug/statsviz/ws")
+	})
 }
 
 func TestWsCantUpgrade(t *testing.T) {
@@ -141,7 +145,23 @@ func TestWsCantUpgrade(t *testing.T) {
 func testRegister(t *testing.T, f http.Handler, baseURL string) {
 	testIndex(t, f, baseURL)
 	ws := strings.TrimRight(baseURL, "/") + "/ws"
-	testWs(t, f, ws)
+	type dataType struct {
+		Goroutines  []uint64 `json:"goroutines"`
+		SizeClasses []uint64 `json:"size-classes"`
+	}
+	s := httptest.NewServer(f)
+	defer s.Close()
+	testWs(t, s, ws, 2, func() any {
+		return &dataType{}
+	}, func(t *testing.T, data1 any) {
+		data := data1.(*dataType)
+		if len(data.Goroutines) != 1 {
+			t.Errorf("len(goroutines) = %d, want 1", len(data.Goroutines))
+		}
+		if len(data.SizeClasses) <= 1 {
+			t.Errorf("len(sizeClasses) = %d, want > 1", len(data.SizeClasses))
+		}
+	})
 }
 
 func TestRegister(t *testing.T) {
@@ -173,6 +193,84 @@ func TestRegister(t *testing.T) {
 		).Register(mux)
 
 		testRegister(t, mux, "http://example.com/path/to/statsviz/")
+	})
+	type Data struct {
+		Test []float64 `json:"test"`
+	}
+
+	makeTestPlot := func() (TimeSeriesPlot, *int) {
+		num := 0
+		build, _ := TimeSeriesPlotConfig{
+			Title: "test",
+			Name:  "test",
+			Series: []TimeSeries{
+				{
+					Name: "1",
+					GetValue: func() float64 {
+						num++
+						return 1
+					},
+				},
+			},
+		}.Build()
+		return build, &num
+	}
+
+	t.Run("customizePlot", func(t *testing.T) {
+		t.Parallel()
+		plot, i := makeTestPlot()
+		s := httptest.NewServer(newServer(t,
+			TimeseriesPlot(plot),
+		).Ws())
+		defer s.Close()
+		go testWs(t, s, "http://example.com/debug/statsviz/ws", 2, func() any { return &Data{} }, func(t *testing.T, a any) {})
+		testWs(t, s, "http://example.com/debug/statsviz/ws", 2, func() any {
+			return &Data{}
+		}, func(t *testing.T, a any) {
+			data := a.(*Data)
+			if len(data.Test) != 1 {
+				t.Fatalf("customizePlot failed,call num %d expect 1", len(data.Test))
+			}
+		})
+		time.Sleep(100 * time.Millisecond)
+		if *i != 4 {
+			t.Fatalf("dataCache2 failed,call num %d expect 4", *i)
+		}
+	})
+
+	t.Run("dataCache", func(t *testing.T) {
+		t.Parallel()
+		plot, i := makeTestPlot()
+		s := httptest.NewServer(newServer(t,
+			EnableDataCache(),
+			TimeseriesPlot(plot),
+		).Ws())
+		defer s.Close()
+		go testWs(t, s, "http://example.com/debug/statsviz/ws", 1, func() any { return &Data{} }, func(t *testing.T, a any) {})
+		go testWs(t, s, "http://example.com/debug/statsviz/ws", 2, func() any { return &Data{} }, func(t *testing.T, a any) {})
+		go testWs(t, s, "http://example.com/debug/statsviz/ws", 3, func() any { return &Data{} }, func(t *testing.T, a any) {})
+		go testWs(t, s, "http://example.com/debug/statsviz/ws", 4, func() any { return &Data{} }, func(t *testing.T, a any) {})
+		testWs(t, s, "http://example.com/debug/statsviz/ws", 4, func() any { return &Data{} }, func(t *testing.T, a any) {})
+		time.Sleep(100 * time.Millisecond)
+		if *i != 4 {
+			t.Fatalf("dataCache failed,call num %d expect 4", *i)
+		}
+	})
+
+	t.Run("dataCache2", func(t *testing.T) {
+		t.Parallel()
+		plot, i := makeTestPlot()
+		s := httptest.NewServer(newServer(t,
+			EnableDataCache(),
+			TimeseriesPlot(plot),
+		).Ws())
+		defer s.Close()
+		go testWs(t, s, "http://example.com/debug/statsviz/ws", 2, func() any { return &Data{} }, func(t *testing.T, a any) {})
+		testWs(t, s, "http://example.com/debug/statsviz/ws", 2, func() any { return &Data{} }, func(t *testing.T, a any) {})
+		time.Sleep(100 * time.Millisecond)
+		if *i != 2 {
+			t.Fatalf("dataCache failed,call num %d expect 2", *i)
+		}
 	})
 
 	t.Run("root+frequency", func(t *testing.T) {
