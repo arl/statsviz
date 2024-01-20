@@ -49,6 +49,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/arl/statsviz/internal/plot"
@@ -90,6 +91,8 @@ type Server struct {
 	root      string        // HTTP path root
 	plots     *plot.List    // plots shown on the user interface
 	userPlots []plot.UserPlot
+	lock      sync.Mutex
+	onData    []func([]byte) error
 }
 
 // NewServer constructs a new Statsviz Server with the provided options, or the
@@ -272,32 +275,84 @@ func (s *Server) Ws() http.HandlerFunc {
 }
 
 func (s *Server) startTransfer(w io.Writer) {
-	buffer := bytes.Buffer{}
-	buffer.WriteString("data: ")
-	callData := func() error {
-		if err := s.plots.WriteValues(&buffer); err == nil {
-			_, err = w.Write(buffer.Bytes())
-			if err != nil {
-				return err
-			}
-			if f, ok := w.(http.Flusher); ok {
-				f.Flush()
-			}
-		} else {
+	s.lock.Lock()
+	c := make(chan struct{})
+	s.onData = append(s.onData, func(data []byte) error {
+		_, err := w.Write(data)
+		if err != nil {
+			close(c)
 			return err
 		}
+		if f, ok := w.(http.Flusher); ok {
+			f.Flush()
+		}
 		return nil
+	})
+	if len(s.onData) == 1 {
+		go s.callData()
 	}
-	//the first time it was sent immediately
-	err := callData()
-	if err != nil {
-		return
+	s.lock.Unlock()
+	<-c
+}
+func (s *Server) callData() {
+	{
+		//the first time it was sent immediately
+		buffer := bytes.Buffer{}
+		buffer.WriteString("data: ")
+		if err := s.plots.WriteValues(&buffer); err == nil {
+			buffer.WriteString("\n\n")
+			err = s.onData[0](buffer.Bytes())
+			if err != nil {
+				s.lock.Lock()
+				if len(s.onData) == 1 {
+					s.onData = nil
+					s.lock.Unlock()
+					return
+				} else {
+					s.onData = s.onData[1:]
+				}
+				s.lock.Unlock()
+			}
+		}
 	}
 	tick := time.NewTicker(s.intv)
 	defer tick.Stop()
 	for range tick.C {
-		if callData() != nil {
+		buffer := bytes.Buffer{}
+		buffer.WriteString("data: ")
+		if err := s.plots.WriteValues(&buffer); err != nil {
+			//maybe all connections should be closed?
+			//fmt.Println("Error plots.WriteValues:", err)
+			continue
+		}
+		buffer.WriteString("\n\n")
+		onData := s.onData
+		del := false
+		for i, f := range onData {
+			if err := f(buffer.Bytes()); err != nil {
+				del = true
+				onData[i] = nil
+				continue
+			}
+		}
+		if del {
+			s.lock.Lock()
+			l := len(onData)
+			for i := 0; i < l; i++ {
+				if onData[i] == nil {
+					onData = append(onData[:i], onData[i+1:]...)
+					i--
+					l--
+				}
+			}
+			s.onData = onData
+			s.lock.Unlock()
+		}
+		s.lock.Lock()
+		if len(s.onData) == 0 {
+			s.lock.Unlock()
 			return
 		}
+		s.lock.Unlock()
 	}
 }
