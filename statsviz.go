@@ -43,14 +43,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/gorilla/websocket"
 
 	"github.com/arl/statsviz/internal/plot"
 	"github.com/arl/statsviz/internal/static"
@@ -82,7 +81,7 @@ func Register(mux *http.ServeMux, opts ...Option) error {
 // updates metrics data and provides two essential HTTP handlers:
 //   - the Index handler serves Statsviz user interface, allowing you to
 //     visualize runtime metrics on your browser.
-//   - The Ws handler establishes a WebSocket connection allowing the connected
+//   - The Ws handler establishes a data connection allowing the connected
 //     browser to receive metrics updates from the server.
 //
 // The zero value is not a valid Server, use NewServer to create a valid one.
@@ -161,20 +160,34 @@ func (s *Server) Register(mux *http.ServeMux) {
 // intercept is a middleware that intercepts requests for plotsdef.js, which is
 // generated dynamically based on the plots configuration. Other requests are
 // forwarded as-is.
-func intercept(h http.Handler, cfg *plot.Config) http.HandlerFunc {
-	buf := bytes.Buffer{}
-	buf.WriteString("export default ")
-	enc := json.NewEncoder(&buf)
-	enc.SetIndent("", "  ")
-	if err := enc.Encode(cfg); err != nil {
-		panic("unexpected failure to encode plot definitions: " + err.Error())
+func intercept(h http.Handler, cfg *plot.Config, extraConfig map[string]any) http.HandlerFunc {
+	var plotsdefjs []byte
+	//Using parentheses helps gc
+	{
+		buf := bytes.Buffer{}
+		buf.WriteString("export default ")
+		enc := json.NewEncoder(&buf)
+		enc.SetIndent("", "  ")
+		var encodeValue any = cfg
+		if len(extraConfig) > 0 {
+			encodeValue1 := map[string]any{
+				"series": cfg.Series,
+				"events": cfg.Events,
+			}
+			for k, v := range extraConfig {
+				encodeValue1[k] = v
+			}
+			encodeValue = encodeValue1
+		}
+		if err := enc.Encode(encodeValue); err != nil {
+			panic("unexpected failure to encode plot definitions: " + err.Error())
+		}
+		buf.WriteString(";")
+		plotsdefjs = buf.Bytes()
 	}
-	buf.WriteString(";")
-	plotsdefjs := buf.Bytes()
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "js/plotsdef.js" {
-			w.Header().Add("Content-Length", strconv.Itoa(buf.Len()))
+			w.Header().Add("Content-Length", strconv.Itoa(len(plotsdefjs)))
 			w.Header().Add("Content-Type", "text/javascript; charset=utf-8")
 			w.Write(plotsdefjs)
 			return
@@ -228,7 +241,9 @@ func assetsFS() http.FileSystem {
 func (s *Server) Index() http.HandlerFunc {
 	prefix := strings.TrimSuffix(s.root, "/") + "/"
 	assets := http.FileServer(assetsFS())
-	handler := intercept(assets, s.plots.Config())
+	handler := intercept(assets, s.plots.Config(), map[string]any{
+		"sendFrequency": s.intv.Milliseconds(),
+	})
 
 	return http.StripPrefix(prefix, handler).ServeHTTP
 }
@@ -238,46 +253,51 @@ func (s *Server) Index() http.HandlerFunc {
 // connection to the WebSocket protocol.
 func (s *Server) Ws() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var upgrader = websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-		}
+		if strings.Contains(r.Header.Get("Accept"), "/event-stream") {
+			// If the connection is initiated by an already open web UI
+			// (started by a previous process, for example), then plotsdef.js won't be
+			// requested. Call plots.Config() manually to ensure that s.plots internals
+			// are correctly initialized.
+			s.plots.Config()
 
-		ws, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
+			w.Header().Set("Content-Type", "text/event-stream")
+			w.Header().Set("Cache-Control", "no-cache")
+			w.Header().Set("Connection", "keep-alive")
+			s.startTransfer(w)
 			return
 		}
-		defer ws.Close()
-
-		// Ignore this error. This happens when the other end connection closes,
-		// for example. We can't handle it in any meaningful way anyways.
-		_ = s.sendStats(ws, s.intv)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("This endpoint only supports text/event-stream requests"))
 	}
 }
 
-// sendStats sends runtime statistics over the WebSocket connection.
-func (s *Server) sendStats(conn *websocket.Conn, frequency time.Duration) error {
-	tick := time.NewTicker(frequency)
+func (s *Server) startTransfer(w io.Writer) {
+	buffer := bytes.Buffer{}
+	buffer.WriteString("data: ")
+	callData := func() error {
+		if err := s.plots.WriteValues(&buffer); err == nil {
+			_, err = w.Write(buffer.Bytes())
+			if err != nil {
+				return err
+			}
+			if f, ok := w.(http.Flusher); ok {
+				f.Flush()
+			}
+		} else {
+			return err
+		}
+		return nil
+	}
+	//the first time it was sent immediately
+	err := callData()
+	if err != nil {
+		return
+	}
+	tick := time.NewTicker(s.intv)
 	defer tick.Stop()
-
-	// If the WebSocket connection is initiated by an already open web UI
-	// (started by a previous process, for example), then plotsdef.js won't be
-	// requested. Call plots.Config() manually to ensure that s.plots internals
-	// are correctly initialized.
-	s.plots.Config()
-
 	for range tick.C {
-		w, err := conn.NextWriter(websocket.TextMessage)
-		if err != nil {
-			return err
-		}
-		if err := s.plots.WriteValues(w); err != nil {
-			return err
-		}
-		if err := w.Close(); err != nil {
-			return err
+		if callData() != nil {
+			return
 		}
 	}
-
-	panic("unreachable")
 }

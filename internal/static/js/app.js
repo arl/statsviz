@@ -3,15 +3,6 @@ import * as plot from "./plot.js";
 import * as theme from "./theme.js";
 import PlotsDef from './plotsdef.js';
 
-const buildWebsocketURI = () => {
-    var loc = window.location,
-        ws_prot = "ws:";
-    if (loc.protocol === "https:") {
-        ws_prot = "wss:";
-    }
-    return ws_prot + "//" + loc.host + loc.pathname + "ws"
-}
-
 const dataRetentionSeconds = 600;
 var timeout = 250;
 
@@ -26,38 +17,45 @@ let paused = false;
 let show_gc = true;
 let timerange = 60;
 
-/* WebSocket connection handling */
-const connect = () => {
-    const uri = buildWebsocketURI();
-    let ws = new WebSocket(uri);
-    console.info(`Attempting websocket connection to server at ${uri}`);
-
-    ws.onopen = () => {
+const dataProcessor = {
+    initDone: false,
+    close: () => {
+    },
+    connected: false,
+    retrying: false,
+    onopen: () => {
+        dataProcessor.initDone = false;
+        dataProcessor.connected = true;
         console.info("Successfully connected");
         timeout = 250; // reset connection timeout for next time
-    };
-
-    ws.onclose = event => {
-        console.error(`Closed websocket connection: code ${event.code}`);
-        setTimeout(connect, clamp(timeout += timeout, 250, 5000));
-    };
-
-    ws.onerror = err => {
-        console.error(`Websocket error, closing connection.`);
-        ws.close();
-    };
-
-    let initDone = false;
-    ws.onmessage = event => {
+    },
+    onclose: event => {
+        dataProcessor.connected = false;
+        console.error(`Closed connection: code ${event.code || event}`);
+        if (dataProcessor.retrying) {
+            return
+        }
+        dataProcessor.retrying = true
+        setTimeout(() => {
+            connect()
+            dataProcessor.retrying = false
+        }, clamp(timeout += timeout, 250, 5000));
+    },
+    onerror: err => {
+        console.error(`error, closing connection.`, err);
+        dataProcessor.close();
+    },
+    onmessage: event => {
         let data = JSON.parse(event.data)
-
-        if (!initDone) {
+        if (!dataProcessor.initDone) {
             configurePlots(PlotsDef);
             stats.init(PlotsDef, dataRetentionSeconds);
 
             attachPlots();
 
-            $('#play_pause').change(() => { paused = !paused; });
+            $('#play_pause').change(() => {
+                paused = !paused;
+            });
             $('#show_gc').change(() => {
                 show_gc = !show_gc;
                 updatePlots();
@@ -67,16 +65,27 @@ const connect = () => {
                 timerange = val;
                 updatePlots();
             });
-            initDone = true;
-            return;
+            dataProcessor.initDone = true;
         }
-
+        dataProcessor.onData(data);
+    },
+    onData: data => {
         stats.pushData(data);
-        if (paused) {
+        if (paused || !dataProcessor.connected) {
             return
         }
-        updatePlots(PlotsDef.events);
+        updatePlots()
     }
+}
+/* WebSocket connection handling */
+const connect = () => {
+    const url = window.location.pathname + "ws";
+    const eventSource = new EventSource(url);
+    console.info(`Attempting sse connection to server at ${url}`);
+    for (let event in dataProcessor) {
+        eventSource[event] = dataProcessor[event];
+    }
+    dataProcessor.close = eventSource.close
 }
 
 connect();
@@ -102,7 +111,31 @@ const attachPlots = () => {
     }
 }
 
-const updatePlots = () => {
+function throttle(func, delay) {
+    let initial = true;
+    let last = null;
+    let timer = null;
+    return function () {
+        const context = this;
+        const args = arguments;
+        if (initial) {
+            func.apply(context, args);
+            initial = false;
+            last = Date.now();
+        } else {
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                const now = Date.now();
+                if (now - last >= delay) {
+                    func.apply(context, args);
+                    last = now;
+                }
+            }, delay - (Date.now() - last));
+        }
+    }
+}
+
+const updatePlots = throttle(() => {
     // Create shapes.
     let shapes = new Map();
 
@@ -123,7 +156,7 @@ const updatePlots = () => {
             plot.update(xrange, data, shapes);
         }
     });
-}
+}, PlotsDef.sendFrequency||1000)
 
 const updatePlotsLayout = () => {
     plots.forEach(plot => {
@@ -139,7 +172,7 @@ theme.updateThemeMode();
 $('#color_theme_sw').change(() => {
     const themeMode = theme.getThemeMode();
     const newTheme = themeMode === "dark" && "light" || "dark";
-    localStorage.setItem("theme-mode", newTheme);    
+    localStorage.setItem("theme-mode", newTheme);
     theme.updateThemeMode();
     updatePlotsLayout();
 });

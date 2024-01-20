@@ -1,7 +1,9 @@
 package statsviz
 
 import (
+	"bufio"
 	"bytes"
+	"encoding/json"
 	"io"
 	"io/fs"
 	"net/http"
@@ -10,8 +12,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/gorilla/websocket"
 
 	"github.com/arl/statsviz/internal/static"
 )
@@ -86,15 +86,26 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 		t.Fatal(err)
 	}
 
-	u1.Scheme = "ws"
 	u1.Path = u2.Path
 
 	// Connect to the server
-	ws, _, err := websocket.DefaultDialer.Dial(u1.String(), nil)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	defer ws.Close()
+	request, err := http.NewRequest(http.MethodGet, u1.String(), nil)
+	request.Header.Set("Accept", "text/event-stream")
+	resp, err := http.DefaultClient.Do(request)
+	if err != nil {
+		t.Fatalf("requset error %v", err)
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("http status %v, want %v", resp.StatusCode, http.StatusOK)
+		return
+	}
+	//sse data , readline to parse
+	reader := bufio.NewReader(resp.Body)
 
 	// Check the content of 2 consecutive payloads.
 	for i := 0; i < 2; i++ {
@@ -105,10 +116,22 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 			Goroutines  []uint64 `json:"goroutines"`
 			SizeClasses []uint64 `json:"size-classes"`
 		}
-		if err := ws.ReadJSON(&data); err != nil {
+		line, prefix, err := reader.ReadLine()
+		if err != nil {
+			t.Fatalf("failed reading line from websocket: %v", err)
+			return
+		}
+		if prefix {
+			t.Fatalf("line too long")
+			return
+		}
+		if !bytes.HasPrefix(line, []byte("data: ")) {
+			i--
+			continue
+		}
+		if err := json.Unmarshal(line[5:], &data); err != nil {
 			t.Fatalf("failed reading json from websocket: %v", err)
 		}
-
 		// The time series must have one and only one element
 		if len(data.Goroutines) != 1 {
 			t.Errorf("len(goroutines) = %d, want 1", len(data.Goroutines))
@@ -134,7 +157,7 @@ func TestWsCantUpgrade(t *testing.T) {
 	newServer(t).Ws()(w, req)
 
 	if w.Result().StatusCode != http.StatusBadRequest {
-		t.Errorf("responded %v to %q with non-websocket-upgradable conn, want %v", w.Result().StatusCode, url, http.StatusBadRequest)
+		t.Errorf("responded %v to %q with non-upgradable conn, want %v", w.Result().StatusCode, url, http.StatusBadRequest)
 	}
 }
 
@@ -212,7 +235,7 @@ func Test_intercept(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/js/plotsdef.js", nil)
 
 	srv := newServer(t)
-	intercept(srv.Index(), srv.plots.Config())(w, req)
+	intercept(srv.Index(), srv.plots.Config(), nil)(w, req)
 
 	resp := w.Result()
 	if resp.StatusCode != http.StatusOK {
