@@ -65,7 +65,7 @@ const (
 //
 // RegisterDefault should not be used in production.
 func RegisterDefault(opts ...Option) error {
-	return Register(http.DefaultServeMux)
+	return Register(http.DefaultServeMux, opts...)
 }
 
 // Register registers the Statsviz HTTP handlers on the provided mux.
