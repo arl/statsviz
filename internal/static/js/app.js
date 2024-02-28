@@ -19,8 +19,7 @@ let timerange = 60;
 
 const dataProcessor = {
     initDone: false,
-    close: () => {
-    },
+    close: (e) => {dataProcessor.onclose(e||"connection fail")},
     connected: false,
     retrying: false,
     onopen: () => {
@@ -79,9 +78,12 @@ const dataProcessor = {
 }
 /* WebSocket connection handling */
 const connect = () => {
-    const url = window.location.pathname + "ws";
-    const eventSource = new EventSource(url);
-    console.info(`Attempting sse connection to server at ${url}`);
+
+    // compatible with the following writing methods
+    // mux.HandleFunc("/debug/statsviz/ws", srv.Metrics())
+    let path = window.location.pathname+(PlotsDef.metricsPath || "ws");
+    const eventSource = new EventSource(path);
+    console.info(`Attempting metrics connection to server at ${path}`);
     for (let event in dataProcessor) {
         eventSource[event] = dataProcessor[event];
     }
@@ -156,7 +158,7 @@ const updatePlots = throttle(() => {
             plot.update(xrange, data, shapes);
         }
     });
-}, PlotsDef.sendFrequency||1000)
+}, (PlotsDef.sendFrequency || 1000) / 10)
 
 const updatePlotsLayout = () => {
     plots.forEach(plot => {

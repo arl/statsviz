@@ -32,11 +32,11 @@
 //   - you want to place Statsviz handler behind some middleware
 //
 // then use [NewServer] to obtain a [Server] instance. Both the [Server.Index] and
-// [Server.Ws]() methods return [http.HandlerFunc].
+// [Server.Metrics]() methods return [http.HandlerFunc].
 //
 //	srv, err := statsviz.NewServer(); // Create server or handle error
 //	srv.Index()                       // UI (dashboard) http.HandlerFunc
-//	srv.Ws()                          // Websocket http.HandlerFunc
+//	srv.Metrics()                     // Metrics http.HandlerFunc
 package statsviz
 
 import (
@@ -49,6 +49,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/arl/statsviz/internal/plot"
@@ -57,6 +58,7 @@ import (
 
 const (
 	defaultRoot         = "/debug/statsviz"
+	defaultMetrics      = "metrics"
 	defaultSendInterval = time.Second
 )
 
@@ -81,13 +83,14 @@ func Register(mux *http.ServeMux, opts ...Option) error {
 // updates metrics data and provides two essential HTTP handlers:
 //   - the Index handler serves Statsviz user interface, allowing you to
 //     visualize runtime metrics on your browser.
-//   - The Ws handler establishes a data connection allowing the connected
+//   - The Metrics handler establishes a data connection allowing the connected
 //     browser to receive metrics updates from the server.
 //
 // The zero value is not a valid Server, use NewServer to create a valid one.
 type Server struct {
 	intv      time.Duration // interval between consecutive metrics emission
 	root      string        // HTTP path root
+	metrics   string        // http path for metrics
 	plots     *plot.List    // plots shown on the user interface
 	userPlots []plot.UserPlot
 }
@@ -100,8 +103,9 @@ type Server struct {
 // the Index and Ws handlers.
 func NewServer(opts ...Option) (*Server, error) {
 	s := &Server{
-		intv: defaultSendInterval,
-		root: defaultRoot,
+		intv:    defaultSendInterval,
+		root:    defaultRoot,
+		metrics: defaultMetrics,
 	}
 
 	for _, opt := range opts {
@@ -142,6 +146,15 @@ func Root(path string) Option {
 	}
 }
 
+// MetricsPath changes the metrics path of the Statsviz user interface.
+// The default is root+"/metrics".
+func MetricsPath(path string) Option {
+	return func(s *Server) error {
+		s.metrics = path
+		return nil
+	}
+}
+
 // TimeseriesPlot adds a new time series plot to Statsviz. This options can
 // be added multiple times.
 func TimeseriesPlot(tsp TimeSeriesPlot) Option {
@@ -154,7 +167,10 @@ func TimeseriesPlot(tsp TimeSeriesPlot) Option {
 // Register registers the Statsviz HTTP handlers on the provided mux.
 func (s *Server) Register(mux *http.ServeMux) {
 	mux.Handle(s.root+"/", s.Index())
-	mux.HandleFunc(s.root+"/ws", s.Ws())
+	if s.metrics == "" {
+		s.metrics = defaultMetrics
+	}
+	mux.HandleFunc(s.root+"/"+s.metrics, s.Metrics())
 }
 
 // intercept is a middleware that intercepts requests for plotsdef.js, which is
@@ -237,21 +253,43 @@ func assetsFS() http.FileSystem {
 
 // Index returns the index handler, which responds with the Statsviz user
 // interface HTML page. By default, the handler is served at the path specified
-// by the root. Use [WithRoot] to change the path.
+// by the root. The default path is "/debug/statsviz/". Use [Root] to change the path.
 func (s *Server) Index() http.HandlerFunc {
 	prefix := strings.TrimSuffix(s.root, "/") + "/"
 	assets := http.FileServer(assetsFS())
-	handler := intercept(assets, s.plots.Config(), map[string]any{
-		"sendFrequency": s.intv.Milliseconds(),
+	// defer initialization until the actual request, so that the Server's properties(s.xxx) are fixed
+	once := sync.Once{}
+	var realHandler http.HandlerFunc
+	handler := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		once.Do(func() {
+			realHandler = intercept(assets, s.plots.Config(), map[string]any{
+				"sendFrequency": s.intv.Milliseconds(),
+				"metricsPath":   s.metrics,
+			})
+		})
+		// the sse protocol in github.com/soheilhy/cmux and other frameworks may reuse other requests,
+		// actively close to avoid bugs.
+		writer.Header().Add("Connection", "close")
+		realHandler.ServeHTTP(writer, request)
 	})
-
 	return http.StripPrefix(prefix, handler).ServeHTTP
 }
 
-// Ws returns the WebSocket handler used by Statsviz to send application
-// metrics. The underlying net.Conn is used to upgrade the HTTP server
-// connection to the WebSocket protocol.
+// Ws returns the long connection handler used by Statsviz to send application metrics.
+// The default path is root+"/ws". Use [MetricsPath] to change the path.
+// Deprecated: use Metrics instead
 func (s *Server) Ws() http.HandlerFunc {
+	println("statsviz.Server.Ws() is deprecated, use statsviz.Server.Metrics() instead")
+	//if you use the websockt version of writing, we will change the default path to ws
+	if s.metrics == "" || s.metrics == defaultMetrics {
+		s.metrics = "ws"
+	}
+	return s.Metrics()
+}
+
+// Metrics returns the long connection handler used by Statsviz to send application metrics.
+// The default path is root+"/metrics". Use [MetricsPath] to change the path.
+func (s *Server) Metrics() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(r.Header.Get("Accept"), "/event-stream") {
 			// If the connection is initiated by an already open web UI

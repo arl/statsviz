@@ -20,7 +20,7 @@ func main() {
 
 	// Create a chi router and register statsviz http handlers.
 	r := chi.NewRouter()
-	r.Get("/debug/statsviz/ws", srv.Ws())
+	r.Get("/debug/statsviz/metrics", srv.Metrics())
 	r.Get("/debug/statsviz", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/debug/statsviz/", 301)
 	})

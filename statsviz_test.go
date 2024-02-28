@@ -70,13 +70,13 @@ func TestRoot(t *testing.T) {
 	testIndex(t, newServer(t, Root("/test/")).Index(), "http://example.com/test/")
 }
 
-func testWs(t *testing.T, f http.Handler, URL string) {
+func testMetrics(t *testing.T, f http.Handler, URL string) {
 	t.Helper()
 
 	s := httptest.NewServer(f)
 	defer s.Close()
 
-	// Build a "ws://" url using the httptest server URL and the URL argument.
+	// Build url using the httptest server URL and the URL argument.
 	u1, err := url.Parse(s.URL)
 	if err != nil {
 		t.Fatal(err)
@@ -118,7 +118,7 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 		}
 		line, prefix, err := reader.ReadLine()
 		if err != nil {
-			t.Fatalf("failed reading line from websocket: %v", err)
+			t.Fatalf("failed reading line from sse: %v", err)
 			return
 		}
 		if prefix {
@@ -130,7 +130,7 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 			continue
 		}
 		if err := json.Unmarshal(line[5:], &data); err != nil {
-			t.Fatalf("failed reading json from websocket: %v", err)
+			t.Fatalf("failed reading json from sse: %v", err)
 		}
 		// The time series must have one and only one element
 		if len(data.Goroutines) != 1 {
@@ -143,18 +143,18 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 	}
 }
 
-func TestWs(t *testing.T) {
+func TestMetrics(t *testing.T) {
 	t.Parallel()
 
-	testWs(t, newServer(t).Ws(), "http://example.com/debug/statsviz/ws")
+	testMetrics(t, newServer(t).Metrics(), "http://example.com/debug/statsviz/metrics")
 }
 
 func TestWsCantUpgrade(t *testing.T) {
-	url := "http://example.com/debug/statsviz/ws"
+	url := "http://example.com/debug/statsviz/metrics"
 
 	req := httptest.NewRequest("GET", url, nil)
 	w := httptest.NewRecorder()
-	newServer(t).Ws()(w, req)
+	newServer(t).Metrics()(w, req)
 
 	if w.Result().StatusCode != http.StatusBadRequest {
 		t.Errorf("responded %v to %q with non-upgradable conn, want %v", w.Result().StatusCode, url, http.StatusBadRequest)
@@ -163,8 +163,8 @@ func TestWsCantUpgrade(t *testing.T) {
 
 func testRegister(t *testing.T, f http.Handler, baseURL string) {
 	testIndex(t, f, baseURL)
-	ws := strings.TrimRight(baseURL, "/") + "/ws"
-	testWs(t, f, ws)
+	url := strings.TrimRight(baseURL, "/") + "/metrics"
+	testMetrics(t, f, url)
 }
 
 func TestRegister(t *testing.T) {
