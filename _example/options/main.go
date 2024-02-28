@@ -20,6 +20,7 @@ func main() {
 	// milliseconds instead of the default of once per second.
 	_ = statsviz.Register(mux,
 		statsviz.Root("/foo/bar"),
+		statsviz.MetricsPath("foo1/metrics1"),
 		statsviz.SendFrequency(250*time.Millisecond),
 	)
 
