@@ -114,27 +114,15 @@ const attachPlots = () => {
 }
 
 function throttle(func, delay) {
-    let initial = true;
-    let last = null;
-    let timer = null;
-    return function () {
-        const context = this;
-        const args = arguments;
-        if (initial) {
-            func.apply(context, args);
-            initial = false;
-            last = Date.now();
-        } else {
-            clearTimeout(timer);
-            timer = setTimeout(function () {
-                const now = Date.now();
-                if (now - last >= delay) {
-                    func.apply(context, args);
-                    last = now;
-                }
-            }, delay - (Date.now() - last));
+    let timerFlag = null;
+    return (...args) => {
+        if (timerFlag === null) {
+            func.apply(func,...args);
+            timerFlag = setTimeout(() => {
+                timerFlag = null;
+            }, delay);
         }
-    }
+    };
 }
 
 const updatePlots = throttle(() => {
