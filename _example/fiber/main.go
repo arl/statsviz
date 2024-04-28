@@ -43,7 +43,7 @@ func main() {
 	fmt.Println("Point your browser to http://localhost:8093/debug/statsviz/")
 
 	// Server start
-	go http.Serve(m.Match(cmux.HTTP1HeaderField("Upgrade", "websocket")), ws)
+	go http.Serve(m.Match(cmux.HTTP1HeaderField("Accept", "text/event-stream")), ws)
 	go app.Listener(m.Match(cmux.Any()))
 	m.Serve()
 }

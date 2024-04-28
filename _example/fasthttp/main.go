@@ -37,7 +37,7 @@ func main() {
 	ws.HandleFunc("/debug/statsviz/ws", srv.Ws())
 
 	// Server start
-	go http.Serve(m.Match(cmux.HTTP1HeaderField("Upgrade", "websocket")), ws)
+	go http.Serve(m.Match(cmux.HTTP1HeaderField("Accept", "text/event-stream")), ws)
 	go fasthttp.Serve(m.Match(cmux.Any()), r.Handler)
 	fmt.Println("Point your browser to http://localhost:8083/debug/statsviz/")
 	m.Serve()
