@@ -311,9 +311,10 @@ func (s *Server) Metrics() http.HandlerFunc {
 
 func (s *Server) startTransfer(w io.Writer) {
 	buffer := bytes.Buffer{}
-	buffer.WriteString("data: ")
 	callData := func() error {
+		buffer.WriteString("data: ")
 		if err := s.plots.WriteValues(&buffer); err == nil {
+			buffer.WriteByte('\n')
 			_, err = w.Write(buffer.Bytes())
 			if err != nil {
 				return err
@@ -321,6 +322,7 @@ func (s *Server) startTransfer(w io.Writer) {
 			if f, ok := w.(http.Flusher); ok {
 				f.Flush()
 			}
+			buffer.Reset()
 		} else {
 			return err
 		}

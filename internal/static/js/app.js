@@ -114,10 +114,11 @@ const attachPlots = () => {
 }
 
 function throttle(func, delay) {
+    const context = this;
     let timerFlag = null;
-    return (...args) => {
+    return function () {
         if (timerFlag === null) {
-            func.apply(func,...args);
+            func.apply(context,arguments);
             timerFlag = setTimeout(() => {
                 timerFlag = null;
             }, delay);
