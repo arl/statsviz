@@ -130,9 +130,8 @@ func (pl *List) WriteValues(w io.Writer) error {
 	debug.ReadGCStats(&gcStats)
 
 	m := map[string]any{
-		// javascript timestampts are in milliseconds
-		"lastgc":    []int64{gcStats.LastGC.UnixMilli()},
-		"timestamp": time.Now().UnixMilli(),
+		// JS timestamps are in millis
+		"lastgc": []int64{gcStats.LastGC.UnixMilli()},
 	}
 
 	for _, p := range pl.rtPlots {
@@ -155,7 +154,21 @@ func (pl *List) WriteValues(w io.Writer) error {
 		}
 	}
 
-	if err := json.NewEncoder(w).Encode(m); err != nil {
+	type data struct {
+		Series    map[string]any `json:"series"`
+		Timestamp int64          `json:"timestamp"`
+	}
+
+	if err := json.NewEncoder(w).Encode(struct {
+		Event string `json:"event"`
+		Data  data   `json:"data"`
+	}{
+		Event: "metrics",
+		Data: data{
+			Series:    m,
+			Timestamp: time.Now().UnixMilli(),
+		},
+	}); err != nil {
 		return fmt.Errorf("failed to write/convert metrics values to json: %v", err)
 	}
 	return nil
