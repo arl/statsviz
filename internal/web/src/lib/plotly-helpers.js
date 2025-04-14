@@ -91,12 +91,14 @@ export const createPlotlyLayout = (cfg) => {
     title: {
       y: 0.88,
       font: {
-        family: "Roboto",
-        size: 18,
+        size: 19,
+        family: "Liberation Sans",
+        color: currentTheme.font_color,
       },
       text: cfg.title,
     },
     margin: {
+      l: 80,
       t: 80,
     },
     paper_bgcolor: currentTheme.paper_bgcolor,
@@ -119,7 +121,14 @@ export const createPlotlyLayout = (cfg) => {
       tickmode: cfg.layout.yaxis.tickmode,
       ticktext: ticktext,
       tickvals: tickvals,
-      title: cfg.layout.yaxis.title,
+      title: {
+        text: cfg.layout.yaxis.title,
+        font: {
+          size: 17,
+          family: "Liberation Sans",
+          color: currentTheme.font_color,
+        },
+      },
       ticksuffix: cfg.layout.yaxis.ticksuffix,
       fixedrange: true,
     },
