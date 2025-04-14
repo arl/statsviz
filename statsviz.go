@@ -185,6 +185,8 @@ var wsUpgrader = sync.OnceValue(func() websocket.Upgrader {
 	}
 })
 
+const printWSErrors = true
+
 // Ws returns the WebSocket handler used by Statsviz to send application
 // metrics. The underlying net.Conn is used to upgrade the HTTP server
 // connection to the WebSocket protocol.
@@ -193,8 +195,12 @@ func (s *Server) Ws() http.HandlerFunc {
 		upgrader := wsUpgrader()
 		ws, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
+			if printWSErrors {
+				fmt.Fprintf(os.Stderr, "statsviz: failed to upgrade connection: %v\n", err)
+			}
 			return
 		}
+
 		defer ws.Close()
 
 		// Ignore websocket errors here. They mainly happen when the other end
@@ -204,8 +210,16 @@ func (s *Server) Ws() http.HandlerFunc {
 		// user could connect to whatever logging facility they use, that seems
 		// overkill for now.
 
-		_ = s.sendConfig(ws)
-		_ = s.sendStats(ws, s.interval)
+		if err := s.sendConfig(ws); err != nil {
+			if printWSErrors {
+				fmt.Fprintf(os.Stderr, "statsviz: failed to send config: %v\n", err)
+			}
+		}
+		if err := s.sendStats(ws, s.interval); err != nil {
+			if printWSErrors {
+				fmt.Fprintf(os.Stderr, "statsviz: failed to send stats: %v\n", err)
+			}
+		}
 	}
 }
 
