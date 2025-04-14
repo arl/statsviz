@@ -1,7 +1,7 @@
 <script>
   import { metricsStore } from "./stores/metrics";
-  import WebsocketHandler from "./lib/Websocket.svelte";
-  import Plot from "./lib/Plot.svelte";
+  import WebsocketHandler from "./components/Websocket.svelte";
+  import Plot from "./components/Plot.svelte";
 </script>
 
 <main>
