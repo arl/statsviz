@@ -147,9 +147,7 @@ export const createPlotlyData = (cfg, sliced) => {
     case "heatmap":
       data.push({
         type: "heatmap",
-        // x: null,
         y: cfg.buckets,
-        // z: null,
         showlegend: false,
         colorscale: cfg.colorscale,
         custom_data: cfg.custom_data,
