@@ -1,0 +1,22 @@
+{
+  "name": "statsviz",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "preview": "vite preview",
+    "build": "vite build",
+    "release": "bash -lc \"vite build && zip -r dist.zip dist/*\""
+  },
+  "devDependencies": {
+    "vite": "^6.3.1"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.5",
+    "jquery": "^3.7.1",
+    "plotly.js-dist-min": "^3.0.1",
+    "query": "^0.2.0",
+    "tippy.js": "^6.3.7"
+  }
+}

@@ -1,40 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Statsviz</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
-</html>
+import "./style.css";
+// import javascriptLogo from "./javascript.svg";
+// import viteLogo from "/vite.svg";
+import { setupCounter } from "./counter.js";
+import { startApp } from "./app.js";
 
-<!--
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <title>Statsviz</title>
-    <meta charset="utf-8">
-    <meta name="description" content="Statsviz interface" />
-    <link rel="stylesheet" href="./libs/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="./libs/css/bootstrap-toggle.min.css">
-    <link rel="stylesheet" href="./css/statsviz.css" />
-    <link rel="stylesheet" href="./libs/css/font.awesome-6.1.2-all.min.css">
-    <script src="./libs/js/jquery-3.6.0.min.js"></script>
-    <script src="./libs/js/plotly-basic-2.12.1.min.js"></script>
-    <script src="./libs/js/plotly-cartesian-2.12.1.min.js"></script>
-    <script type="module" src="./libs/js/bootstrap.bundle.min.js"></script>
-    <script src="./libs/js/popperjs-core2"></script>
-    <script src="./libs/js/tippy.js@6"></script>
-    <script src="./libs/js/bootstrap-toggle.min.js"></script>
-    <script src="./libs/js/font.awesome-6.1.2-all.min.js"></script>
-</head>
-
-<body>
+/*
+    <a href="https://vite.dev" target="_blank">
+      <img src="${viteLogo}" class="logo" alt="Vite logo" />
+    </a>
+    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
+      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
+    </a>
+*/
+document.querySelector("#app").innerHTML = `
     <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-xxl">
             <a class="navbar-brand" href="#">Statsviz</a>
@@ -69,9 +47,7 @@
         </div>
     </nav>
 
-    <div id="plots" class="plots-wrapper"></div>
-    <script type="module" src="./js/app.js"></script>
-</body>
+    <div id="plots" class="plots-wrapper"></div>`;
 
-</html>
-!-->
+startApp();
+// setupCounter(document.querySelector("#counter"));
