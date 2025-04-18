@@ -51,7 +51,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/arl/statsviz/internal/plot"
-	"github.com/arl/statsviz/internal/web"
+	"github.com/arl/statsviz/internal/static"
 )
 
 const (
@@ -161,7 +161,7 @@ func (s *Server) Register(mux *http.ServeMux) {
 // by the root. Use [WithRoot] to change the path.
 func (s *Server) Index() http.HandlerFunc {
 	prefix := strings.TrimSuffix(s.root, "/") + "/"
-	dist := http.FileServerFS(web.Dist())
+	dist := http.FileServerFS(static.Assets())
 	return http.StripPrefix(prefix, dist).ServeHTTP
 }
 

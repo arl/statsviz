@@ -20,17 +20,15 @@ export const getThemeMode = () => {
  * Set light or dark theme
  */
 export const updateThemeMode = () => {
-  if (getThemeMode() === "dark") {
-    document.body.classList.add("dark-theme");
-    document
-      .getElementById("navbar")
-      .classList.replace("navbar-light", "navbar-dark");
-    document.getElementById("navbar").classList.replace("bg-light", "bg-dark");
+  const themeMode = getThemeMode();
+  console.log("themeMode", themeMode);
+  if (themeMode === "dark") {
+    document.body.classList.add("dark-mode");
+    document.getElementById("navbar").setAttribute("data-bs-theme", "dark");
+    document.getElementById("dark_mode_switch").setAttribute("checked", "");
   } else {
-    document.body.classList.remove("dark-theme");
-    document
-      .getElementById("navbar")
-      .classList.replace("navbar-dark", "navbar-light");
-    document.getElementById("navbar").classList.replace("bg-dark", "bg-light");
+    document.body.classList.remove("dark-mode");
+    document.getElementById("navbar").setAttribute("data-bs-theme", "light");
+    document.getElementById("dark_mode_switch").removeAttribute("checked");
   }
 };
