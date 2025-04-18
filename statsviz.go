@@ -161,7 +161,7 @@ func (s *Server) Register(mux *http.ServeMux) {
 // by the root. Use [WithRoot] to change the path.
 func (s *Server) Index() http.HandlerFunc {
 	prefix := strings.TrimSuffix(s.root, "/") + "/"
-	dist := http.FileServerFS(static.Dist)
+	dist := http.FileServerFS(static.Assets())
 	return http.StripPrefix(prefix, dist).ServeHTTP
 }
 

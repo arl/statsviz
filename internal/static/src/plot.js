@@ -37,6 +37,7 @@ const newConfigObject = (cfg) => {
     toImageButtonOptions: {
       format: "png",
       filename: cfg.name,
+      scale: 2,
     },
   };
 };
