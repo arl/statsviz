@@ -1,16 +1,7 @@
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./style.css";
-// import javascriptLogo from "./javascript.svg";
-// import viteLogo from "/vite.svg";
 import { startApp } from "./app.js";
 
-/*
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-*/
 document.querySelector("#app").innerHTML = `
     <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-xxl">
@@ -49,4 +40,3 @@ document.querySelector("#app").innerHTML = `
     <div id="plots" class="plots-wrapper"></div>`;
 
 startApp();
-// setupCounter(document.querySelector("#counter"));
