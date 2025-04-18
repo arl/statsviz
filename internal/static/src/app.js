@@ -55,11 +55,13 @@ const connect = () => {
     ws.close();
   };
 
+  let config;
+  let plots;
   ws.onmessage = (event) => {
     let data = JSON.parse(event.data);
     if (data.event == "config") {
-      const config = data.data;
-      const plots = configurePlots(config);
+      config = data.data;
+      plots = configurePlots(config);
       stats.init(config, dataRetentionSeconds);
 
       attachPlots(plots);
@@ -70,7 +72,7 @@ const connect = () => {
       if (paused) {
         return;
       }
-      updatePlots(config.events);
+      updatePlots(plots);
     }
   };
 };
