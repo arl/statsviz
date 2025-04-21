@@ -2,14 +2,12 @@ import * as stats from "./stats.js";
 import * as plot from "./plot.js";
 import * as theme from "./theme.js";
 import $ from "jquery";
-// import PlotsDef from "./plotsdef.js";
 
 const buildWebsocketURI = () => {
   const wsUrl = import.meta.env.VITE_WEBSOCKET_URL;
   if (wsUrl) {
     return wsUrl;
   }
-  //   const wsUrl = "ws://localhost:9090/debug/statsviz/ws";
   console.log(`wsUrl: ${wsUrl}`);
 
   var loc = window.location,
@@ -107,14 +105,14 @@ const installEventHandlers = (plots) => {
     updatePlots(plots);
   });
 
-  $("#select_timerange").on("click", () => {
-    const val = parseInt($("#select_timerange option:selected").val(), 10);
+  $("#select-timerange").on("click", () => {
+    const val = parseInt($("#select-timerange option:selected").val(), 10);
     timerange = val;
     updatePlots(plots);
   });
 
   // Change color theme when the user presses the theme switch button
-  $("#color_theme_sw").on("change", () => {
+  $("#dark_mode_switch").on("change", () => {
     const themeMode = theme.getThemeMode();
     const newTheme = (themeMode === "dark" && "light") || "dark";
     localStorage.setItem("theme-mode", newTheme);
