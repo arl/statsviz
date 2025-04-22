@@ -16,7 +16,6 @@
     "bootstrap": "^5.3.5",
     "jquery": "^3.7.1",
     "plotly.js-dist-min": "^3.0.1",
-    "query": "^0.2.0",
     "tippy.js": "^6.3.7"
   }
 }
