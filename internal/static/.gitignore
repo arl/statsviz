@@ -3,6 +3,7 @@ logs
 *.log
 npm-debug.log*
 node_modules
+dist/
 
 # Editor directories and files
 .vscode/*
