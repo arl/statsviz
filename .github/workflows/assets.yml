@@ -14,6 +14,5 @@ jobs:
         working-directory: internal/static
       - run: npm run build
         working-directory: internal/static
-      - name: Check assets are up to date
-        run: go generate && git diff --exit-code
-        working-directory: internal/static
+      - name: Check assets zip are up to date
+        run: ./internal/static/scripts/checkzip.sh
