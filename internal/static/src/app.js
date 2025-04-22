@@ -33,7 +33,7 @@ let show_gc = true;
 let timerange = 60;
 
 /* WebSocket connection handling */
-const connect = () => {
+export const connect = () => {
   const uri = buildWebsocketURI();
   let ws = new WebSocket(uri);
   console.info(`Attempting websocket connection to server at ${uri}`);
@@ -145,8 +145,3 @@ const updatePlots = (plots) => {
     }
   });
 };
-
-export function startApp() {
-  connect();
-  theme.updateThemeMode();
-}
