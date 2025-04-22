@@ -1,0 +1,16 @@
+name: Assets
+on: [push, pull_request]
+jobs:
+  check-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: internal/static/.nvmrc
+      - run: npm install
+        working-directory: internal/static
+      - run: npm run build
+        working-directory: internal/static
+      - run: ./internal/static/scripts/diff.sh

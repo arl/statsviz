@@ -1,17 +1,17 @@
 on: [push, pull_request]
 name: Tests-linux
 jobs:
-  test:
+  tests-linux:
     strategy:
       matrix:
-        go-version: [1.20.x, 1.21.x]
+        go-version: [1.22.x, 1.23.x]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version-file: go.mod
       - name: go mod tidy check
-        run: .github/scripts/modtidy-check.sh
+        run: go mod tidy -diff
       - name: Tests
         run: go test -race -shuffle=on ./...
