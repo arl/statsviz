@@ -4,9 +4,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./style.css";
 import { startApp } from "./app.js";
 
-document.querySelector(
-  "#app"
-).innerHTML = `<nav id="navbar" class="navbar navbar-expand-lg bg-body-tertiary">
+document.querySelector("#app").innerHTML = `
+
+
+<nav id="navbar" class="navbar navbar-expand-lg bg-body-tertiary">
   <div class="container-fluid">
     <a class="navbar-brand">Statsviz</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,15 +28,15 @@ document.querySelector(
             <option value="600">10 minutes</option>
           </select>
         </li>
-        <li class="nav-item d-flex align-items-center" style="margin-left: 25px;">
+        <li class="nav-item d-flex align-items-center pt-3 pt-lg-1 ms-0 ms-lg-3">
           <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="dark_mode_switch" name="darkmode" value="yes">
+            <input class="form-check-input" type="checkbox" id="dark_mode_switch" name="darkmode">
             <label class="form-check-label" for="darkmode">Dark Mode</label>
           </div>
         </li>
-        <li class="nav-item d-flex align-items-center" style="margin-left: 25px;">
+        <li class="nav-item d-flex align-items-center pt-3 pt-lg-1 ms-0 ms-lg-3">
           <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="show_gc_switch" name="showgc" value="yes">
+            <input class="form-check-input" type="checkbox" id="show_gc_switch" name="showgc">
             <label class="form-check-label" for="showgc">Show GC</label>
           </div>
         </li>

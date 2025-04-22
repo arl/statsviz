@@ -25,8 +25,12 @@ export const updateThemeMode = () => {
   if (themeMode === "dark") {
     document.body.classList.add("dark-mode");
     document.getElementById("navbar").setAttribute("data-bs-theme", "dark");
+    document
+      .getElementById("dark_mode_switch")
+      .setAttribute("checked", "checked");
   } else {
     document.body.classList.remove("dark-mode");
     document.getElementById("navbar").setAttribute("data-bs-theme", "light");
+    document.getElementById("dark_mode_switch").removeAttribute("checked");
   }
 };

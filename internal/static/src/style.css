@@ -21,10 +21,6 @@ body.dark-mode nav.navbar span.action svg {
   text-align: center;
 }
 
-.container-xxl {
-  width: 2190px;
-}
-
 .tooltip-table {
   display: table;
   width: 160px;
