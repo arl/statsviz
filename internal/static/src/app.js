@@ -100,7 +100,7 @@ const installEventHandlers = (plots) => {
     paused = !paused;
   });
 
-  $("#show_gc").on("change", () => {
+  $("#show_gc_switch").on("change", () => {
     show_gc = !show_gc;
     updatePlots(plots);
   });
