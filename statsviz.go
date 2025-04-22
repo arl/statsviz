@@ -223,11 +223,13 @@ func (s *Server) Ws() http.HandlerFunc {
 	}
 }
 
+type wsmsg struct {
+	Event string `json:"event"`
+	Data  any    `json:"data"`
+}
+
 func (s *Server) sendConfig(conn *websocket.Conn) error {
-	return conn.WriteJSON(struct {
-		Event string `json:"event"`
-		Data  any    `json:"data"`
-	}{
+	return conn.WriteJSON(wsmsg{
 		Event: "config",
 		Data:  s.plots.Config(),
 	})
@@ -237,12 +239,6 @@ func (s *Server) sendConfig(conn *websocket.Conn) error {
 func (s *Server) sendStats(conn *websocket.Conn, frequency time.Duration) error {
 	tick := time.NewTicker(frequency)
 	defer tick.Stop()
-
-	// If the WebSocket connection is initiated by an already open web UI
-	// (started by a previous process, for example), then plotsdef.js won't be
-	// requested. Call plots.Config() manually to ensure that s.plots internals
-	// are correctly initialized.
-	s.plots.Config()
 
 	for range tick.C {
 		w, err := conn.NextWriter(websocket.TextMessage)

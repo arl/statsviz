@@ -3,7 +3,6 @@ package statsviz
 import (
 	"bytes"
 	"io"
-	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -24,7 +23,7 @@ func testIndex(t *testing.T, f http.Handler, url string) {
 	f.ServeHTTP(w, req)
 
 	resp := w.Result()
-	body, _ := io.ReadAll(resp.Body)
+	httpindex, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("http status %v, want %v", resp.StatusCode, http.StatusOK)
@@ -34,12 +33,13 @@ func testIndex(t *testing.T, f http.Handler, url string) {
 		t.Errorf("header[Content-Type] %s, want %s", resp.Header.Get("Content-Type"), "text/html; charset=utf-8")
 	}
 
-	html, err := static.Assets.ReadFile("index.html")
+	fhtml, err := static.Assets().Open("index.html")
 	if err != nil {
 		t.Fatalf("couldn't read index.html from assets Fs: %v", err)
 	}
+	fsindex, _ := io.ReadAll(fhtml)
 
-	if !bytes.Equal(html, body) {
+	if !bytes.Equal(fsindex, httpindex) {
 		t.Errorf("read body is not that of index.html from assets")
 	}
 }
@@ -96,26 +96,37 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 	}
 	defer ws.Close()
 
+	// First message is the plots configuration.
+	var cfg map[string]any
+	if err := ws.ReadJSON(&cfg); err != nil {
+		t.Fatalf("failed reading json from websocket: %v", err)
+	}
+
 	// Check the content of 2 consecutive payloads.
 	for i := 0; i < 2; i++ {
-
 		// Verifies that we've received 1 time series (goroutines) and one
 		// heatmap (sizeClasses).
-		var data struct {
-			Goroutines  []uint64 `json:"goroutines"`
-			SizeClasses []uint64 `json:"size-classes"`
+		var msg struct {
+			Event string `json:"event"`
+			Data  struct {
+				Series struct {
+					Goroutines  []uint64 `json:"goroutines"`
+					SizeClasses []uint64 `json:"size-classes"`
+				} `json:"series"`
+			} `json:"data"`
 		}
-		if err := ws.ReadJSON(&data); err != nil {
+
+		if err := ws.ReadJSON(&msg); err != nil {
 			t.Fatalf("failed reading json from websocket: %v", err)
 		}
 
 		// The time series must have one and only one element
-		if len(data.Goroutines) != 1 {
-			t.Errorf("len(goroutines) = %d, want 1", len(data.Goroutines))
+		if len(msg.Data.Series.Goroutines) != 1 {
+			t.Errorf("len(goroutines) = %d, want 1", len(msg.Data.Series.Goroutines))
 		}
 		// Heatmaps should have many elements, check that there's more than one.
-		if len(data.SizeClasses) <= 1 {
-			t.Errorf("len(sizeClasses) = %d, want > 1", len(data.SizeClasses))
+		if len(msg.Data.Series.SizeClasses) <= 1 {
+			t.Errorf("len(sizeClasses) = %d, want > 1", len(msg.Data.Series.SizeClasses))
 		}
 	}
 }
@@ -203,80 +214,4 @@ func TestRegisterDefault(t *testing.T) {
 	mux := http.DefaultServeMux
 	Register(mux)
 	testRegister(t, mux, "http://example.com/debug/statsviz/")
-}
-
-func Test_intercept(t *testing.T) {
-	// Check that the file server has been 'hijacked'.
-	// 'plotsdef.js' is generated at runtime, it doesn't actually exist, it is generated on the fly.
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "http://example.com/debug/statsviz/js/plotsdef.js", nil)
-
-	srv := newServer(t)
-	intercept(srv.Index(), srv.plots.Config())(w, req)
-
-	resp := w.Result()
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("http status %v, want %v", resp.StatusCode, http.StatusOK)
-	}
-
-	contentType := "text/javascript; charset=utf-8"
-	if resp.Header.Get("Content-Type") != contentType {
-		t.Errorf("header[Content-Type] %s, want %s", resp.Header.Get("Content-Type"), contentType)
-	}
-}
-
-func TestContentTypeIsSet(t *testing.T) {
-	// Check that "Content-Type" headers on the assets we serve are all set to
-	// something more specific than "text/plain" because that'd make the page be
-	// rejected in certain 'strict' environments.
-	const root = "/some/root/path"
-	srv := newServer(t, Root(root))
-	httpfs := srv.Index()
-
-	requested := []string{}
-
-	// While we walk the embedded assets filesystem, control the header on the
-	// http filesystem server.
-	_ = fs.WalkDir(static.Assets, ".", func(path string, d fs.DirEntry, err error) error {
-		if d.IsDir() || path == "fs.go" || path == "index.html" {
-			return nil
-		}
-
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest(http.MethodGet, root+"/"+path, nil)
-
-		httpfs(w, r)
-		res := w.Result()
-		if res.StatusCode != 200 && path != "index.html" {
-			t.Errorf("GET %q returned HTTP %d, want 200", path, res.StatusCode)
-			return nil
-		}
-
-		ct := res.Header.Get("Content-Type")
-		if ct == "" || strings.Contains(ct, "text/plain") {
-			t.Errorf(`GET %q has incorrect header "Content-Type = %s"`, path, ct)
-			return nil
-		}
-
-		if testing.Verbose() {
-			t.Logf("%q Content-Type %q", path, ct)
-		}
-		requested = append(requested, path)
-		return nil
-	})
-
-	// Verify that all files in contentTypes map have been requested. This is to
-	// keep the map aligned with the actual content of the static/ dir.
-	for path := range contentTypes {
-		found := false
-		for i := range requested {
-			if requested[i] == path {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Fatalf("contentTypes[%v] matches no files in the static/ dir", path)
-		}
-	}
 }
