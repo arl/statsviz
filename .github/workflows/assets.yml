@@ -9,8 +9,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: internal/static/.nvmrc
+      - uses: actions/setup-go@v5
       - run: npm install
         working-directory: internal/static
       - run: npm run build
         working-directory: internal/static
-      - run: ./internal/static/scripts/diff.sh
+      - name: Check assets are up to date
+        run: go generate && git diff --exit-code
+        working-directory: internal/static

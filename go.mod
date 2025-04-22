@@ -10,6 +10,11 @@ require (
 )
 
 require (
+	github.com/gobwas/glob v0.2.3 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
+	github.com/timo-reymann/deterministic-zip v0.0.0-20250313142458-97cfdf725a80 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
 )
+
+tool github.com/timo-reymann/deterministic-zip
