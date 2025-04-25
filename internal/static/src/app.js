@@ -1,6 +1,7 @@
 import * as stats from "./stats.js";
 import * as plot from "./plot.js";
 import * as theme from "./theme.js";
+import "bootstrap/dist/js/bootstrap.min.js";
 
 const buildWebsocketURI = () => {
   const wsUrl = import.meta.env.VITE_WEBSOCKET_URL;
@@ -95,36 +96,62 @@ const attachPlots = (plots) => {
 };
 
 const installEventHandlers = (plots) => {
-  document
-    .getElementById("play_pause_switch")
-    .addEventListener("change", (e) => {
-      paused = !paused;
-    });
+  // Show GC toggle.
+  const gcToggle = document.getElementById("gcToggle");
 
-  document.getElementById("show_gc_switch").addEventListener("change", (e) => {
+  const onToggleGC = (e) => {
     show_gc = !show_gc;
+    console.log("show_gc", show_gc);
+    gcToggle.checked = show_gc;
     updatePlots(plots);
-  });
+  };
+  gcToggle.checked = show_gc;
+  gcToggle.addEventListener("change", onToggleGC);
 
-  document
-    .getElementById("select-timerange")
-    .addEventListener("change", (e) => {
-      const val = parseInt(e.target.value, 10);
-      timerange = val;
-      updatePlots(plots);
-    });
+  // Pause/Resume button.
+  const pauseBtn = document.getElementById("pauseBtn");
+  const onPlayPause = (e) => {
+    paused = !paused;
+    pauseBtn.textContent = paused ? "Resume" : "Pause";
+    pauseBtn.classList.toggle("active", paused);
+    updatePlots(plots);
+  };
+  pauseBtn.addEventListener("click", onPlayPause);
 
-  document
-    .getElementById("dark_mode_switch")
-    .addEventListener("change", (e) => {
-      const themeMode = theme.getThemeMode();
-      const newTheme = (themeMode === "dark" && "light") || "dark";
-      localStorage.setItem("theme-mode", newTheme);
-      theme.updateThemeMode();
-      plots.forEach((plot) => {
-        plot.updateTheme();
-      });
+  // Dark mode toggle.
+  const themeToggle = document.getElementById("themeToggle");
+
+  const onToggleTheme = (e) => {
+    const themeMode = theme.getThemeMode();
+    const newTheme = (themeMode === "dark" && "light") || "dark";
+    localStorage.setItem("theme-mode", newTheme);
+
+    theme.updateThemeMode();
+
+    plots.forEach((plot) => {
+      plot.updateTheme();
     });
+  };
+
+  themeToggle.addEventListener("change", onToggleTheme);
+
+  // Time range selection
+  const rangeInputs = document.querySelectorAll('input[name="range"]');
+
+  const onChangeTimeRange = (i) => {
+    rangeInputs[i].checked = true;
+    const val = 60 * parseInt(rangeInputs[i].value, 10);
+    console.log(`selected ${i} with value ${rangeInputs[i].value} -> ${val}`);
+    timerange = val;
+    updatePlots(plots);
+  };
+
+  rangeInputs.forEach((r, i) =>
+    r.addEventListener("change", () => {
+      if (r.checked) onChangeTimeRange(i);
+    })
+  );
+  document.getElementById("range1").checked = true;
 };
 
 const updatePlots = (plots) => {

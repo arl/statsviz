@@ -7,104 +7,161 @@
     <title>Statsviz</title>
   </head>
   <body>
-    <div id="app">
-      <nav id="navbar" class="navbar navbar-expand-lg bg-body-tertiary">
-        <div class="container-fluid">
-          <a class="navbar-brand">Statsviz</a>
+    <!-- Top Navbar -->
+    <nav id="top-navbar" class="navbar">
+      <button
+        id="sidebarToggleBtn"
+        class="btn btn-outline-secondary position-absolute start-0"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#sidebarOffcanvas"
+        aria-controls="sidebarOffcanvas"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <ul
+        id="navCategories"
+        class="nav nav-pills flex-column flex-lg-row mb-0 justify-content-center w-100"
+        role="tablist"
+      >
+        <li class="nav-item">
+          <span class="nav-link" data-category="runtime">Runtime</span>
+        </li>
+        <li class="nav-item">
+          <span class="nav-link" data-category="memory">Memory</span>
+        </li>
+        <li class="nav-item">
+          <span class="nav-link" data-category="gc">GC</span>
+        </li>
+        <li class="nav-item">
+          <span class="nav-link" data-category="custom">Custom</span>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="d-flex flex-grow-1">
+      <!-- Unified Offcanvas Sidebar for all devices -->
+      <div
+        class="offcanvas offcanvas-start"
+        tabindex="-1"
+        id="sidebarOffcanvas"
+        aria-labelledby="sidebarOffcanvasLabel"
+      >
+        <div class="offcanvas-header">
+          <h5 id="sidebarOffcanvasLabel" class="d-flex align-items-center">
+            statsviz
+            <img
+              src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+              alt="GitHub"
+              width="20"
+              height="20"
+              class="ms-1"
+            />
+          </h5>
           <button
-            class="navbar-toggler"
             type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mb-2 mb-lg-0 ms-auto">
-              <li class="nav-item">
-                <a
-                  class="bi bi-github nav-link"
-                  href="https://github.com/arl/statsviz"
-                  target="_blank"
-                >
-                  GitHub</a
-                >
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link"
-                  href="https://pkg.go.dev/runtime/metrics#hdr-Supported_metrics"
-                  target="_blank"
-                  >runtime/metrics</a
-                >
-              </li>
-              <li class="nav-item">
-                <select
-                  class="form-select"
-                  id="select-timerange"
-                  style="width: 120px"
-                >
-                  <option value="60">1 minute</option>
-                  <option value="300">5 minutes</option>
-                  <option value="600">10 minutes</option>
-                </select>
-              </li>
-              <li
-                class="nav-item d-flex align-items-center pt-3 pt-lg-1 ms-0 ms-lg-3"
+            class="btn-close text-reset"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column">
+          <div>
+            <button id="pauseBtn" class="btn btn-outline-primary w-100 mb-3">
+              Pause
+            </button>
+            <div class="form-check form-switch mb-3">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="gcToggle"
+                checked
+              />
+              <label class="form-check-label" for="gcToggle"
+                >Show GC Events</label
               >
-                <div class="form-check form-switch">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="dark_mode_switch"
-                    name="darkmode"
-                  />
-                  <label class="form-check-label" for="darkmode"
-                    >Dark Mode</label
-                  >
-                </div>
-              </li>
-
-              <li
-                class="nav-item d-flex align-items-center pt-3 pt-lg-1 ms-0 ms-lg-3"
+            </div>
+            <h6>Time Range</h6>
+            <div class="btn-group mb-3" role="group" aria-label="Time range">
+              <input
+                type="radio"
+                class="btn-check"
+                name="range"
+                id="range1"
+                autocomplete="off"
+                value="1"
+              />
+              <label class="btn btn-outline-secondary" for="range1">1m</label>
+              <input
+                type="radio"
+                class="btn-check"
+                name="range"
+                id="range5"
+                autocomplete="off"
+                value="5"
+              />
+              <label class="btn btn-outline-secondary" for="range5">5m</label>
+              <input
+                type="radio"
+                class="btn-check"
+                name="range"
+                id="range10"
+                autocomplete="off"
+                value="10"
+              />
+              <label class="btn btn-outline-secondary" for="range10">10m</label>
+            </div>
+          </div>
+          <div class="mt-auto">
+            <hr />
+            <a href="https://pkg.go.dev/runtime/metrics" target="_blank"
+              >runtime/metrics</a
+            ><br />
+            <a
+              href="https://github.com/arl/statsviz"
+              target="_blank"
+              class="d-flex align-items-center mt-3"
+            >
+              statsviz
+              <img
+                src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                alt="GitHub"
+                width="20"
+                height="20"
+                class="ms-1"
+              />
+            </a>
+            <div class="form-check form-switch mt-4">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="themeToggle"
+              />
+              <label class="form-check-label" for="themeToggle"
+                >Dark Mode</label
               >
-                <div class="form-check form-switch">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="show_gc_switch"
-                    name="show_gc"
-                    checked
-                  />
-                  <label class="form-check-label" for="show_gc">Show GC</label>
-                </div>
-              </li>
-
-              <li
-                class="nav-item d-flex align-items-center pt-3 pt-lg-1 ms-0 ms-lg-3"
-              >
-                <div class="form-check form-switch">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="play_pause_switch"
-                    name="play_pause"
-                    checked
-                  />
-                  <label class="form-check-label" for="play_pause"
-                    >Play/Pause</label
-                  >
-                </div>
-              </li>
-            </ul>
+            </div>
           </div>
         </div>
-      </nav>
+      </div>
 
-      <div id="plots" class="plots-wrapper"></div>
+      <!-- Main Content -->
+      <main id="main-content" class="w-100">
+        <div class="plots-container" id="plots">
+          <div class="card plot-card" data-category="runtime">
+            <div class="card-body">Runtime Plot 1</div>
+          </div>
+          <div class="card plot-card" data-category="memory">
+            <div class="card-body">Memory Plot 1</div>
+          </div>
+          <div class="card plot-card" data-category="gc">
+            <div class="card-body">GC Plot 1</div>
+          </div>
+          <div class="card plot-card" data-category="custom">
+            <div class="card-body">Custom Plot 1</div>
+          </div>
+        </div>
+      </main>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>
