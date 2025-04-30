@@ -1,5 +1,5 @@
 import * as theme from "./theme.js";
-import * as app from "./app.js";
+import * as ui from "./ui.js";
 import Plotly from "plotly.js-cartesian-dist-min";
 import tippy, { followCursor } from "tippy.js";
 import "tippy.js/dist/tippy.css";
@@ -29,12 +29,12 @@ const newConfigObject = (cfg, isMaximized) => {
         name: "info",
         title: "Plot info",
         icon: Plotly.Icons.question,
-        click: handleInfoButton,
+        click: ui.onClickPlotInfo,
       },
       {
         name: isMaximized ? "minimize" : "maximize",
         icon: Plotly.Icons.zoombox,
-        click: handleMaximizeButton(cfg),
+        click: ui.onClickPlotMaximize(cfg),
       },
     ],
     toImageButtonOptions: {
@@ -116,48 +116,6 @@ const newLayoutObject = (cfg, isMaximized) => {
   }
 
   return layout;
-};
-
-const handleMaximizeButton = (cfg) => (gd, ev) => {
-  const clicked = app.allPlots.find((p) => p.name() === cfg.name);
-  const isOnlyVisible = app.allPlots.every(
-    (p) => p === clicked || !p.isVisible()
-  );
-
-  if (isOnlyVisible) {
-    // Restore all plots.
-    app.allPlots.forEach((p) => p.show());
-  } else {
-    // Hide all plots except the clicked one.
-    app.allPlots.forEach((p) => {
-      if (p !== clicked) p.hide();
-    });
-  }
-  if (isOnlyVisible) {
-    clicked.minimize();
-  } else {
-    clicked.maximize();
-    app.updatePlots([clicked], true);
-  }
-};
-
-const handleInfoButton = (gd, ev) => {
-  let button = ev.currentTarget;
-  let val = button.getAttribute("data-val") === "true";
-
-  const options = {
-    allowHTML: true,
-    trigger: "click",
-  };
-
-  const instance = tippy(ev.currentTarget, options);
-  instance.setContent("<div>" + gd.infoText + "</div>");
-  if (val) {
-    instance.hide();
-  } else {
-    instance.show();
-  }
-  button.setAttribute("data-val", !val);
 };
 
 const themeColors = {
