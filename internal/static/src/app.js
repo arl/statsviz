@@ -32,7 +32,7 @@ let paused = false;
 let show_gc = true;
 let timerange = 60;
 let config;
-export let plots;
+export let allPlots;
 
 /* WebSocket connection handling */
 export const connect = () => {
@@ -59,18 +59,18 @@ export const connect = () => {
     let data = JSON.parse(event.data);
     if (data.event == "config") {
       config = data.data;
-      plots = configurePlots(config);
+      allPlots = configurePlots(config);
       stats.init(config, dataRetentionSeconds);
 
-      attachPlots(plots);
+      attachPlots(allPlots);
 
-      installEventHandlers(plots);
+      installEventHandlers(allPlots);
     } else {
       stats.pushData(data.data);
       if (paused) {
         return;
       }
-      if (!paused) updatePlots(plots);
+      if (!paused) updatePlots(allPlots, false);
     }
   };
 };
@@ -103,7 +103,7 @@ const installEventHandlers = (plots) => {
     show_gc = !show_gc;
     console.log("show_gc", show_gc);
     gcToggle.checked = show_gc;
-    updatePlots(plots);
+    updatePlots(plots, true);
   };
   gcToggle.checked = show_gc;
   gcToggle.addEventListener("change", onToggleGC);
@@ -114,7 +114,7 @@ const installEventHandlers = (plots) => {
     paused = !paused;
     pauseBtn.textContent = paused ? "Resume" : "Pause";
     pauseBtn.classList.toggle("active", paused);
-    updatePlots(plots);
+    updatePlots(plots, true);
   };
   pauseBtn.addEventListener("click", onPlayPause);
 
@@ -143,7 +143,7 @@ const installEventHandlers = (plots) => {
     const val = 60 * parseInt(rangeInputs[i].value, 10);
     console.log(`selected ${i} with value ${rangeInputs[i].value} -> ${val}`);
     timerange = val;
-    updatePlots(plots);
+    updatePlots(plots, true);
   };
 
   rangeInputs.forEach((r, i) =>
@@ -154,11 +154,9 @@ const installEventHandlers = (plots) => {
   document.getElementById("range1").checked = true;
 };
 
-const updatePlots = (plots) => {
-  // Create shapes.
-  let shapes = new Map();
-
-  let data = stats.slice(timerange);
+export const updatePlots = (plots, force = false) => {
+  const data = stats.slice(timerange);
+  const shapes = new Map();
 
   if (show_gc) {
     for (const [name, serie] of data.events) {
@@ -172,7 +170,7 @@ const updatePlots = (plots) => {
 
   plots.forEach((plot) => {
     if (!plot.hidden) {
-      plot.update(xrange, data, shapes);
+      plot.update(xrange, data, shapes, force);
     }
   });
 };

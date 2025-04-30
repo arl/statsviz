@@ -119,15 +119,17 @@ const newLayoutObject = (cfg, isMaximized) => {
 };
 
 const handleMaximizeButton = (cfg) => (gd, ev) => {
-  const clicked = app.plots.find((p) => p.name() === cfg.name);
-  const isOnlyVisible = app.plots.every((p) => p === clicked || !p.isVisible());
+  const clicked = app.allPlots.find((p) => p.name() === cfg.name);
+  const isOnlyVisible = app.allPlots.every(
+    (p) => p === clicked || !p.isVisible()
+  );
 
   if (isOnlyVisible) {
     // Restore all plots.
-    app.plots.forEach((p) => p.show());
+    app.allPlots.forEach((p) => p.show());
   } else {
     // Hide all plots except the clicked one.
-    app.plots.forEach((p) => {
+    app.allPlots.forEach((p) => {
       if (p !== clicked) p.hide();
     });
   }
@@ -135,8 +137,8 @@ const handleMaximizeButton = (cfg) => (gd, ev) => {
     clicked.minimize();
   } else {
     clicked.maximize();
+    app.updatePlots([clicked], true);
   }
-  // clicked.setMaximized(!isOnlyVisible);
 };
 
 const handleInfoButton = (gd, ev) => {
@@ -170,6 +172,8 @@ const themeColors = {
     font_color: "#fff",
   },
 };
+
+const plotsDiv = document.getElementById("plots");
 
 /*
     Plot configuration object:
@@ -289,10 +293,6 @@ class Plot {
     return !this._htmlElt.hidden;
   }
 
-  setMaximized(maximized) {
-    this._maximized = maximized;
-  }
-
   createElement(div) {
     this._htmlElt = div;
     // Pass a single data with no data to create an empty plot, this removes
@@ -384,10 +384,11 @@ class Plot {
     return this._dataTemplate;
   }
 
-  update(xrange, data, shapes) {
+  update(xrange, data, shapes, force) {
     this._lastData = this._extractData(data);
     this._updateCount++;
     if (
+      force ||
       this._cfg.updateFreq == 0 ||
       this._updateCount % this._cfg.updateFreq == 0
     ) {
@@ -400,9 +401,7 @@ class Plot {
       this._plotlyLayout.xaxis.range = xrange;
 
       if (this._maximized) {
-        const plotsDiv = document.getElementById("plots");
         this._plotlyLayout.width = plotsDiv.clientWidth;
-        // this._plotlyLayout.height = plotsDiv.clientHeight;
         this._plotlyLayout.height = null;
         this._plotlyConfig.responsive = true;
       } else {
