@@ -8,7 +8,6 @@ const buildWebsocketURI = () => {
   if (wsUrl) {
     return wsUrl;
   }
-  console.log(`wsUrl: ${wsUrl}`);
 
   var loc = window.location,
     ws_prot = "ws:";
@@ -99,29 +98,25 @@ const installEventHandlers = (plots) => {
   // Show GC toggle.
   const gcToggle = document.getElementById("gcToggle");
 
-  const onToggleGC = (e) => {
+  gcToggle.checked = show_gc;
+  gcToggle.addEventListener("change", (e) => {
     show_gc = !show_gc;
-    console.log("show_gc", show_gc);
     gcToggle.checked = show_gc;
     updatePlots(plots, true);
-  };
-  gcToggle.checked = show_gc;
-  gcToggle.addEventListener("change", onToggleGC);
+  });
 
   // Pause/Resume button.
   const pauseBtn = document.getElementById("pauseBtn");
-  const onPlayPause = (e) => {
+  pauseBtn.addEventListener("click", (e) => {
     paused = !paused;
     pauseBtn.textContent = paused ? "Resume" : "Pause";
     pauseBtn.classList.toggle("active", paused);
     updatePlots(plots, true);
-  };
-  pauseBtn.addEventListener("click", onPlayPause);
+  });
 
   // Dark mode toggle.
   const themeToggle = document.getElementById("themeToggle");
-
-  const onToggleTheme = (e) => {
+  themeToggle.addEventListener("change", (e) => {
     const themeMode = theme.getThemeMode();
     const newTheme = (themeMode === "dark" && "light") || "dark";
     localStorage.setItem("theme-mode", newTheme);
@@ -131,24 +126,19 @@ const installEventHandlers = (plots) => {
     plots.forEach((plot) => {
       plot.updateTheme();
     });
-  };
-
-  themeToggle.addEventListener("change", onToggleTheme);
+  });
 
   // Time range selection
   const rangeInputs = document.querySelectorAll('input[name="range"]');
 
-  const onChangeTimeRange = (i) => {
-    rangeInputs[i].checked = true;
-    const val = 60 * parseInt(rangeInputs[i].value, 10);
-    console.log(`selected ${i} with value ${rangeInputs[i].value} -> ${val}`);
-    timerange = val;
-    updatePlots(plots, true);
-  };
-
   rangeInputs.forEach((r, i) =>
     r.addEventListener("change", () => {
-      if (r.checked) onChangeTimeRange(i);
+      if (r.checked) {
+        rangeInputs[i].checked = true;
+        const val = 60 * parseInt(rangeInputs[i].value, 10);
+        timerange = val;
+        updatePlots(plots, true);
+      }
     })
   );
   document.getElementById("range1").checked = true;
