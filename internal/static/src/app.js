@@ -37,7 +37,6 @@ export const connect = () => {
       config = data.data;
       allPlots = configurePlots(config);
       stats = new StatsManager(dataRetentionSeconds, config);
-
       attachPlots(allPlots);
       initNav(allPlots);
     } else {
