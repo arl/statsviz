@@ -1,14 +1,14 @@
-import * as stats from "./stats.js";
+import StatsManager from "./StatsManager.js";
 import * as plot from "./plot.js";
 import { initNav, paused, show_gc, timerange } from "./nav.js";
 import { clamp, buildWebsocketURI } from "./utils.js";
 import "bootstrap/dist/js/bootstrap.min.js";
 
-let timeout = 250;
-
-/* nav bar ui management */
-let config;
-export let allPlots;
+const dataRetentionSeconds = 600;
+var stats;
+var config;
+export var allPlots;
+var timeout = 250;
 
 /* WebSocket connection handling */
 export const connect = () => {
@@ -36,7 +36,7 @@ export const connect = () => {
     if (data.event == "config") {
       config = data.data;
       allPlots = configurePlots(config);
-      stats.init(config);
+      stats = new StatsManager(dataRetentionSeconds, config);
 
       attachPlots(allPlots);
       initNav(allPlots);
@@ -51,10 +51,7 @@ export const connect = () => {
 };
 
 const configurePlots = (config) => {
-  const plots = [];
-  config.series.forEach((plotdef) => {
-    plots.push(new plot.Plot(plotdef));
-  });
+  const plots = config.series.map((pd) => new plot.Plot(pd));
   return plots;
 };
 
