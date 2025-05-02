@@ -1,52 +1,33 @@
 import StatsManager from "./StatsManager.js";
 import * as plot from "./plot.js";
 import { initNav, paused, show_gc, timerange } from "./nav.js";
-import { clamp, buildWebsocketURI } from "./utils.js";
+import { buildWebsocketURI } from "./utils.js";
+import WebSocketClient from "./socket.js";
 import "bootstrap/dist/js/bootstrap.min.js";
 
 const dataRetentionSeconds = 600;
-var stats;
-var config;
+let config;
 export var allPlots;
-var timeout = 250;
 
-/* WebSocket connection handling */
+let statsMgr;
 export const connect = () => {
   const uri = buildWebsocketURI();
-  let ws = new WebSocket(uri);
-  console.info(`Attempting websocket connection to server at ${uri}`);
-
-  ws.onopen = () => {
-    console.info("Successfully connected");
-    timeout = 250; // reset connection timeout for next time
-  };
-
-  ws.onclose = (event) => {
-    console.error(`Closed websocket connection: code ${event.code}`);
-    setTimeout(connect, clamp((timeout += timeout), 250, 5000));
-  };
-
-  ws.onerror = (err) => {
-    console.error("WebSocket error:", err);
-    ws.close();
-  };
-
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.event == "config") {
-      config = data.data;
-      allPlots = configurePlots(config);
-      stats = new StatsManager(dataRetentionSeconds, config);
+  const client = new WebSocketClient(
+    uri,
+    // onConfig
+    (cfg) => {
+      config = cfg;
+      allPlots = configurePlots(cfg);
+      statsMgr = new StatsManager(dataRetentionSeconds, cfg);
       attachPlots(allPlots);
       initNav(allPlots);
-    } else {
-      stats.pushData(data.data);
-      if (paused) {
-        return;
-      }
+    },
+    // onData
+    (msg) => {
+      statsMgr.pushData(msg);
       if (!paused) updatePlots(allPlots, false);
     }
-  };
+  );
 };
 
 const configurePlots = (config) => {
@@ -67,7 +48,7 @@ const attachPlots = (plots) => {
 };
 
 export const updatePlots = (plots, force = false) => {
-  const data = stats.slice(timerange);
+  const data = statsMgr.slice(timerange);
   const shapes = new Map();
 
   if (show_gc) {
