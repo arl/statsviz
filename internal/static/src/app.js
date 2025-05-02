@@ -6,17 +6,15 @@ import WebSocketClient from "./socket.js";
 import "bootstrap/dist/js/bootstrap.min.js";
 
 const dataRetentionSeconds = 600;
-let config;
 export var allPlots;
 
 let statsMgr;
 export const connect = () => {
   const uri = buildWebsocketURI();
-  const client = new WebSocketClient(
+  new WebSocketClient(
     uri,
     // onConfig
     (cfg) => {
-      config = cfg;
       allPlots = configurePlots(cfg);
       statsMgr = new StatsManager(dataRetentionSeconds, cfg);
       attachPlots(allPlots);
