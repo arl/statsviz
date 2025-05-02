@@ -32,14 +32,14 @@ class Plot {
         custom_data: this._cfg.custom_data,
       });
     } else {
-      this._cfg.subplots.forEach((subplot) => {
-        this._dataTemplate.push({
+      this._dataTemplate = this._cfg.subplots.map((subplot) => {
+        return {
           type: this._cfg.type,
           x: null,
           y: null,
           name: subplot.name,
           hovertemplate: `<b>${subplot.unitfmt}</b>`,
-        });
+        };
       });
     }
 
