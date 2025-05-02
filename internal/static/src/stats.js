@@ -1,18 +1,16 @@
-// stats holds the data and function to modify it.
-import Buffer from "./buffer.js";
+import RingBuffer from "./RingBuffer.js";
 
-var series = {
+const series = {
   times: null,
   eventsData: new Map(),
   plotData: new Map(),
 };
 
-// initialize time series storage.
-const init = (plotdefs, buflen) => {
-  const extraBufferCapacity = 20; // 20% of extra (preallocated) buffer datapoints
-  const bufcap = buflen + (buflen * extraBufferCapacity) / 100; // number of actual datapoints
+const dataRetentionSeconds = 600;
 
-  series.times = new Buffer(buflen, bufcap);
+// initialize time series storage.
+const init = (plotdefs) => {
+  series.times = new RingBuffer(dataRetentionSeconds);
   series.plotData.clear();
   plotdefs.series.forEach((plotdef) => {
     let ndim;
@@ -31,7 +29,7 @@ const init = (plotdefs, buflen) => {
 
     let data = new Array(ndim);
     for (let i = 0; i < ndim; i++) {
-      data[i] = new Buffer(buflen, bufcap);
+      data[i] = new RingBuffer(dataRetentionSeconds);
     }
     series.plotData.set(plotdef.name, data);
   });
