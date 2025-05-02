@@ -1,7 +1,7 @@
 export default class RingBuffer {
   constructor(capacity) {
     if (capacity < 1) throw new Error("Capacity must be > 0");
-    this._buf = new Array(capacity);
+    this._buf = new Float64Array(capacity);
     this._capacity = capacity;
     this._size = 0;
     this._start = 0;
