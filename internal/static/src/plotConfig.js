@@ -31,7 +31,7 @@ export const newConfigObject = (cfg, isMaximized) => {
       },
       {
         name: isMaximized ? "minimize" : "maximize",
-        icon: Plotly.Icons.zoombox,
+        icon: isMaximized ? Plotly.Icons.zoom_minus : Plotly.Icons.zoom_plus,
         click: ui.onClickPlotMaximize(cfg),
       },
     ],
