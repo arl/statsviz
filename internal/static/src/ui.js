@@ -1,27 +1,25 @@
-import * as app from "./app.js";
+import { plotMgr, drawPlots } from "./app.js";
 import tippy from "tippy.js";
 
-export const onClickPlotMaximize = (cfg) => (gd, ev) => {
-  const clicked = app.allPlots.find((p) => p.name() === cfg.name);
-  const isOnlyVisible = app.allPlots.every(
+export const onClickPlotMaximize = (cfg) => (_gd, _ev) => {
+  const clicked = plotMgr.plots.find((p) => p.name() === cfg.name);
+  const isOnlyVisible = plotMgr.plots.every(
     (p) => p === clicked || !p.isVisible()
   );
 
   if (isOnlyVisible) {
-    // Restore all plots.
-    app.allPlots.forEach((p) => p.show());
-  } else {
-    // Hide all plots except the clicked one.
-    app.allPlots.forEach((p) => {
-      if (p !== clicked) p.hide();
-    });
-  }
-  if (isOnlyVisible) {
+    // Show plots.
+    plotMgr.plots.forEach((p) => p.show());
     clicked.minimize();
   } else {
+    // Hide all plots except the clicked one.
+    plotMgr.plots.forEach((p) => {
+      if (p !== clicked) p.hide();
+    });
     clicked.maximize();
-    app.updatePlots([clicked], true);
   }
+
+  drawPlots(true);
 };
 
 export const onClickPlotInfo = (gd, ev) => {

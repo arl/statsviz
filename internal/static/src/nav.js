@@ -1,18 +1,18 @@
-import { updatePlots } from "./app.js";
 import * as theme from "./theme.js";
 
-export function initNav(allPlots) {
-  // move gcToggle, pauseBtn, themeToggle, rangeInputs handling here
-  // exactly as in app.js but using passed-in allPlots
+export let paused = false;
+export let gcEnabled = true;
+export let timerange = 60;
 
+export function initNav(onUpdate) {
   // Show GC toggle.
   const gcToggle = document.getElementById("gcToggle");
 
-  gcToggle.checked = show_gc;
+  gcToggle.checked = gcEnabled;
   gcToggle.addEventListener("change", (e) => {
-    show_gc = !show_gc;
-    gcToggle.checked = show_gc;
-    updatePlots(allPlots, true);
+    gcEnabled = !gcEnabled;
+    gcToggle.checked = gcEnabled;
+    onUpdate(true);
   });
 
   // Pause/Resume button.
@@ -21,7 +21,7 @@ export function initNav(allPlots) {
     paused = !paused;
     pauseBtn.textContent = paused ? "Resume" : "Pause";
     pauseBtn.classList.toggle("active", paused);
-    updatePlots(allPlots, true);
+    onUpdate(true);
   });
 
   // Dark mode toggle.
@@ -32,10 +32,7 @@ export function initNav(allPlots) {
     localStorage.setItem("theme-mode", newTheme);
 
     theme.updateThemeMode();
-
-    allPlots.forEach((plot) => {
-      plot.updateTheme();
-    });
+    onUpdate(true);
   });
 
   // Time range selection
@@ -47,13 +44,9 @@ export function initNav(allPlots) {
         rangeInputs[i].checked = true;
         const val = 60 * parseInt(rangeInputs[i].value, 10);
         timerange = val;
-        updatePlots(allPlots, true);
+        onUpdate(true);
       }
     })
   );
   document.getElementById("range1").checked = true;
 }
-
-export let paused = false,
-  show_gc = true,
-  timerange = 60;
