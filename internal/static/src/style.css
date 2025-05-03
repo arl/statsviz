@@ -58,15 +58,15 @@ body {
 #main-content {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 1.25rem;
-  background-color: var(--bs-body-bg);
+  padding: 0.35rem;
+  background-color: darkgrey;
 }
 
 /* Prevent any horizontal scrollbar */
 .plots-container {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 0.35rem;
   overflow-x: hidden;
   /* no width transitions or animations on this container */
 }
