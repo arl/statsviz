@@ -50,7 +50,7 @@ class Plot {
       });
     }
 
-    this.#plotlyLayout = newLayoutObject(cfg);
+    this.#plotlyLayout = newLayoutObject(cfg, this.#maximized);
     this.#plotlyConfig = newConfigObject(cfg, this.#maximized);
   }
 
@@ -202,9 +202,9 @@ class Plot {
 
   maximize() {
     this.#maximized = true;
-    const plotsDiv = document.getElementById("plots");
+    const plotsDiv = document.getElementById("plots", this.#maximized);
 
-    this.#plotlyLayout = newLayoutObject(this.#cfg);
+    this.#plotlyLayout = newLayoutObject(this.#cfg, this.#maximized);
     this.#plotlyConfig = newConfigObject(this.#cfg, this.#maximized);
 
     this.#plotlyLayout.width = plotsDiv.clientWidth;
@@ -214,9 +214,9 @@ class Plot {
   }
 
   minimize() {
-    this.#maximized = false;
+    (this.#maximized = false), this.#maximized;
 
-    this.#plotlyLayout = newLayoutObject(this.#cfg);
+    this.#plotlyLayout = newLayoutObject(this.#cfg, this.#maximized);
     this.#plotlyConfig = newConfigObject(this.#cfg, this.#maximized);
 
     this.#react();
@@ -237,7 +237,7 @@ class Plot {
     this.#cfg.layout.plot_bgcolor = themeColors[themeMode].plot_bgcolor;
     this.#cfg.layout.font_color = themeColors[themeMode].font_color;
 
-    this.#plotlyLayout = newLayoutObject(this.#cfg);
+    this.#plotlyLayout = newLayoutObject(this.#cfg, this.#maximized);
     this.#plotlyConfig = newConfigObject(this.#cfg, this.#maximized);
 
     Plotly.react(

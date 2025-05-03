@@ -48,10 +48,10 @@ const copyArrayOrNull = (o) => {
   return (Array.isArray(o) && [...o]) || null;
 };
 
-export const newLayoutObject = (cfg) => {
+export const newLayoutObject = (cfg, isMaximized) => {
   const layout = {
     title: {
-      y: 0.94,
+      y: isMaximized ? 0.98 : 0.94,
       font: {
         family: "Roboto",
         size: 18,
