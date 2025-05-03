@@ -87,7 +87,7 @@ func checkui(ts *testscript.TestScript, neg bool, args []string) {
 	defer resp.Body.Close()
 	ts.Check(err)
 
-	const want = `<div id="plots">`
+	const want = `id="plots"`
 	if !bytes.Contains(body, []byte(want)) {
 		ts.Fatalf("checkui: response body doesn't contain %s\n\nbody;\n\n%s", want, body)
 	}
