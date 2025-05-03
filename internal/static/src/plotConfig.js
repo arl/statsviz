@@ -1,5 +1,5 @@
 import * as ui from "./ui.js";
-import Plotly from "plotly.js-cartesian-dist-min";
+import Plotly from "plotly.js-cartesian-dist";
 import { formatFunction } from "./utils.js";
 
 const debugMode = true;
@@ -8,6 +8,7 @@ export const newConfigObject = (cfg, isMaximized) => {
   return {
     showEditInChartStudio: debugMode,
     plotlyServerURL: debugMode ? "https://chart-studio.plotly.com" : ":",
+    responsive: isMaximized,
     displaylogo: false,
     displayModeBar: true,
     modeBarButtonsToRemove: [
@@ -47,10 +48,7 @@ const copyArrayOrNull = (o) => {
   return (Array.isArray(o) && [...o]) || null;
 };
 
-export const plotWidth = 630;
-export const plotHeight = 450;
-
-export const newLayoutObject = (cfg, isMaximized) => {
+export const newLayoutObject = (cfg) => {
   const layout = {
     title: {
       y: 0.94,
@@ -71,8 +69,6 @@ export const newLayoutObject = (cfg, isMaximized) => {
     font: {
       color: cfg.layout.font_color,
     },
-    width: isMaximized ? null : plotWidth,
-    height: isMaximized ? null : plotHeight,
     hovermode: "x",
     barmode: cfg.layout.barmode,
     xaxis: {

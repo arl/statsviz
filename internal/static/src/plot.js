@@ -1,40 +1,47 @@
 import * as theme from "./theme.js";
 import { newConfigObject, newLayoutObject, themeColors } from "./plotConfig.js";
 import { formatFunction } from "./utils.js";
-import { plotWidth, plotHeight } from "./plotConfig.js";
-import Plotly from "plotly.js-cartesian-dist-min";
+import Plotly from "plotly.js-cartesian-dist";
 import tippy, { followCursor } from "tippy.js";
 import "tippy.js/dist/tippy.css";
 
 const plotsDiv = document.getElementById("plots");
 
 class Plot {
+  #htmlElt;
+  #plotlyLayout;
+  #plotlyConfig;
+  #lastData;
+  #updateCount;
+  #maximized;
+  #cfg;
+  #dataTemplate;
+
   constructor(cfg) {
     cfg.layout.paper_bgcolor = themeColors[theme.getThemeMode()].paper_bgcolor;
     cfg.layout.plot_bgcolor = themeColors[theme.getThemeMode()].plot_bgcolor;
     cfg.layout.font_color = themeColors[theme.getThemeMode()].font_color;
 
-    this._hidden = false;
-    this._maximized = false;
-    this._cfg = cfg;
-    this._updateCount = 0;
-    this._dataTemplate = [];
-    this._lastData = [{ x: new Date() }];
+    this.#maximized = false;
+    this.#cfg = cfg;
+    this.#updateCount = 0;
+    this.#dataTemplate = [];
+    this.#lastData = [{ x: new Date() }];
 
-    if (this._cfg.type == "heatmap") {
-      this._dataTemplate.push({
+    if (this.#cfg.type == "heatmap") {
+      this.#dataTemplate.push({
         type: "heatmap",
         x: null,
-        y: this._cfg.buckets,
+        y: this.#cfg.buckets,
         z: null,
         showlegend: false,
-        colorscale: this._cfg.colorscale,
-        custom_data: this._cfg.custom_data,
+        colorscale: this.#cfg.colorscale,
+        custom_data: this.#cfg.custom_data,
       });
     } else {
-      this._dataTemplate = this._cfg.subplots.map((subplot) => {
+      this.#dataTemplate = this.#cfg.subplots.map((subplot) => {
         return {
-          type: this._cfg.type,
+          type: this.#cfg.type,
           x: null,
           y: null,
           name: subplot.name,
@@ -43,41 +50,46 @@ class Plot {
       });
     }
 
-    this._plotlyLayout = newLayoutObject(cfg, this._maximized);
-    this._plotlyConfig = newConfigObject(cfg, this._maximized);
+    this.#plotlyLayout = newLayoutObject(cfg);
+    this.#plotlyConfig = newConfigObject(cfg, this.#maximized);
   }
 
   name() {
-    return this._cfg.name;
+    return this.#cfg.name;
   }
 
   hide() {
-    this._htmlElt.hidden = true;
+    this.#htmlElt.hidden = true;
   }
 
   show() {
-    this._htmlElt.hidden = false;
+    this.#htmlElt.hidden = false;
   }
 
   isVisible() {
-    return !this._htmlElt.hidden;
+    return !this.#htmlElt.hidden;
   }
 
   createElement(div) {
-    this._htmlElt = div;
-    // Pass a single data with no data to create an empty plot, this removes
-    // the 'bad time formatting' warning at startup.
+    this.#htmlElt = div;
+
+    // Measure the final CSS width.
+    const initialWidth = div.clientWidth;
+    this.#plotlyLayout.width = initialWidth;
+
+    // Pass a single data with no data to create an empty plot (this removes
+    // the 'bad time formatting' warning at startup).
     Plotly.newPlot(
-      this._htmlElt,
-      this._lastData,
-      this._plotlyLayout,
-      this._plotlyConfig
+      this.#htmlElt,
+      this.#lastData,
+      this.#plotlyLayout,
+      this.#plotlyConfig
     );
-    if (this._cfg.type == "heatmap") {
+    if (this.#cfg.type == "heatmap") {
       this._installHeatmapTooltip();
     }
 
-    this._htmlElt.infoText = this._cfg.infoText
+    this.#htmlElt.infoText = this.#cfg.infoText
       .split("\n")
       .map((line) => `<p>${line}</p>`)
       .join("");
@@ -91,7 +103,7 @@ class Plot {
       plugins: [followCursor],
     };
     const instance = tippy(document.body, options);
-    const hover = this._cfg.hover;
+    const hover = this.#cfg.hover;
     const formatYUnit = formatFunction(hover.yunit);
 
     const onHover = (data) => {
@@ -124,124 +136,115 @@ class Plot {
       instance.setContent(data.points.map(pt2txt)[0]);
       instance.show();
     };
-    const onUnhover = (data) => {
+    const onUnhover = (_data) => {
       instance.hide();
     };
 
-    this._htmlElt.on("plotly_hover", onHover).on("plotly_unhover", onUnhover);
+    this.#htmlElt.on("plotly_hover", onHover).on("plotly_unhover", onUnhover);
   }
 
-  _extractData(data) {
-    const serie = data.series.get(this._cfg.name);
-    if (this._cfg.type == "heatmap") {
-      this._dataTemplate[0].x = data.times;
-      this._dataTemplate[0].z = serie;
-      this._dataTemplate[0].hoverinfo = "none";
-      this._dataTemplate[0].colorbar = { len: "350", lenmode: "pixels" };
+  #extractData(data) {
+    const serie = data.series.get(this.#cfg.name);
+    if (this.#cfg.type == "heatmap") {
+      this.#dataTemplate[0].x = data.times;
+      this.#dataTemplate[0].z = serie;
+      this.#dataTemplate[0].hoverinfo = "none";
+      this.#dataTemplate[0].colorbar = { len: "350", lenmode: "pixels" };
     } else {
-      for (let i = 0; i < this._dataTemplate.length; i++) {
-        this._dataTemplate[i].x = data.times;
-        this._dataTemplate[i].y = serie[i];
-        this._dataTemplate[i].stackgroup = this._cfg.subplots[i].stackgroup;
-        this._dataTemplate[i].hoveron = this._cfg.subplots[i].hoveron;
-        this._dataTemplate[i].type =
-          this._cfg.subplots[i].type || this._cfg.type;
-        this._dataTemplate[i].marker = {
-          color: this._cfg.subplots[i].color,
+      for (let i = 0; i < this.#dataTemplate.length; i++) {
+        this.#dataTemplate[i].x = data.times;
+        this.#dataTemplate[i].y = serie[i];
+        this.#dataTemplate[i].stackgroup = this.#cfg.subplots[i].stackgroup;
+        this.#dataTemplate[i].hoveron = this.#cfg.subplots[i].hoveron;
+        this.#dataTemplate[i].type =
+          this.#cfg.subplots[i].type || this.#cfg.type;
+        this.#dataTemplate[i].marker = {
+          color: this.#cfg.subplots[i].color,
         };
       }
     }
-    return this._dataTemplate;
+    return this.#dataTemplate;
   }
 
   update(xrange, data, shapes, force) {
-    this._lastData = this._extractData(data);
-    this._updateCount++;
+    this.#lastData = this.#extractData(data);
+    this.#updateCount++;
     if (
       force ||
-      this._cfg.updateFreq == 0 ||
-      this._updateCount % this._cfg.updateFreq == 0
+      this.#cfg.updateFreq == 0 ||
+      this.#updateCount % this.#cfg.updateFreq == 0
     ) {
       // Update layout with vertical shapes if necessary.
-      if (this._cfg.events != "") {
-        this._plotlyLayout.shapes = shapes.get(this._cfg.events);
+      if (this.#cfg.events != "") {
+        this.#plotlyLayout.shapes = shapes.get(this.#cfg.events);
       }
 
       // Move the xaxis time range.
-      this._plotlyLayout.xaxis.range = xrange;
+      this.#plotlyLayout.xaxis.range = xrange;
 
-      if (this._maximized) {
-        this._plotlyLayout.width = plotsDiv.clientWidth;
-        this._plotlyLayout.height = null;
-        this._plotlyConfig.responsive = true;
+      if (this.#maximized) {
+        this.#plotlyLayout.width = plotsDiv.clientWidth;
+        this.#plotlyConfig.responsive = true;
       } else {
-        this._plotlyLayout.width = plotWidth;
-        this._plotlyLayout.height = plotHeight;
-        this._plotlyConfig.responsive = false;
+        this.#plotlyLayout.height = 480;
+        this.#plotlyConfig.responsive = false;
       }
 
-      Plotly.react(
-        this._htmlElt,
-        this._lastData,
-        this._plotlyLayout,
-        this._plotlyConfig
-      );
+      // **Re‐measure** container width each time
+      const newWidth = this.#maximized
+        ? plotsDiv.clientWidth
+        : this.#htmlElt.clientWidth;
+      this.#plotlyLayout.width = newWidth;
+
+      this.#react();
     }
   }
 
   maximize() {
-    this._maximized = true;
+    this.#maximized = true;
     const plotsDiv = document.getElementById("plots");
 
-    this._plotlyLayout = newLayoutObject(this._cfg, this._maximized);
-    this._plotlyConfig = newConfigObject(this._cfg, this._maximized);
+    this.#plotlyLayout = newLayoutObject(this.#cfg);
+    this.#plotlyConfig = newConfigObject(this.#cfg, this.#maximized);
 
-    this._plotlyLayout.width = plotsDiv.clientWidth;
-    // this._plotlyLayout.height = plotsDiv.clientHeight;
-    this._plotlyLayout.height = 2 * plotHeight;
-    this._plotlyConfig.responsive = true;
-    Plotly.react(
-      this._htmlElt,
-      this._lastData,
-      this._plotlyLayout,
-      this._plotlyConfig
-    );
+    this.#plotlyLayout.width = plotsDiv.clientWidth;
+    this.#plotlyLayout.height = plotsDiv.parentElement.clientHeight - 50;
+
+    this.#react();
   }
 
   minimize() {
-    this._maximized = false;
+    this.#maximized = false;
 
-    this._plotlyLayout = newLayoutObject(this._cfg, this._maximized);
-    this._plotlyConfig = newConfigObject(this._cfg, this._maximized);
+    this.#plotlyLayout = newLayoutObject(this.#cfg);
+    this.#plotlyConfig = newConfigObject(this.#cfg, this.#maximized);
 
-    this._plotlyLayout.width = plotWidth;
-    this._plotlyLayout.height = plotHeight;
-    this._plotlyConfig.responsive = false;
+    this.#react();
+  }
+
+  #react() {
     Plotly.react(
-      this._htmlElt,
-      this._lastData,
-      this._plotlyLayout,
-      this._plotlyConfig
+      this.#htmlElt,
+      this.#lastData,
+      this.#plotlyLayout,
+      this.#plotlyConfig
     );
   }
 
-  /**
-   * update theme color and immediately force plot redraw to apply the new theme
-   */
   updateTheme() {
     const themeMode = theme.getThemeMode();
-    this._cfg.layout.paper_bgcolor = themeColors[themeMode].paper_bgcolor;
-    this._cfg.layout.plot_bgcolor = themeColors[themeMode].plot_bgcolor;
-    this._cfg.layout.font_color = themeColors[themeMode].font_color;
+    this.#cfg.layout.paper_bgcolor = themeColors[themeMode].paper_bgcolor;
+    this.#cfg.layout.plot_bgcolor = themeColors[themeMode].plot_bgcolor;
+    this.#cfg.layout.font_color = themeColors[themeMode].font_color;
 
-    this._plotlyLayout = newLayoutObject(this._cfg, this._maximized);
-    this._plotlyConfig = newConfigObject(this._cfg, this._maximized);
+    this.#plotlyLayout = newLayoutObject(this.#cfg);
+    this.#plotlyConfig = newConfigObject(this.#cfg, this.#maximized);
 
     Plotly.react(
-      this._htmlElt,
-      this._lastData,
-      this._plotlyLayout,
-      this._plotlyConfig
+      this.#htmlElt,
+      this.#lastData,
+      this.#plotlyLayout,
+      this.#plotlyConfig
     );
   }
 }
