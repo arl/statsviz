@@ -1,4 +1,5 @@
 import * as theme from "./theme.js";
+import { plotMgr } from "./app.js";
 
 export let paused = false;
 export let gcEnabled = true;
@@ -32,6 +33,7 @@ export function initNav(onUpdate) {
     localStorage.setItem("theme-mode", newTheme);
 
     theme.updateThemeMode();
+    plotMgr.plots.forEach((p) => p.updateTheme());
     onUpdate(true);
   });
 

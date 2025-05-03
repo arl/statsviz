@@ -14,8 +14,8 @@
         class="btn btn-outline-secondary position-absolute start-0"
         type="button"
         data-bs-toggle="offcanvas"
-        data-bs-target="#sidebarOffcanvas"
-        aria-controls="sidebarOffcanvas"
+        data-bs-target="#sidebar"
+        aria-controls="sidebar"
       >
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -40,24 +40,14 @@
     </nav>
 
     <div class="d-flex flex-grow-1">
-      <!-- Unified Offcanvas Sidebar for all devices -->
       <div
         class="offcanvas offcanvas-start"
         tabindex="-1"
-        id="sidebarOffcanvas"
-        aria-labelledby="sidebarOffcanvasLabel"
+        id="sidebar"
+        aria-labelledby="sidebarLabel"
       >
         <div class="offcanvas-header">
-          <h5 id="sidebarOffcanvasLabel" class="d-flex align-items-center">
-            statsviz
-            <img
-              src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-              alt="GitHub"
-              width="20"
-              height="20"
-              class="ms-1"
-            />
-          </h5>
+          <h5 id="sidebarLabel" class="d-flex align-items-center">statsviz</h5>
           <button
             type="button"
             class="btn-close text-reset"
@@ -124,7 +114,8 @@
             >
               statsviz
               <img
-                src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                id="github-logo"
+                src="./github-mark.svg"
                 alt="GitHub"
                 width="20"
                 height="20"
