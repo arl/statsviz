@@ -7,13 +7,6 @@ import (
 )
 
 func init() {
-	// lastgc and timestamp are both special cases.
-
-	// lastgc draws vertical lines represeting GCs on certain plots.
-	useMetrics("lastgc")
-	// timestamp is the metric is the data for the time axis used on all plots.
-	useMetrics("timestamp")
-
 	registerPlotFunc(makeHeapGlobalPlot)
 	registerPlotFunc(makeHeapDetailsPlot)
 	registerPlotFunc(makeLiveObjectsPlot)
@@ -36,12 +29,6 @@ func init() {
 /*
  * heap (global)
  */
-var _ = useMetrics("heap-global",
-	"/memory/classes/heap/objects:bytes",
-	"/memory/classes/heap/unused:bytes",
-	"/memory/classes/heap/free:bytes",
-	"/memory/classes/heap/released:bytes",
-)
 
 type heapGlobal struct {
 	enabled bool
@@ -53,7 +40,8 @@ type heapGlobal struct {
 }
 
 func makeHeapGlobalPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"heap-global",
 		"/memory/classes/heap/objects:bytes",
 		"/memory/classes/heap/unused:bytes",
 		"/memory/classes/heap/free:bytes",
@@ -124,14 +112,6 @@ func (p *heapGlobal) values(samples []metrics.Sample) any {
 /*
  * heap (details)
  */
-var _ = useMetrics("heap-details",
-	"/memory/classes/heap/objects:bytes",
-	"/memory/classes/heap/unused:bytes",
-	"/memory/classes/heap/free:bytes",
-	"/memory/classes/heap/released:bytes",
-	"/memory/classes/heap/stacks:bytes",
-	"/gc/heap/goal:bytes",
-)
 
 type heapDetails struct {
 	enabled bool
@@ -145,7 +125,8 @@ type heapDetails struct {
 }
 
 func makeHeapDetailsPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"heap-details",
 		"/memory/classes/heap/objects:bytes",
 		"/memory/classes/heap/unused:bytes",
 		"/memory/classes/heap/free:bytes",
@@ -226,7 +207,6 @@ func (p *heapDetails) values(samples []metrics.Sample) any {
 /*
  * live objects
  */
-var _ = useMetrics("live-objects", "/gc/heap/objects:objects")
 
 type liveObjects struct {
 	enabled bool
@@ -235,7 +215,8 @@ type liveObjects struct {
 }
 
 func makeLiveObjectsPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"live-objects",
 		"/gc/heap/objects:objects",
 	)
 
@@ -277,10 +258,6 @@ func (p *liveObjects) values(samples []metrics.Sample) any {
 /*
  * live bytes
  */
-var _ = useMetrics("live-bytes",
-	"/gc/heap/allocs:bytes",
-	"/gc/heap/frees:bytes",
-)
 
 type liveBytes struct {
 	enabled bool
@@ -290,7 +267,8 @@ type liveBytes struct {
 }
 
 func makeLiveBytesPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"live-bytes",
 		"/gc/heap/allocs:bytes",
 		"/gc/heap/frees:bytes",
 	)
@@ -335,12 +313,6 @@ func (p *liveBytes) values(samples []metrics.Sample) any {
 /*
  * mspan mcache
  */
-var _ = useMetrics("mspan-mcache",
-	"/memory/classes/metadata/mspan/inuse:bytes",
-	"/memory/classes/metadata/mspan/free:bytes",
-	"/memory/classes/metadata/mcache/inuse:bytes",
-	"/memory/classes/metadata/mcache/free:bytes",
-)
 
 type mspanMcache struct {
 	enabled bool
@@ -352,7 +324,8 @@ type mspanMcache struct {
 }
 
 func makeMSpanMCachePlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"mspan-mcache",
 		"/memory/classes/metadata/mspan/inuse:bytes",
 		"/memory/classes/metadata/mspan/free:bytes",
 		"/memory/classes/metadata/mcache/inuse:bytes",
@@ -422,7 +395,6 @@ func (p *mspanMcache) values(samples []metrics.Sample) any {
 /*
  * goroutines
  */
-var _ = useMetrics("goroutines", "/sched/goroutines:goroutines")
 
 type goroutines struct {
 	enabled bool
@@ -431,7 +403,8 @@ type goroutines struct {
 }
 
 func makeGoroutinesPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"goroutines",
 		"/sched/goroutines:goroutines",
 	)
 
@@ -470,10 +443,6 @@ func (p *goroutines) values(samples []metrics.Sample) any {
 /*
  * size classes
  */
-var _ = useMetrics("size-classes",
-	"/gc/heap/allocs-by-size:bytes",
-	"/gc/heap/frees-by-size:bytes",
-)
 
 type sizeClasses struct {
 	enabled     bool
@@ -484,7 +453,8 @@ type sizeClasses struct {
 }
 
 func makeSizeClassesPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"size-classes",
 		"/gc/heap/allocs-by-size:bytes",
 		"/gc/heap/frees-by-size:bytes",
 	)
@@ -556,7 +526,6 @@ func (p *sizeClasses) values(samples []metrics.Sample) any {
 /*
  * gc pauses
  */
-var _ = useMetrics("gc-pauses", "/gc/pauses:seconds")
 
 type gcpauses struct {
 	enabled    bool
@@ -567,7 +536,8 @@ type gcpauses struct {
 }
 
 func makeGCPausesPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"gc-pauses",
 		"/gc/pauses:seconds",
 	)
 
@@ -619,7 +589,6 @@ func (p *gcpauses) values(samples []metrics.Sample) any {
 /*
  * time spent in runnable state
  */
-var _ = useMetrics("runnable-time", "/sched/latencies:seconds")
 
 type runnableTime struct {
 	enabled    bool
@@ -630,7 +599,8 @@ type runnableTime struct {
 }
 
 func makeRunnableTimePlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"runnable-time",
 		"/sched/latencies:seconds",
 	)
 
@@ -684,10 +654,6 @@ func (p *runnableTime) values(samples []metrics.Sample) any {
 /*
  * scheduling events
  */
-var _ = useMetrics("sched-events",
-	"/sched/latencies:seconds",
-	"/sched/gomaxprocs:threads",
-)
 
 type schedEvents struct {
 	enabled bool
@@ -698,7 +664,8 @@ type schedEvents struct {
 }
 
 func makeSchedEventsPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"sched-events",
 		"/sched/latencies:seconds",
 		"/sched/gomaxprocs:threads",
 	)
@@ -772,7 +739,6 @@ func (p *schedEvents) values(samples []metrics.Sample) any {
 /*
  * cgo
  */
-var _ = useMetrics("cgo", "/cgo/go-to-c-calls:calls")
 
 type cgo struct {
 	enabled  bool
@@ -781,7 +747,8 @@ type cgo struct {
 }
 
 func makeCGOPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"cgo",
 		"/cgo/go-to-c-calls:calls",
 	)
 
@@ -829,7 +796,6 @@ func (p *cgo) values(samples []metrics.Sample) any {
 /*
  * gc stack size
  */
-var _ = useMetrics("gc-stack-size", "/gc/stack/starting-size:bytes")
 
 type gcStackSize struct {
 	enabled  bool
@@ -837,7 +803,8 @@ type gcStackSize struct {
 }
 
 func makeGCStackSizePlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"gc-stack-size",
 		"/gc/stack/starting-size:bytes",
 	)
 
@@ -876,11 +843,6 @@ func (p *gcStackSize) values(samples []metrics.Sample) any {
 /*
  * GC cycles
  */
-var _ = useMetrics("gc-cycles",
-	"/gc/cycles/automatic:gc-cycles",
-	"/gc/cycles/forced:gc-cycles",
-	"/gc/cycles/total:gc-cycles",
-)
 
 type gcCycles struct {
 	enabled bool
@@ -893,7 +855,8 @@ type gcCycles struct {
 }
 
 func makeGCCyclesPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"gc-cycles",
 		"/gc/cycles/automatic:gc-cycles",
 		"/gc/cycles/forced:gc-cycles",
 		"/gc/cycles/total:gc-cycles",
@@ -963,12 +926,6 @@ func (p *gcCycles) values(samples []metrics.Sample) any {
 /*
 * mspan mcache
  */
-var _ = useMetrics("memory-classes",
-	"/memory/classes/os-stacks:bytes",
-	"/memory/classes/other:bytes",
-	"/memory/classes/profiling/buckets:bytes",
-	"/memory/classes/total:bytes",
-)
 
 type memoryClasses struct {
 	enabled bool
@@ -980,7 +937,8 @@ type memoryClasses struct {
 }
 
 func makeMemoryClassesPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"memory-classes",
 		"/memory/classes/os-stacks:bytes",
 		"/memory/classes/other:bytes",
 		"/memory/classes/profiling/buckets:bytes",
@@ -1050,13 +1008,6 @@ func (p *memoryClasses) values(samples []metrics.Sample) any {
 /*
 * cpu classes (gc)
  */
-var _ = useMetrics("cpu-classes-gc",
-	"/cpu/classes/gc/mark/assist:cpu-seconds",
-	"/cpu/classes/gc/mark/dedicated:cpu-seconds",
-	"/cpu/classes/gc/mark/idle:cpu-seconds",
-	"/cpu/classes/gc/pause:cpu-seconds",
-	"/cpu/classes/gc/total:cpu-seconds",
-)
 
 type cpuClassesGC struct {
 	enabled bool
@@ -1077,7 +1028,8 @@ type cpuClassesGC struct {
 }
 
 func makeCPUClassesGCPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"cpu-classes-gc",
 		"/cpu/classes/gc/mark/assist:cpu-seconds",
 		"/cpu/classes/gc/mark/dedicated:cpu-seconds",
 		"/cpu/classes/gc/mark/idle:cpu-seconds",
@@ -1186,10 +1138,6 @@ func (p *cpuClassesGC) values(samples []metrics.Sample) any {
 /*
 * mutex wait
  */
-var _ = useMetrics("mutex-wait",
-	"/sync/mutex/wait/total:seconds",
-)
-
 type mutexWait struct {
 	enabled      bool
 	idxMutexWait int
@@ -1199,7 +1147,8 @@ type mutexWait struct {
 }
 
 func makeMutexWaitPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"mutex-wait",
 		"/cpu/classes/gc/mark/assist:cpu-seconds",
 	)
 
@@ -1258,12 +1207,6 @@ func (p *mutexWait) values(samples []metrics.Sample) any {
 /*
  * gc scan
  */
-var _ = useMetrics("gc-scan",
-	"/gc/scan/globals:bytes",
-	"/gc/scan/heap:bytes",
-	"/gc/scan/stack:bytes",
-	"/gc/scan/total:bytes",
-)
 
 type gcScan struct {
 	enabled bool
@@ -1274,7 +1217,8 @@ type gcScan struct {
 }
 
 func makeGCScanPlot(idxs map[string]int) runtimeMetric {
-	indices, allFound := metricIndices(idxs,
+	indices, allFound := mapMetricsToIndices(idxs,
+		"gc-scan",
 		"/gc/scan/globals:bytes",
 		"/gc/scan/heap:bytes",
 		"/gc/scan/stack:bytes",
