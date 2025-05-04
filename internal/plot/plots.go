@@ -10,9 +10,9 @@ func init() {
 	// lastgc and timestamp are both special cases.
 
 	// lastgc draws vertical lines represeting GCs on certain plots.
-	registerRuntimePlot("lastgc")
+	useMetrics("lastgc")
 	// timestamp is the metric is the data for the time axis used on all plots.
-	registerRuntimePlot("timestamp")
+	useMetrics("timestamp")
 
 	registerPlotFunc(makeHeapGlobalPlot)
 	registerPlotFunc(makeHeapDetailsPlot)
@@ -36,7 +36,7 @@ func init() {
 /*
  * heap (global)
  */
-var _ = registerRuntimePlot("heap-global",
+var _ = useMetrics("heap-global",
 	"/memory/classes/heap/objects:bytes",
 	"/memory/classes/heap/unused:bytes",
 	"/memory/classes/heap/free:bytes",
@@ -122,7 +122,7 @@ func (p *heapGlobal) values(samples []metrics.Sample) any {
 /*
  * heap (details)
  */
-var _ = registerRuntimePlot("heap-details",
+var _ = useMetrics("heap-details",
 	"/memory/classes/heap/objects:bytes",
 	"/memory/classes/heap/unused:bytes",
 	"/memory/classes/heap/free:bytes",
@@ -222,7 +222,7 @@ func (p *heapDetails) values(samples []metrics.Sample) any {
 /*
  * live objects
  */
-var _ = registerRuntimePlot("live-objects", "/gc/heap/objects:objects")
+var _ = useMetrics("live-objects", "/gc/heap/objects:objects")
 
 type liveObjects struct {
 	enabled bool
@@ -271,7 +271,7 @@ func (p *liveObjects) values(samples []metrics.Sample) any {
 /*
  * live bytes
  */
-var _ = registerRuntimePlot("live-bytes",
+var _ = useMetrics("live-bytes",
 	"/gc/heap/allocs:bytes",
 	"/gc/heap/frees:bytes",
 )
@@ -327,7 +327,7 @@ func (p *liveBytes) values(samples []metrics.Sample) any {
 /*
  * mspan mcache
  */
-var _ = registerRuntimePlot("mspan-mcache",
+var _ = useMetrics("mspan-mcache",
 	"/memory/classes/metadata/mspan/inuse:bytes",
 	"/memory/classes/metadata/mspan/free:bytes",
 	"/memory/classes/metadata/mcache/inuse:bytes",
@@ -412,7 +412,7 @@ func (p *mspanMcache) values(samples []metrics.Sample) any {
 /*
  * goroutines
  */
-var _ = registerRuntimePlot("goroutines", "/sched/goroutines:goroutines")
+var _ = useMetrics("goroutines", "/sched/goroutines:goroutines")
 
 type goroutines struct {
 	enabled bool
@@ -458,7 +458,7 @@ func (p *goroutines) values(samples []metrics.Sample) any {
 /*
  * size classes
  */
-var _ = registerRuntimePlot("size-classes",
+var _ = useMetrics("size-classes",
 	"/gc/heap/allocs-by-size:bytes",
 	"/gc/heap/frees-by-size:bytes",
 )
@@ -542,7 +542,7 @@ func (p *sizeClasses) values(samples []metrics.Sample) any {
 /*
  * gc pauses
  */
-var _ = registerRuntimePlot("gc-pauses", "/gc/pauses:seconds")
+var _ = useMetrics("gc-pauses", "/gc/pauses:seconds")
 
 type gcpauses struct {
 	enabled    bool
@@ -603,7 +603,7 @@ func (p *gcpauses) values(samples []metrics.Sample) any {
 /*
  * time spent in runnable state
  */
-var _ = registerRuntimePlot("runnable-time", "/sched/latencies:seconds")
+var _ = useMetrics("runnable-time", "/sched/latencies:seconds")
 
 type runnableTime struct {
 	enabled    bool
@@ -666,7 +666,7 @@ func (p *runnableTime) values(samples []metrics.Sample) any {
 /*
  * scheduling events
  */
-var _ = registerRuntimePlot("sched-events",
+var _ = useMetrics("sched-events",
 	"/sched/latencies:seconds",
 	"/sched/gomaxprocs:threads",
 )
@@ -752,7 +752,7 @@ func (p *schedEvents) values(samples []metrics.Sample) any {
 /*
  * cgo
  */
-var _ = registerRuntimePlot("cgo", "/cgo/go-to-c-calls:calls")
+var _ = useMetrics("cgo", "/cgo/go-to-c-calls:calls")
 
 type cgo struct {
 	enabled  bool
@@ -807,7 +807,7 @@ func (p *cgo) values(samples []metrics.Sample) any {
 /*
  * gc stack size
  */
-var _ = registerRuntimePlot("gc-stack-size", "/gc/stack/starting-size:bytes")
+var _ = useMetrics("gc-stack-size", "/gc/stack/starting-size:bytes")
 
 type gcStackSize struct {
 	enabled  bool
@@ -852,7 +852,7 @@ func (p *gcStackSize) values(samples []metrics.Sample) any {
 /*
  * GC cycles
  */
-var _ = registerRuntimePlot("gc-cycles",
+var _ = useMetrics("gc-cycles",
 	"/gc/cycles/automatic:gc-cycles",
 	"/gc/cycles/forced:gc-cycles",
 	"/gc/cycles/total:gc-cycles",
@@ -937,7 +937,7 @@ func (p *gcCycles) values(samples []metrics.Sample) any {
 /*
 * mspan mcache
  */
-var _ = registerRuntimePlot("memory-classes",
+var _ = useMetrics("memory-classes",
 	"/memory/classes/os-stacks:bytes",
 	"/memory/classes/other:bytes",
 	"/memory/classes/profiling/buckets:bytes",
@@ -1023,7 +1023,7 @@ func (p *memoryClasses) values(samples []metrics.Sample) any {
 /*
 * cpu classes (gc)
  */
-var _ = registerRuntimePlot("cpu-classes-gc",
+var _ = useMetrics("cpu-classes-gc",
 	"/cpu/classes/gc/mark/assist:cpu-seconds",
 	"/cpu/classes/gc/mark/dedicated:cpu-seconds",
 	"/cpu/classes/gc/mark/idle:cpu-seconds",
@@ -1157,7 +1157,7 @@ func (p *cpuClassesGC) values(samples []metrics.Sample) any {
 /*
 * mutex wait
  */
-var _ = registerRuntimePlot("mutex-wait",
+var _ = useMetrics("mutex-wait",
 	"/sync/mutex/wait/total:seconds",
 )
 
@@ -1227,7 +1227,7 @@ func (p *mutexWait) values(samples []metrics.Sample) any {
 /*
  * gc scan
  */
-var _ = registerRuntimePlot("gc-scan",
+var _ = useMetrics("gc-scan",
 	"/gc/scan/globals:bytes",
 	"/gc/scan/heap:bytes",
 	"/gc/scan/stack:bytes",

@@ -52,15 +52,18 @@ type (
 		CustomData []float64       `json:"custom_data"`
 		Hover      HeapmapHover    `json:"hover"`
 	}
+
 	HeatmapLayout struct {
 		YAxis HeatmapYaxis `json:"yaxis"`
 	}
+
 	HeatmapYaxis struct {
 		Title    string    `json:"title"`
 		TickMode string    `json:"tickmode"`
 		TickVals []float64 `json:"tickvals"`
 		TickText []float64 `json:"ticktext"`
 	}
+
 	HeapmapHover struct {
 		YName string `json:"yname"`
 		YUnit string `json:"yunit"` // 'duration', 'bytes' or custom

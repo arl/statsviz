@@ -23,7 +23,7 @@ func registerPlotFunc(f plotFunc) {
 	plotFuncs = append(plotFuncs, f)
 }
 
-func registerRuntimePlot(name string, metrics ...string) bool {
+func useMetrics(name string, metrics ...string) bool {
 	if names == nil {
 		names = make(map[string]bool)
 		usedMetrics = make(map[string]struct{})
