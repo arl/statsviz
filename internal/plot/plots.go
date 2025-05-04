@@ -53,17 +53,19 @@ type heapGlobal struct {
 }
 
 func makeHeapGlobalPlot(idxs map[string]int) runtimeMetric {
-	idxobj, ok1 := idxs["/memory/classes/heap/objects:bytes"]
-	idxunused, ok2 := idxs["/memory/classes/heap/unused:bytes"]
-	idxfree, ok3 := idxs["/memory/classes/heap/free:bytes"]
-	idxreleased, ok4 := idxs["/memory/classes/heap/released:bytes"]
+	indices, allFound := metricIndices(idxs,
+		"/memory/classes/heap/objects:bytes",
+		"/memory/classes/heap/unused:bytes",
+		"/memory/classes/heap/free:bytes",
+		"/memory/classes/heap/released:bytes",
+	)
 
 	return &heapGlobal{
-		enabled:     ok1 && ok2 && ok3 && ok4,
-		idxobj:      idxobj,
-		idxunused:   idxunused,
-		idxfree:     idxfree,
-		idxreleased: idxreleased,
+		enabled:     allFound,
+		idxobj:      indices[0],
+		idxunused:   indices[1],
+		idxfree:     indices[2],
+		idxreleased: indices[3],
 	}
 }
 
@@ -143,21 +145,23 @@ type heapDetails struct {
 }
 
 func makeHeapDetailsPlot(idxs map[string]int) runtimeMetric {
-	idxobj, ok1 := idxs["/memory/classes/heap/objects:bytes"]
-	idxunused, ok2 := idxs["/memory/classes/heap/unused:bytes"]
-	idxfree, ok3 := idxs["/memory/classes/heap/free:bytes"]
-	idxreleased, ok4 := idxs["/memory/classes/heap/released:bytes"]
-	idxstacks, ok5 := idxs["/memory/classes/heap/stacks:bytes"]
-	idxgoal, ok6 := idxs["/gc/heap/goal:bytes"]
+	indices, allFound := metricIndices(idxs,
+		"/memory/classes/heap/objects:bytes",
+		"/memory/classes/heap/unused:bytes",
+		"/memory/classes/heap/free:bytes",
+		"/memory/classes/heap/released:bytes",
+		"/memory/classes/heap/stacks:bytes",
+		"/gc/heap/goal:bytes",
+	)
 
 	return &heapDetails{
-		enabled:     ok1 && ok2 && ok3 && ok4 && ok5 && ok6,
-		idxobj:      idxobj,
-		idxunused:   idxunused,
-		idxfree:     idxfree,
-		idxreleased: idxreleased,
-		idxstacks:   idxstacks,
-		idxgoal:     idxgoal,
+		enabled:     allFound,
+		idxobj:      indices[0],
+		idxunused:   indices[1],
+		idxfree:     indices[2],
+		idxreleased: indices[3],
+		idxstacks:   indices[4],
+		idxgoal:     indices[5],
 	}
 }
 
@@ -231,11 +235,13 @@ type liveObjects struct {
 }
 
 func makeLiveObjectsPlot(idxs map[string]int) runtimeMetric {
-	idxobjects, ok := idxs["/gc/heap/objects:objects"]
+	indices, allFound := metricIndices(idxs,
+		"/gc/heap/objects:objects",
+	)
 
 	return &liveObjects{
-		enabled:    ok,
-		idxobjects: idxobjects,
+		enabled:    allFound,
+		idxobjects: indices[0],
 	}
 }
 
@@ -284,13 +290,15 @@ type liveBytes struct {
 }
 
 func makeLiveBytesPlot(idxs map[string]int) runtimeMetric {
-	idxallocs, ok1 := idxs["/gc/heap/allocs:bytes"]
-	idxfrees, ok2 := idxs["/gc/heap/frees:bytes"]
+	indices, allFound := metricIndices(idxs,
+		"/gc/heap/allocs:bytes",
+		"/gc/heap/frees:bytes",
+	)
 
 	return &liveBytes{
-		enabled:   ok1 && ok2,
-		idxallocs: idxallocs,
-		idxfrees:  idxfrees,
+		enabled:   allFound,
+		idxallocs: indices[0],
+		idxfrees:  indices[1],
 	}
 }
 
@@ -344,17 +352,19 @@ type mspanMcache struct {
 }
 
 func makeMSpanMCachePlot(idxs map[string]int) runtimeMetric {
-	idxmspanInuse, ok1 := idxs["/memory/classes/metadata/mspan/inuse:bytes"]
-	idxmspanFree, ok2 := idxs["/memory/classes/metadata/mspan/free:bytes"]
-	idxmcacheInuse, ok3 := idxs["/memory/classes/metadata/mcache/inuse:bytes"]
-	idxmcacheFree, ok4 := idxs["/memory/classes/metadata/mcache/free:bytes"]
+	indices, allFound := metricIndices(idxs,
+		"/memory/classes/metadata/mspan/inuse:bytes",
+		"/memory/classes/metadata/mspan/free:bytes",
+		"/memory/classes/metadata/mcache/inuse:bytes",
+		"/memory/classes/metadata/mcache/free:bytes",
+	)
 
 	return &mspanMcache{
-		enabled:        ok1 && ok2 && ok3 && ok4,
-		idxmspanInuse:  idxmspanInuse,
-		idxmspanFree:   idxmspanFree,
-		idxmcacheInuse: idxmcacheInuse,
-		idxmcacheFree:  idxmcacheFree,
+		enabled:        allFound,
+		idxmspanInuse:  indices[0],
+		idxmspanFree:   indices[1],
+		idxmcacheInuse: indices[2],
+		idxmcacheFree:  indices[3],
 	}
 }
 
@@ -421,11 +431,13 @@ type goroutines struct {
 }
 
 func makeGoroutinesPlot(idxs map[string]int) runtimeMetric {
-	idxgs, ok := idxs["/sched/goroutines:goroutines"]
+	indices, allFound := metricIndices(idxs,
+		"/sched/goroutines:goroutines",
+	)
 
 	return &goroutines{
-		enabled: ok,
-		idxgs:   idxgs,
+		enabled: allFound,
+		idxgs:   indices[0],
 	}
 }
 
@@ -472,13 +484,15 @@ type sizeClasses struct {
 }
 
 func makeSizeClassesPlot(idxs map[string]int) runtimeMetric {
-	idxallocs, ok1 := idxs["/gc/heap/allocs-by-size:bytes"]
-	idxfrees, ok2 := idxs["/gc/heap/frees-by-size:bytes"]
+	indices, allFound := metricIndices(idxs,
+		"/gc/heap/allocs-by-size:bytes",
+		"/gc/heap/frees-by-size:bytes",
+	)
 
 	return &sizeClasses{
-		enabled:   ok1 && ok2,
-		idxallocs: idxallocs,
-		idxfrees:  idxfrees,
+		enabled:   allFound,
+		idxallocs: indices[0],
+		idxfrees:  indices[1],
 	}
 }
 
@@ -533,7 +547,7 @@ func (p *sizeClasses) values(samples []metrics.Sample) any {
 	allocsBySize := samples[p.idxallocs].Value.Float64Histogram()
 	freesBySize := samples[p.idxfrees].Value.Float64Histogram()
 
-	for i := 0; i < len(p.sizeClasses); i++ {
+	for i := range p.sizeClasses {
 		p.sizeClasses[i] = allocsBySize.Counts[i] - freesBySize.Counts[i]
 	}
 	return p.sizeClasses
@@ -553,11 +567,13 @@ type gcpauses struct {
 }
 
 func makeGCPausesPlot(idxs map[string]int) runtimeMetric {
-	idxgcpauses, ok := idxs["/gc/pauses:seconds"]
+	indices, allFound := metricIndices(idxs,
+		"/gc/pauses:seconds",
+	)
 
 	return &gcpauses{
-		enabled:     ok,
-		idxgcpauses: idxgcpauses,
+		enabled:     allFound,
+		idxgcpauses: indices[0],
 	}
 }
 
@@ -614,11 +630,13 @@ type runnableTime struct {
 }
 
 func makeRunnableTimePlot(idxs map[string]int) runtimeMetric {
-	idxschedlat, ok := idxs["/sched/latencies:seconds"]
+	indices, allFound := metricIndices(idxs,
+		"/sched/latencies:seconds",
+	)
 
 	return &runnableTime{
-		enabled:     ok,
-		idxschedlat: idxschedlat,
+		enabled:     allFound,
+		idxschedlat: indices[0],
 	}
 }
 
@@ -680,13 +698,15 @@ type schedEvents struct {
 }
 
 func makeSchedEventsPlot(idxs map[string]int) runtimeMetric {
-	idxschedlat, ok1 := idxs["/sched/latencies:seconds"]
-	idxGomaxprocs, ok2 := idxs["/sched/gomaxprocs:threads"]
+	indices, allFound := metricIndices(idxs,
+		"/sched/latencies:seconds",
+		"/sched/gomaxprocs:threads",
+	)
 
 	return &schedEvents{
-		enabled:       ok1 && ok2,
-		idxschedlat:   idxschedlat,
-		idxGomaxprocs: idxGomaxprocs,
+		enabled:       allFound,
+		idxschedlat:   indices[0],
+		idxGomaxprocs: indices[1],
 		lasttot:       math.MaxUint64,
 	}
 }
@@ -761,11 +781,13 @@ type cgo struct {
 }
 
 func makeCGOPlot(idxs map[string]int) runtimeMetric {
-	idxgo2c, ok := idxs["/cgo/go-to-c-calls:calls"]
+	indices, allFound := metricIndices(idxs,
+		"/cgo/go-to-c-calls:calls",
+	)
 
 	return &cgo{
-		enabled:  ok,
-		idxgo2c:  idxgo2c,
+		enabled:  allFound,
+		idxgo2c:  indices[0],
 		lastgo2c: math.MaxUint64,
 	}
 }
@@ -815,11 +837,13 @@ type gcStackSize struct {
 }
 
 func makeGCStackSizePlot(idxs map[string]int) runtimeMetric {
-	idxstack, ok := idxs["/gc/stack/starting-size:bytes"]
+	indices, allFound := metricIndices(idxs,
+		"/gc/stack/starting-size:bytes",
+	)
 
 	return &gcStackSize{
-		enabled:  ok,
-		idxstack: idxstack,
+		enabled:  allFound,
+		idxstack: indices[0],
 	}
 }
 
@@ -869,15 +893,17 @@ type gcCycles struct {
 }
 
 func makeGCCyclesPlot(idxs map[string]int) runtimeMetric {
-	idxAutomatic, ok1 := idxs["/gc/cycles/automatic:gc-cycles"]
-	idxForced, ok2 := idxs["/gc/cycles/forced:gc-cycles"]
-	idxTotal, ok3 := idxs["/gc/cycles/total:gc-cycles"]
+	indices, allFound := metricIndices(idxs,
+		"/gc/cycles/automatic:gc-cycles",
+		"/gc/cycles/forced:gc-cycles",
+		"/gc/cycles/total:gc-cycles",
+	)
 
 	return &gcCycles{
-		enabled:      ok1 && ok2 && ok3,
-		idxAutomatic: idxAutomatic,
-		idxForced:    idxForced,
-		idxTotal:     idxTotal,
+		enabled:      allFound,
+		idxAutomatic: indices[0],
+		idxForced:    indices[1],
+		idxTotal:     indices[2],
 	}
 }
 
@@ -954,17 +980,18 @@ type memoryClasses struct {
 }
 
 func makeMemoryClassesPlot(idxs map[string]int) runtimeMetric {
-	idxOSStacks, ok1 := idxs["/memory/classes/os-stacks:bytes"]
-	idxOther, ok2 := idxs["/memory/classes/other:bytes"]
-	idxProfBuckets, ok3 := idxs["/memory/classes/profiling/buckets:bytes"]
-	idxTotal, ok4 := idxs["/memory/classes/total:bytes"]
-
+	indices, allFound := metricIndices(idxs,
+		"/memory/classes/os-stacks:bytes",
+		"/memory/classes/other:bytes",
+		"/memory/classes/profiling/buckets:bytes",
+		"/memory/classes/total:bytes",
+	)
 	return &memoryClasses{
-		enabled:        ok1 && ok2 && ok3 && ok4,
-		idxOSStacks:    idxOSStacks,
-		idxOther:       idxOther,
-		idxProfBuckets: idxProfBuckets,
-		idxTotal:       idxTotal,
+		enabled:        allFound,
+		idxOSStacks:    indices[0],
+		idxOther:       indices[1],
+		idxProfBuckets: indices[2],
+		idxTotal:       indices[3],
 	}
 }
 
@@ -1050,19 +1077,21 @@ type cpuClassesGC struct {
 }
 
 func makeCPUClassesGCPlot(idxs map[string]int) runtimeMetric {
-	idxMarkAssist, ok1 := idxs["/cpu/classes/gc/mark/assist:cpu-seconds"]
-	idxMarkDedicated, ok2 := idxs["/cpu/classes/gc/mark/dedicated:cpu-seconds"]
-	idxMarkIdle, ok3 := idxs["/cpu/classes/gc/mark/idle:cpu-seconds"]
-	idxPause, ok4 := idxs["/cpu/classes/gc/pause:cpu-seconds"]
-	idxTotal, ok5 := idxs["/cpu/classes/gc/total:cpu-seconds"]
+	indices, allFound := metricIndices(idxs,
+		"/cpu/classes/gc/mark/assist:cpu-seconds",
+		"/cpu/classes/gc/mark/dedicated:cpu-seconds",
+		"/cpu/classes/gc/mark/idle:cpu-seconds",
+		"/cpu/classes/gc/pause:cpu-seconds",
+		"/cpu/classes/gc/total:cpu-seconds",
+	)
 
 	return &cpuClassesGC{
-		enabled:          ok1 && ok2 && ok3 && ok4 && ok5,
-		idxMarkAssist:    idxMarkAssist,
-		idxMarkDedicated: idxMarkDedicated,
-		idxMarkIdle:      idxMarkIdle,
-		idxPause:         idxPause,
-		idxTotal:         idxTotal,
+		enabled:          allFound,
+		idxMarkAssist:    indices[0],
+		idxMarkDedicated: indices[1],
+		idxMarkIdle:      indices[2],
+		idxPause:         indices[3],
+		idxTotal:         indices[4],
 	}
 }
 
@@ -1170,11 +1199,13 @@ type mutexWait struct {
 }
 
 func makeMutexWaitPlot(idxs map[string]int) runtimeMetric {
-	idxMutexWait, ok := idxs["/cpu/classes/gc/mark/assist:cpu-seconds"]
+	indices, allFound := metricIndices(idxs,
+		"/cpu/classes/gc/mark/assist:cpu-seconds",
+	)
 
 	return &mutexWait{
-		enabled:      ok,
-		idxMutexWait: idxMutexWait,
+		enabled:      allFound,
+		idxMutexWait: indices[0],
 	}
 }
 
@@ -1243,15 +1274,17 @@ type gcScan struct {
 }
 
 func makeGCScanPlot(idxs map[string]int) runtimeMetric {
-	idxGlobals, ok1 := idxs["/gc/scan/globals:bytes"]
-	idxHeap, ok2 := idxs["/gc/scan/heap:bytes"]
-	idxStack, ok3 := idxs["/gc/scan/stack:bytes"]
+	indices, allFound := metricIndices(idxs,
+		"/gc/scan/globals:bytes",
+		"/gc/scan/heap:bytes",
+		"/gc/scan/stack:bytes",
+	)
 
 	return &gcScan{
-		enabled:    ok1 && ok2 && ok3,
-		idxGlobals: idxGlobals,
-		idxHeap:    idxHeap,
-		idxStack:   idxStack,
+		enabled:    allFound,
+		idxGlobals: indices[0],
+		idxHeap:    indices[1],
+		idxStack:   indices[2],
 	}
 }
 
@@ -1313,7 +1346,7 @@ func (p *gcScan) values(samples []metrics.Sample) any {
 
 func floatseq(n int) []float64 {
 	seq := make([]float64, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		seq[i] = float64(i)
 	}
 	return seq

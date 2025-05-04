@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	names       map[string]bool
-	usedMetrics map[string]struct{}
+	plotNames   = make(map[string]bool)
+	usedMetrics = make(map[string]struct{})
 )
 
 type plotFunc func(idxs map[string]int) runtimeMetric
@@ -23,15 +23,11 @@ func registerPlotFunc(f plotFunc) {
 	plotFuncs = append(plotFuncs, f)
 }
 
-func useMetrics(name string, metrics ...string) bool {
-	if names == nil {
-		names = make(map[string]bool)
-		usedMetrics = make(map[string]struct{})
+func useMetrics(plot string, metrics ...string) bool {
+	if plotNames[plot] {
+		panic(plot + " is an already reserved plot name")
 	}
-	if names[name] {
-		panic(name + " is an already reserved plot name")
-	}
-	names[name] = true
+	plotNames[plot] = true
 
 	// Record the metrics we use.
 	for _, m := range metrics {
@@ -41,8 +37,25 @@ func useMetrics(name string, metrics ...string) bool {
 	return true
 }
 
+// metricIndices retrieves indices for the specified metrics, returning both
+// the indices and whether all metrics were found.
+func metricIndices(idxs map[string]int, metricNames ...string) ([]int, bool) {
+	indices := make([]int, len(metricNames))
+	allFound := true
+
+	for i, name := range metricNames {
+		idx, ok := idxs[name]
+		if !ok {
+			allFound = false
+		}
+		indices[i] = idx
+	}
+
+	return indices, allFound
+}
+
 func IsReservedPlotName(name string) bool {
-	return names[name]
+	return plotNames[name]
 }
 
 type runtimeMetric interface {
