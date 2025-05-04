@@ -4,6 +4,8 @@ import { formatFunction } from "./utils.js";
 
 const debugMode = true;
 
+export const defaultPlotHeight = 480;
+
 export const newConfigObject = (cfg, isMaximized) => {
   return {
     showEditInChartStudio: debugMode,

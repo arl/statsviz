@@ -1,5 +1,10 @@
 import * as theme from "./theme.js";
-import { newConfigObject, newLayoutObject, themeColors } from "./plotConfig.js";
+import {
+  defaultPlotHeight,
+  newConfigObject,
+  newLayoutObject,
+  themeColors,
+} from "./plotConfig.js";
 import { formatFunction } from "./utils.js";
 import Plotly from "plotly.js-cartesian-dist";
 import tippy, { followCursor } from "tippy.js";
@@ -76,15 +81,18 @@ class Plot {
     // Measure the final CSS width.
     const initialWidth = div.clientWidth;
     this.#plotlyLayout.width = initialWidth;
+    this.#plotlyLayout.height = defaultPlotHeight;
 
     // Pass a single data with no data to create an empty plot (this removes
     // the 'bad time formatting' warning at startup).
+
     Plotly.newPlot(
       this.#htmlElt,
       this.#lastData,
       this.#plotlyLayout,
       this.#plotlyConfig
     );
+
     if (this.#cfg.type == "heatmap") {
       this._installHeatmapTooltip();
     }
@@ -186,7 +194,7 @@ class Plot {
         this.#plotlyLayout.width = plotsDiv.clientWidth;
         this.#plotlyConfig.responsive = true;
       } else {
-        this.#plotlyLayout.height = 480;
+        this.#plotlyLayout.height = defaultPlotHeight;
         this.#plotlyConfig.responsive = false;
       }
 
