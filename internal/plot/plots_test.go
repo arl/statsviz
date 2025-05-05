@@ -34,7 +34,7 @@ func TestUnusedRuntimeMetrics(t *testing.T) {
 	// runtime/metrics are not used in any Statsviz plot.
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 	for _, m := range metrics.All() {
-		if _, ok := usedMetrics[m.Name]; !ok && !strings.HasPrefix(m.Name, "/godebug/") {
+		if _, ok := l.usedMetrics[m.Name]; !ok && !strings.HasPrefix(m.Name, "/godebug/") {
 			fmt.Fprintf(w, "%s\t%s\n", m.Name, kindstr(m.Kind))
 		}
 	}

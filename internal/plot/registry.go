@@ -10,50 +10,48 @@ import (
 	"time"
 )
 
-var (
-	plotNames = map[string]bool{
-		// not actual plot names but reserved 'series' names.
-		"timestamp": true,
-		"lastgc":    true,
-	}
-	usedMetrics = map[string]struct{}{}
-)
+type plotFunc func(l *List, name string) runtimeMetric
 
-type plotFunc func(idxs map[string]int) runtimeMetric
+var reg registry
 
-var plotFuncs []plotFunc
-
-func registerPlotFunc(f plotFunc) {
-	plotFuncs = append(plotFuncs, f)
+type registry struct {
+	plotFuncs map[string]plotFunc
+	order     []string // keep track of insertion order
 }
 
-// mapMetricsToIndices retrieves indices for the specified metrics, returning both
-// the indices and whether all metrics were found. Panics if the plot name has
-// already been used.
-func mapMetricsToIndices(idxs map[string]int, plotName string, metricNames ...string) ([]int, bool) {
-	if plotNames[plotName] {
-		panic(plotName + " is already used")
-	}
-	plotNames[plotName] = true
-
-	indices := make([]int, len(metricNames))
-	allFound := true
-
-	for i, name := range metricNames {
-		usedMetrics[name] = struct{}{} // record the metrics we use
-
-		idx, ok := idxs[name]
-		if !ok {
-			allFound = false
+func (reg *registry) makePlots(list *List) []runtimeMetric {
+	plots := make([]runtimeMetric, 0, len(reg.order))
+	for _, name := range reg.order {
+		makePlot := reg.plotFuncs[name]
+		if makePlot == nil {
+			continue
 		}
-		indices[i] = idx
+		plots = append(plots, makePlot(list, name))
 	}
 
-	return indices, allFound
+	return plots
 }
 
+func registerPlotFunc(name string, f plotFunc) {
+	if reg.plotFuncs == nil {
+		reg.plotFuncs = map[string]plotFunc{
+			// Reserved names for trasversal time series.
+			"timestamp": nil,
+			"lastgc":    nil,
+		}
+	}
+	if _, ok := reg.plotFuncs[name]; ok {
+		panic(name + " is already used")
+	}
+	reg.plotFuncs[name] = f
+	reg.order = append(reg.order, name)
+}
+
+// IsReservedPlotName reports whether that name is reserved for Statsviz plots
+// and thus can't be chosen by user (for user plots).
 func IsReservedPlotName(name string) bool {
-	return plotNames[name]
+	_, ok := reg.plotFuncs[name]
+	return ok
 }
 
 type runtimeMetric interface {
@@ -72,8 +70,9 @@ type List struct {
 	once sync.Once // ensure Config is called once
 	cfg  *Config
 
-	idxs  map[string]int // map metrics name to idx in samples and descs
-	descs []metrics.Description
+	idxs        map[string]int // map metrics name to idx in samples and descs
+	descs       []metrics.Description
+	usedMetrics map[string]struct{}
 
 	mu      sync.Mutex // protects samples in case of concurrent calls to WriteValues
 	samples []metrics.Sample
@@ -86,10 +85,11 @@ func NewList(userPlots []UserPlot) (*List, error) {
 
 	descs := metrics.All()
 	pl := &List{
-		idxs:      make(map[string]int),
-		descs:     descs,
-		samples:   make([]metrics.Sample, len(descs)),
-		userPlots: userPlots,
+		idxs:        make(map[string]int),
+		descs:       descs,
+		samples:     make([]metrics.Sample, len(descs)),
+		userPlots:   userPlots,
+		usedMetrics: map[string]struct{}{},
 	}
 	for i := range pl.samples {
 		pl.samples[i].Name = pl.descs[i].Name
@@ -102,10 +102,7 @@ func NewList(userPlots []UserPlot) (*List, error) {
 
 func (pl *List) Config() *Config {
 	pl.once.Do(func() {
-		pl.rtPlots = make([]runtimeMetric, 0, len(plotFuncs))
-		for _, f := range plotFuncs {
-			pl.rtPlots = append(pl.rtPlots, f(pl.idxs))
-		}
+		pl.rtPlots = reg.makePlots(pl)
 
 		layouts := make([]any, 0, len(pl.rtPlots))
 		for i := range pl.rtPlots {
@@ -183,4 +180,24 @@ func (pl *List) WriteValues(w io.Writer) error {
 		return fmt.Errorf("failed to write/convert metrics values to json: %v", err)
 	}
 	return nil
+}
+
+// mapMetricsToIndices retrieves indices for the specified metrics, returning both
+// the indices and whether all metrics were found. Panics if the plot name has
+// already been used.
+func (pl *List) mapMetricsToIndices(plotName string, metricNames ...string) ([]int, bool) {
+	indices := make([]int, len(metricNames))
+	allFound := true
+
+	for i, name := range metricNames {
+		pl.usedMetrics[name] = struct{}{} // record the metrics we use
+
+		idx, ok := pl.idxs[name]
+		if !ok {
+			allFound = false
+		}
+		indices[i] = idx
+	}
+
+	return indices, allFound
 }
