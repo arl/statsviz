@@ -13,6 +13,7 @@ type (
 
 	Scatter struct {
 		Name       string        `json:"name"`
+		Tags       []string      `json:"tags"`
 		Title      string        `json:"title"`
 		Type       string        `json:"type"`
 		UpdateFreq int           `json:"updateFreq"`
@@ -41,6 +42,7 @@ type (
 
 	Heatmap struct {
 		Name       string          `json:"name"`
+		Tags       []string        `json:"tags"`
 		Title      string          `json:"title"`
 		Type       string          `json:"type"`
 		UpdateFreq int             `json:"updateFreq"`
