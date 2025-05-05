@@ -191,7 +191,6 @@ class Plot {
       this.#plotlyLayout.xaxis.range = xrange;
 
       if (this.#maximized) {
-        this.#plotlyLayout.width = plotsDiv.clientWidth;
         this.#plotlyConfig.responsive = true;
       } else {
         this.#plotlyLayout.height = defaultPlotHeight;
@@ -240,20 +239,18 @@ class Plot {
   }
 
   updateTheme() {
-    const themeMode = theme.getThemeMode();
-    this.#cfg.layout.paper_bgcolor = themeColors[themeMode].paper_bgcolor;
-    this.#cfg.layout.plot_bgcolor = themeColors[themeMode].plot_bgcolor;
-    this.#cfg.layout.font_color = themeColors[themeMode].font_color;
+    const mode = theme.getThemeMode();
+    const { paper_bgcolor, plot_bgcolor, font_color } = themeColors[mode];
 
-    this.#plotlyLayout = newLayoutObject(this.#cfg, this.#maximized);
-    this.#plotlyConfig = newConfigObject(this.#cfg, this.#maximized);
+    this.#cfg.layout.paper_bgcolor = paper_bgcolor;
+    this.#cfg.layout.plot_bgcolor = plot_bgcolor;
+    this.#cfg.layout.font_color = font_color;
 
-    Plotly.react(
-      this.#htmlElt,
-      this.#lastData,
-      this.#plotlyLayout,
-      this.#plotlyConfig
-    );
+    Plotly.relayout(this.#htmlElt, {
+      paper_bgcolor: paper_bgcolor,
+      plot_bgcolor: plot_bgcolor,
+      "font.color": font_color,
+    });
   }
 }
 
