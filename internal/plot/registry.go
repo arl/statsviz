@@ -185,7 +185,7 @@ func (pl *List) WriteValues(w io.Writer) error {
 // mapMetricsToIndices retrieves indices for the specified metrics, returning both
 // the indices and whether all metrics were found. Panics if the plot name has
 // already been used.
-func (pl *List) mapMetricsToIndices(plotName string, metricNames ...string) ([]int, bool) {
+func (pl *List) mapMetricsToIndices(metricNames ...string) ([]int, bool) {
 	indices := make([]int, len(metricNames))
 	allFound := true
 

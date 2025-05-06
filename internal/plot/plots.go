@@ -40,7 +40,7 @@ type heapGlobal struct {
 }
 
 func makeHeapGlobalPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/memory/classes/heap/objects:bytes",
 		"/memory/classes/heap/unused:bytes",
 		"/memory/classes/heap/free:bytes",
@@ -124,7 +124,7 @@ type heapDetails struct {
 }
 
 func makeHeapDetailsPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/memory/classes/heap/objects:bytes",
 		"/memory/classes/heap/unused:bytes",
 		"/memory/classes/heap/free:bytes",
@@ -184,15 +184,14 @@ func (p *heapDetails) layout(_ []metrics.Sample) any {
 func (p *heapDetails) values(samples []metrics.Sample) any {
 	heapObjects := samples[p.idxobj].Value.Uint64()
 	heapUnused := samples[p.idxunused].Value.Uint64()
-
-	heapInUse := heapObjects + heapUnused
 	heapFree := samples[p.idxfree].Value.Uint64()
 	heapReleased := samples[p.idxreleased].Value.Uint64()
-
-	heapIdle := heapReleased + heapFree
-	heapSys := heapInUse + heapIdle
 	heapStacks := samples[p.idxstacks].Value.Uint64()
 	nextGC := samples[p.idxgoal].Value.Uint64()
+
+	heapIdle := heapReleased + heapFree
+	heapInUse := heapObjects + heapUnused
+	heapSys := heapInUse + heapIdle
 
 	return []uint64{
 		heapSys,
@@ -213,7 +212,7 @@ type liveObjects struct {
 }
 
 func makeLiveObjectsPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/gc/heap/objects:objects",
 	)
 
@@ -264,7 +263,7 @@ type liveBytes struct {
 }
 
 func makeLiveBytesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/gc/heap/allocs:bytes",
 		"/gc/heap/frees:bytes",
 	)
@@ -320,7 +319,7 @@ type mspanMcache struct {
 }
 
 func makeMSpanMCachePlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/memory/classes/metadata/mspan/inuse:bytes",
 		"/memory/classes/metadata/mspan/free:bytes",
 		"/memory/classes/metadata/mcache/inuse:bytes",
@@ -398,7 +397,7 @@ type goroutines struct {
 }
 
 func makeGoroutinesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/sched/goroutines:goroutines",
 	)
 
@@ -447,7 +446,7 @@ type sizeClasses struct {
 }
 
 func makeSizeClassesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/gc/heap/allocs-by-size:bytes",
 		"/gc/heap/frees-by-size:bytes",
 	)
@@ -529,7 +528,7 @@ type gcpauses struct {
 }
 
 func makeGCPausesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/gc/pauses:seconds",
 	)
 
@@ -591,7 +590,7 @@ type runnableTime struct {
 }
 
 func makeRunnableTimePlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/sched/latencies:seconds",
 	)
 
@@ -655,7 +654,7 @@ type schedEvents struct {
 }
 
 func makeSchedEventsPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/sched/latencies:seconds",
 		"/sched/gomaxprocs:threads",
 	)
@@ -737,7 +736,7 @@ type cgo struct {
 }
 
 func makeCGOPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/cgo/go-to-c-calls:calls",
 	)
 
@@ -792,7 +791,7 @@ type gcStackSize struct {
 }
 
 func makeGCStackSizePlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/gc/stack/starting-size:bytes",
 	)
 
@@ -843,7 +842,7 @@ type gcCycles struct {
 }
 
 func makeGCCyclesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/gc/cycles/automatic:gc-cycles",
 		"/gc/cycles/forced:gc-cycles",
 		"/gc/cycles/total:gc-cycles",
@@ -924,7 +923,7 @@ type memoryClasses struct {
 }
 
 func makeMemoryClassesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/memory/classes/os-stacks:bytes",
 		"/memory/classes/other:bytes",
 		"/memory/classes/profiling/buckets:bytes",
@@ -1014,7 +1013,7 @@ type cpuClassesGC struct {
 }
 
 func makeCPUClassesGCPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/cpu/classes/gc/mark/assist:cpu-seconds",
 		"/cpu/classes/gc/mark/dedicated:cpu-seconds",
 		"/cpu/classes/gc/mark/idle:cpu-seconds",
@@ -1132,7 +1131,7 @@ type mutexWait struct {
 }
 
 func makeMutexWaitPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/cpu/classes/gc/mark/assist:cpu-seconds",
 	)
 
@@ -1201,7 +1200,7 @@ type gcScan struct {
 }
 
 func makeGCScanPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(name,
+	indices, allFound := list.mapMetricsToIndices(
 		"/gc/scan/globals:bytes",
 		"/gc/scan/heap:bytes",
 		"/gc/scan/stack:bytes",
