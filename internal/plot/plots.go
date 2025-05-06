@@ -6,24 +6,32 @@ import (
 	"time"
 )
 
-func init() {
-	registerPlotFunc("heap-global", makeHeapGlobalPlot)
-	registerPlotFunc("heap-details", makeHeapDetailsPlot)
-	registerPlotFunc("live-objects", makeLiveObjectsPlot)
-	registerPlotFunc("live-bytes", makeLiveBytesPlot)
-	registerPlotFunc("mspan-mcache", makeMSpanMCachePlot)
-	registerPlotFunc("goroutines", makeGoroutinesPlot)
-	registerPlotFunc("size-classes", makeSizeClassesPlot)
-	registerPlotFunc("gc-pauses", makeGCPausesPlot)
-	registerPlotFunc("runnable-time", makeRunnableTimePlot)
-	registerPlotFunc("sched-events", makeSchedEventsPlot)
-	registerPlotFunc("cgo", makeCGOPlot)
-	registerPlotFunc("gc-stack-size", makeCPUClassesGCPlot)
-	registerPlotFunc("gc-cycles", makeGCCyclesPlot)
-	registerPlotFunc("memory-classes", makeMemoryClassesPlot)
-	registerPlotFunc("cpu-classes-gc", makeGCStackSizePlot)
-	registerPlotFunc("mutex-wait", makeMutexWaitPlot)
-	registerPlotFunc("gc-scan", makeGCScanPlot)
+type plotDesc struct {
+	name string
+	make plotFunc
+}
+
+var plotDescs = []plotDesc{
+	{name: "heap-global", make: makeHeapGlobalPlot},
+	{name: "heap-details", make: makeHeapDetailsPlot},
+	{name: "live-objects", make: makeLiveObjectsPlot},
+	{name: "live-bytes", make: makeLiveBytesPlot},
+	{name: "mspan-mcache", make: makeMSpanMCachePlot},
+	{name: "goroutines", make: makeGoroutinesPlot},
+	{name: "size-classes", make: makeSizeClassesPlot},
+	{name: "gc-pauses", make: makeGCPausesPlot},
+	{name: "runnable-time", make: makeRunnableTimePlot},
+	{name: "sched-events", make: makeSchedEventsPlot},
+	{name: "cgo", make: makeCGOPlot},
+	{name: "gc-stack-size", make: makeCPUClassesGCPlot},
+	{name: "gc-cycles", make: makeGCCyclesPlot},
+	{name: "memory-classes", make: makeMemoryClassesPlot},
+	{name: "cpu-classes-gc", make: makeGCStackSizePlot},
+	{name: "mutex-wait", make: makeMutexWaitPlot},
+	{name: "gc-scan", make: makeGCScanPlot},
+
+	{"timestamp", nil}, // reserved time serie name
+	{"lastgc", nil},    // "
 }
 
 /*

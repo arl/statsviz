@@ -6,52 +6,19 @@ import (
 	"io"
 	"runtime/debug"
 	"runtime/metrics"
+	"slices"
 	"sync"
 	"time"
 )
 
 type plotFunc func(l *List, name string) runtimeMetric
 
-var reg registry
-
-type registry struct {
-	plotFuncs map[string]plotFunc
-	order     []string // keep track of insertion order
-}
-
-func (reg *registry) makePlots(list *List) []runtimeMetric {
-	plots := make([]runtimeMetric, 0, len(reg.order))
-	for _, name := range reg.order {
-		makePlot := reg.plotFuncs[name]
-		if makePlot == nil {
-			continue
-		}
-		plots = append(plots, makePlot(list, name))
-	}
-
-	return plots
-}
-
-func registerPlotFunc(name string, f plotFunc) {
-	if reg.plotFuncs == nil {
-		reg.plotFuncs = map[string]plotFunc{
-			// Reserved names for trasversal time series.
-			"timestamp": nil,
-			"lastgc":    nil,
-		}
-	}
-	if _, ok := reg.plotFuncs[name]; ok {
-		panic(name + " is already used")
-	}
-	reg.plotFuncs[name] = f
-	reg.order = append(reg.order, name)
-}
-
 // IsReservedPlotName reports whether that name is reserved for Statsviz plots
 // and thus can't be chosen by user (for user plots).
 func IsReservedPlotName(name string) bool {
-	_, ok := reg.plotFuncs[name]
-	return ok
+	return slices.ContainsFunc(plotDescs, func(pd plotDesc) bool {
+		return pd.name == name
+	})
 }
 
 type runtimeMetric interface {
@@ -100,9 +67,21 @@ func NewList(userPlots []UserPlot) (*List, error) {
 	return pl, nil
 }
 
+func makePlots(list *List) []runtimeMetric {
+	plots := make([]runtimeMetric, 0, len(plotDescs))
+	for _, plot := range plotDescs {
+		if plot.make == nil {
+			continue
+		}
+		plots = append(plots, plot.make(list, plot.name))
+	}
+
+	return plots
+}
+
 func (pl *List) Config() *Config {
 	pl.once.Do(func() {
-		pl.rtPlots = reg.makePlots(pl)
+		pl.rtPlots = makePlots(pl)
 
 		layouts := make([]any, 0, len(pl.rtPlots))
 		for i := range pl.rtPlots {
