@@ -21,17 +21,15 @@ func IsReservedPlotName(name string) bool {
 	})
 }
 
+// TODO: rename this to something meaningful
 type runtimeMetric interface {
-	name() string
-	isEnabled() bool
-	layout([]metrics.Sample) any
 	values([]metrics.Sample) any
 }
 
 // List holds all the plots that statsviz knows about. Some plots might be
 // disabled, if they rely on metrics that are unknown to the current Go version.
 type List struct {
-	rtPlots   []runtimeMetric
+	rtPlots   []rtplot
 	userPlots []UserPlot
 
 	once sync.Once // ensure Config is built once
@@ -43,6 +41,12 @@ type List struct {
 
 	mu      sync.Mutex // protects samples in case of concurrent calls to WriteValues
 	samples []metrics.Sample
+}
+
+type rtplot struct {
+	name   string
+	rt     runtimeMetric
+	layout any
 }
 
 func NewList(userPlots []UserPlot) (*List, error) {
@@ -60,34 +64,53 @@ func NewList(userPlots []UserPlot) (*List, error) {
 	}
 	for i := range pl.samples {
 		pl.samples[i].Name = pl.descs[i].Name
-		pl.idxs[pl.samples[i].Name] = i
 	}
 	metrics.Read(pl.samples)
 
 	return pl, nil
 }
 
-func makePlots(list *List) []runtimeMetric {
-	plots := make([]runtimeMetric, 0, len(plotDescs))
+func enabledPlots() []rtplot {
+	plots := make([]rtplot, 0, len(plotDescs))
+
 	for _, plot := range plotDescs {
 		if plot.make == nil {
 			continue
 		}
-		plots = append(plots, plot.make(list, plot.name))
+
+		indices, enabled := indicesFor(plot.metrics...)
+		if enabled {
+			plots = append(plots, rtplot{
+				name:   plot.name,
+				rt:     plot.make(indices...),
+				layout: assignName(plot.layout, plot.name),
+			})
+		}
 	}
 
 	return plots
 }
 
+func assignName(layout any, name string) any {
+	switch layout := layout.(type) {
+	case Scatter:
+		layout.Name = name
+		return layout
+	case Heatmap:
+		layout.Name = name
+		return layout
+	default:
+		panic(fmt.Sprintf("unknown plot layout type %T", layout))
+	}
+}
+
 func (pl *List) Config() *Config {
 	pl.once.Do(func() {
-		pl.rtPlots = makePlots(pl)
+		pl.rtPlots = enabledPlots()
 
-		layouts := make([]any, 0, len(pl.rtPlots))
-		for _, plot := range pl.rtPlots {
-			if plot.isEnabled() {
-				layouts = append(layouts, plot.layout(pl.samples))
-			}
+		layouts := make([]any, len(pl.rtPlots))
+		for i := range pl.rtPlots {
+			layouts[i] = pl.rtPlots[i].layout
 		}
 
 		pl.cfg = &Config{
@@ -95,7 +118,7 @@ func (pl *List) Config() *Config {
 			Series: layouts,
 		}
 
-		// User plots go at the back of the list for now.
+		// User plots go at the back.
 		for i := range pl.userPlots {
 			pl.cfg.Series = append(pl.cfg.Series, pl.userPlots[i].Layout())
 		}
@@ -117,14 +140,12 @@ func (pl *List) WriteValues(w io.Writer) error {
 	debug.ReadGCStats(&gcStats)
 
 	m := map[string]any{
-		// JS timestamps are in millis
+		// Javascript timestamps are in millis.
 		"lastgc": []int64{gcStats.LastGC.UnixMilli()},
 	}
 
 	for _, p := range pl.rtPlots {
-		if p.isEnabled() {
-			m[p.name()] = p.values(pl.samples)
-		}
+		m[p.name] = p.rt.values(pl.samples)
 	}
 
 	for i := range pl.userPlots {
@@ -161,17 +182,16 @@ func (pl *List) WriteValues(w io.Writer) error {
 	return nil
 }
 
-// mapMetricsToIndices retrieves indices for the specified metrics, returning both
-// the indices and whether all metrics were found. Panics if the plot name has
-// already been used.
-func (pl *List) mapMetricsToIndices(metricNames ...string) ([]int, bool) {
+// indicesFor retrieves indices for the specified metrics, and a boolean
+// indicating whether they were all found.
+func indicesFor(metricNames ...string) ([]int, bool) {
 	indices := make([]int, len(metricNames))
 	allFound := true
 
 	for i, name := range metricNames {
-		pl.usedMetrics[name] = struct{}{} // record the metrics we use
+		usedMetrics[name] = struct{}{} // record the metrics we use
 
-		idx, ok := pl.idxs[name]
+		idx, ok := metricIdx[name]
 		if !ok {
 			allFound = false
 		}

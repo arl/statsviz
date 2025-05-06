@@ -7,101 +7,216 @@ import (
 )
 
 type plotDesc struct {
-	name string
-	make plotFunc
+	name    string
+	metrics []string
+	layout  any
+	make    func(indices ...int) runtimeMetric
 }
 
-var plotDescs = []plotDesc{
-	{name: "heap-global", make: makeHeapGlobalPlot},
-	{name: "heap-details", make: makeHeapDetailsPlot},
-	{name: "live-objects", make: makeLiveObjectsPlot},
-	{name: "live-bytes", make: makeLiveBytesPlot},
-	{name: "mspan-mcache", make: makeMSpanMCachePlot},
-	{name: "goroutines", make: makeGoroutinesPlot},
-	{name: "size-classes", make: makeSizeClassesPlot},
-	{name: "gc-pauses", make: makeGCPausesPlot},
-	{name: "runnable-time", make: makeRunnableTimePlot},
-	{name: "sched-events", make: makeSchedEventsPlot},
-	{name: "cgo", make: makeCGOPlot},
-	{name: "gc-stack-size", make: makeCPUClassesGCPlot},
-	{name: "gc-cycles", make: makeGCCyclesPlot},
-	{name: "memory-classes", make: makeMemoryClassesPlot},
-	{name: "cpu-classes-gc", make: makeGCStackSizePlot},
-	{name: "mutex-wait", make: makeMutexWaitPlot},
-	{name: "gc-scan", make: makeGCScanPlot},
+var (
+	plotDescs []plotDesc
 
-	{"timestamp", nil}, // reserved time serie name
-	{"lastgc", nil},    // "
+	metricDescs = metrics.All()
+	metricIdx   map[string]int
+	usedMetrics = make(map[string]struct{})
+)
+
+func init() {
+	// We need a first set of sample in order to dimension and process the
+	// heatmaps buckets.
+	samples := make([]metrics.Sample, len(metricDescs))
+	metricIdx = make(map[string]int)
+
+	for i := range samples {
+		samples[i].Name = metricDescs[i].Name
+		metricIdx[samples[i].Name] = i
+	}
+	metrics.Read(samples)
+
+	plotDescs = []plotDesc{
+		{
+			name: "heap-global",
+			metrics: []string{
+				"/memory/classes/heap/objects:bytes",
+				"/memory/classes/heap/unused:bytes",
+				"/memory/classes/heap/free:bytes",
+				"/memory/classes/heap/released:bytes",
+			},
+			layout: heapGlobalLayout,
+			make:   makeHeapGlobal,
+		},
+		{
+			name: "heap-details",
+			metrics: []string{
+				"/memory/classes/heap/objects:bytes",
+				"/memory/classes/heap/unused:bytes",
+				"/memory/classes/heap/free:bytes",
+				"/memory/classes/heap/released:bytes",
+				"/memory/classes/heap/stacks:bytes",
+				"/gc/heap/goal:bytes",
+			},
+			layout: heapDetailslLayout,
+			make:   makeHeapDetails,
+		},
+		{
+			name: "live-objects",
+			metrics: []string{
+				"/gc/heap/objects:objects",
+			},
+			layout: liveObjectsLayout,
+			make:   makeLiveObjects,
+		},
+		{
+			name: "live-bytes",
+			metrics: []string{
+				"/gc/heap/allocs:bytes",
+				"/gc/heap/frees:bytes",
+			},
+			layout: liveBytesLayout,
+			make:   makeLiveBytes,
+		},
+		{
+			name: "mspan-mcache",
+			metrics: []string{
+				"/memory/classes/metadata/mspan/inuse:bytes",
+				"/memory/classes/metadata/mspan/free:bytes",
+				"/memory/classes/metadata/mcache/inuse:bytes",
+				"/memory/classes/metadata/mcache/free:bytes",
+			},
+			layout: mspanMCacheLayout,
+			make:   makeMSpanMCache,
+		},
+		{
+			name: "goroutines",
+			metrics: []string{
+				"/sched/goroutines:goroutines",
+			},
+			layout: goroutinesLayout,
+			make:   makeGoroutines,
+		},
+		{
+			name: "size-classes",
+			metrics: []string{
+				"/gc/heap/allocs-by-size:bytes",
+				"/gc/heap/frees-by-size:bytes",
+			},
+			layout: sizeClassesLayout(samples),
+			make:   makeSizeClasses,
+		},
+		{
+			name: "gc-pauses",
+			metrics: []string{
+				"/gc/pauses:seconds",
+			},
+			layout: gcPausesLayout(samples),
+			make:   makeGCPauses,
+		},
+		{
+			name: "runnable-time",
+			metrics: []string{
+				"/sched/latencies:seconds",
+			},
+			layout: runnableTimeLayout(samples),
+			make:   makeRunnableTime,
+		},
+		{
+			name: "sched-events",
+			metrics: []string{
+				"/sched/latencies:seconds",
+				"/sched/gomaxprocs:threads",
+			},
+			layout: schedEventsLayout,
+			make:   makeSchedEvents,
+		},
+		{
+			name: "cgo",
+			metrics: []string{
+				"/cgo/go-to-c-calls:calls",
+			},
+			layout: cgoLayout,
+			make:   makeCGO,
+		},
+		{
+			name: "gc-stack-size",
+			metrics: []string{
+				"/gc/stack/starting-size:bytes",
+			},
+			layout: gcStackSizeLayout,
+			make:   makeGCStackSize,
+		},
+		{
+			name: "gc-cycles",
+			metrics: []string{
+				"/gc/cycles/automatic:gc-cycles",
+				"/gc/cycles/forced:gc-cycles",
+				"/gc/cycles/total:gc-cycles",
+			},
+			layout: gcCyclesLayout,
+			make:   makeGCCycles,
+		},
+		{
+			name: "memory-classes",
+			metrics: []string{
+				"/memory/classes/os-stacks:bytes",
+				"/memory/classes/other:bytes",
+				"/memory/classes/profiling/buckets:bytes",
+				"/memory/classes/total:bytes",
+			},
+			layout: memoryClassesLayout,
+			make:   makeMemoryClasses,
+		},
+		{
+			name: "cpu-classes-gc",
+			metrics: []string{
+				"/cpu/classes/gc/mark/assist:cpu-seconds",
+				"/cpu/classes/gc/mark/dedicated:cpu-seconds",
+				"/cpu/classes/gc/mark/idle:cpu-seconds",
+				"/cpu/classes/gc/pause:cpu-seconds",
+				"/cpu/classes/gc/total:cpu-seconds",
+			},
+			layout: cpuClassesLayout,
+			make:   makeCPUClassesGC,
+		},
+		{
+			name: "mutex-wait",
+			metrics: []string{
+				"/cpu/classes/gc/mark/assist:cpu-seconds",
+			},
+			layout: mutexWaitLayout,
+			make:   makeMutexWait,
+		},
+		{
+			name: "gc-scan",
+			metrics: []string{
+				"/gc/scan/globals:bytes",
+				"/gc/scan/heap:bytes",
+				"/gc/scan/stack:bytes",
+			},
+			layout: gcScanLayout,
+			make:   makeGCScan,
+		},
+
+		// reserved time serie names
+		{name: "timestamp", make: nil}, // x axis
+		{name: "lastgc", make: nil},    // gc events (vertical lines)
+	}
 }
 
-/*
- * heap (global)
- */
+// heap (global)
 
 type heapGlobal struct {
-	enabled bool
-
 	idxobj      int
 	idxunused   int
 	idxfree     int
 	idxreleased int
 }
 
-func makeHeapGlobalPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/memory/classes/heap/objects:bytes",
-		"/memory/classes/heap/unused:bytes",
-		"/memory/classes/heap/free:bytes",
-		"/memory/classes/heap/released:bytes",
-	)
-
+func makeHeapGlobal(indices ...int) runtimeMetric {
 	return &heapGlobal{
-		enabled:     allFound,
 		idxobj:      indices[0],
 		idxunused:   indices[1],
 		idxfree:     indices[2],
 		idxreleased: indices[3],
-	}
-}
-
-func (p *heapGlobal) name() string    { return "heap-global" }
-func (p *heapGlobal) isEnabled() bool { return p.enabled }
-
-func (p *heapGlobal) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:   p.name(),
-		Title:  "Heap (global)",
-		Type:   "scatter",
-		Events: "lastgc",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title:      "bytes",
-				TickSuffix: "B",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:       "heap in-use",
-				Unitfmt:    "%{y:.4s}B",
-				HoverOn:    "points+fills",
-				StackGroup: "one",
-			},
-			{
-				Name:       "heap free",
-				Unitfmt:    "%{y:.4s}B",
-				HoverOn:    "points+fills",
-				StackGroup: "one",
-			},
-			{
-				Name:       "heap released",
-				Unitfmt:    "%{y:.4s}B",
-				HoverOn:    "points+fills",
-				StackGroup: "one",
-			},
-		},
-		InfoText: `<i>Heap in use</i> is <b>/memory/classes/heap/objects + /memory/classes/heap/unused</b>. It amounts to the memory occupied by live objects and dead objects that are not yet marked free by the GC, plus some memory reserved for heap objects.
-<i>Heap free</i> is <b>/memory/classes/heap/free</b>, that is free memory that could be returned to the OS, but has not been.
-<i>Heap released</i> is <b>/memory/classes/heap/free</b>, memory that is free memory that has been returned to the OS.`,
 	}
 }
 
@@ -119,13 +234,9 @@ func (p *heapGlobal) values(samples []metrics.Sample) any {
 	}
 }
 
-/*
- * heap (details)
- */
+// heap (details)
 
 type heapDetails struct {
-	enabled bool
-
 	idxobj      int
 	idxunused   int
 	idxfree     int
@@ -134,64 +245,14 @@ type heapDetails struct {
 	idxgoal     int
 }
 
-func makeHeapDetailsPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/memory/classes/heap/objects:bytes",
-		"/memory/classes/heap/unused:bytes",
-		"/memory/classes/heap/free:bytes",
-		"/memory/classes/heap/released:bytes",
-		"/memory/classes/heap/stacks:bytes",
-		"/gc/heap/goal:bytes",
-	)
-
+func makeHeapDetails(indices ...int) runtimeMetric {
 	return &heapDetails{
-		enabled:     allFound,
 		idxobj:      indices[0],
 		idxunused:   indices[1],
 		idxfree:     indices[2],
 		idxreleased: indices[3],
 		idxstacks:   indices[4],
 		idxgoal:     indices[5],
-	}
-}
-
-func (p *heapDetails) name() string    { return "heap-details" }
-func (p *heapDetails) isEnabled() bool { return p.enabled }
-
-func (p *heapDetails) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:   p.name(),
-		Title:  "Heap (details)",
-		Type:   "scatter",
-		Events: "lastgc",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title:      "bytes",
-				TickSuffix: "B",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "heap sys",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "heap objects",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "heap stacks",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "heap goal",
-				Unitfmt: "%{y:.4s}B",
-			},
-		},
-		InfoText: `<i>Heap</i> sys is <b>/memory/classes/heap/objects + /memory/classes/heap/unused + /memory/classes/heap/released + /memory/classes/heap/free</b>. It's an estimate of all the heap memory obtained form the OS.
-<i>Heap objects</i> is <b>/memory/classes/heap/objects</b>, the memory occupied by live objects and dead objects that have not yet been marked free by the GC.
-<i>Heap stacks</i> is <b>/memory/classes/heap/stacks</b>, the memory used for stack space.
-<i>Heap goal</i> is <b>gc/heap/goal</b>, the heap size target for the end of the GC cycle.`,
 	}
 }
 
@@ -215,49 +276,15 @@ func (p *heapDetails) values(samples []metrics.Sample) any {
 	}
 }
 
-/*
- * live objects
- */
+// live objects
 
 type liveObjects struct {
-	enabled bool
-
 	idxobjects int
 }
 
-func makeLiveObjectsPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/gc/heap/objects:objects",
-	)
-
+func makeLiveObjects(indices ...int) runtimeMetric {
 	return &liveObjects{
-		enabled:    allFound,
 		idxobjects: indices[0],
-	}
-}
-
-func (p *liveObjects) name() string    { return "live-objects" }
-func (p *liveObjects) isEnabled() bool { return p.enabled }
-
-func (p *liveObjects) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:   p.name(),
-		Title:  "Live Objects in Heap",
-		Type:   "bar",
-		Events: "lastgc",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title: "bytes",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "live objects",
-				Unitfmt: "%{y:.4s}",
-				Color:   RGBString(255, 195, 128),
-			},
-		},
-		InfoText: `<i>Live objects</i> is <b>/gc/heap/objects</b>. It's the number of objects, live or unswept, occupying heap memory.`,
 	}
 }
 
@@ -268,52 +295,17 @@ func (p *liveObjects) values(samples []metrics.Sample) any {
 	}
 }
 
-/*
- * live bytes
- */
+// live bytes
 
 type liveBytes struct {
-	enabled bool
-
 	idxallocs int
 	idxfrees  int
 }
 
-func makeLiveBytesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/gc/heap/allocs:bytes",
-		"/gc/heap/frees:bytes",
-	)
-
+func makeLiveBytes(indices ...int) runtimeMetric {
 	return &liveBytes{
-		enabled:   allFound,
 		idxallocs: indices[0],
 		idxfrees:  indices[1],
-	}
-}
-
-func (p *liveBytes) name() string    { return "live-bytes" }
-func (p *liveBytes) isEnabled() bool { return p.enabled }
-
-func (p *liveBytes) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:   p.name(),
-		Title:  "Live Bytes in Heap",
-		Type:   "bar",
-		Events: "lastgc",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title: "bytes",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "live bytes",
-				Unitfmt: "%{y:.4s}B",
-				Color:   RGBString(135, 182, 218),
-			},
-		},
-		InfoText: `<i>Live bytes</i> is <b>/gc/heap/allocs - /gc/heap/frees</b>. It's the number of bytes currently allocated (and not yet GC'ec) to the heap by the application.`,
 	}
 }
 
@@ -325,9 +317,7 @@ func (p *liveBytes) values(samples []metrics.Sample) any {
 	}
 }
 
-/*
- * mspan mcache
- */
+// mspan mcache
 
 type mspanMcache struct {
 	enabled bool
@@ -338,61 +328,12 @@ type mspanMcache struct {
 	idxmcacheFree  int
 }
 
-func makeMSpanMCachePlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/memory/classes/metadata/mspan/inuse:bytes",
-		"/memory/classes/metadata/mspan/free:bytes",
-		"/memory/classes/metadata/mcache/inuse:bytes",
-		"/memory/classes/metadata/mcache/free:bytes",
-	)
-
+func makeMSpanMCache(indices ...int) runtimeMetric {
 	return &mspanMcache{
-		enabled:        allFound,
 		idxmspanInuse:  indices[0],
 		idxmspanFree:   indices[1],
 		idxmcacheInuse: indices[2],
 		idxmcacheFree:  indices[3],
-	}
-}
-
-func (p *mspanMcache) name() string    { return "mspan-mcache" }
-func (p *mspanMcache) isEnabled() bool { return p.enabled }
-
-func (p *mspanMcache) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:   p.name(),
-		Title:  "MSpan/MCache",
-		Type:   "scatter",
-		Events: "lastgc",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title:      "bytes",
-				TickSuffix: "B",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "mspan in-use",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "mspan free",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "mcache in-use",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "mcache free",
-				Unitfmt: "%{y:.4s}B",
-			},
-		},
-		InfoText: `<i>Mspan in-use</i> is <b>/memory/classes/metadata/mspan/inuse</b>, the memory that is occupied by runtime mspan structures that are currently being used.
-<i>Mspan free</i> is <b>/memory/classes/metadata/mspan/free</b>, the memory that is reserved for runtime mspan structures, but not in-use.
-<i>Mcache in-use</i> is <b>/memory/classes/metadata/mcache/inuse</b>, the memory that is occupied by runtime mcache structures that are currently being used.
-<i>Mcache free</i> is <b>/memory/classes/metadata/mcache/free</b>, the memory that is reserved for runtime mcache structures, but not in-use.
-`,
 	}
 }
 
@@ -409,48 +350,15 @@ func (p *mspanMcache) values(samples []metrics.Sample) any {
 	}
 }
 
-/*
- * goroutines
- */
+// goroutines
 
 type goroutines struct {
-	enabled bool
-
 	idxgs int
 }
 
-func makeGoroutinesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/sched/goroutines:goroutines",
-	)
-
+func makeGoroutines(indices ...int) runtimeMetric {
 	return &goroutines{
-		enabled: allFound,
-		idxgs:   indices[0],
-	}
-}
-
-func (p *goroutines) name() string    { return "goroutines" }
-func (p *goroutines) isEnabled() bool { return p.enabled }
-
-func (p *goroutines) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:   p.name(),
-		Title:  "Goroutines",
-		Type:   "scatter",
-		Events: "lastgc",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title: "goroutines",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "goroutines",
-				Unitfmt: "%{y}",
-			},
-		},
-		InfoText: "<i>Goroutines</i> is <b>/sched/goroutines</b>, the count of live goroutines.",
+		idxgs: indices[0],
 	}
 }
 
@@ -458,74 +366,19 @@ func (p *goroutines) values(samples []metrics.Sample) any {
 	return []uint64{samples[p.idxgs].Value.Uint64()}
 }
 
-/*
- * size classes
- */
+// size classes
 
 type sizeClasses struct {
-	enabled     bool
 	sizeClasses []uint64
 
 	idxallocs int
 	idxfrees  int
 }
 
-func makeSizeClassesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/gc/heap/allocs-by-size:bytes",
-		"/gc/heap/frees-by-size:bytes",
-	)
-
+func makeSizeClasses(indices ...int) runtimeMetric {
 	return &sizeClasses{
-		enabled:   allFound,
 		idxallocs: indices[0],
 		idxfrees:  indices[1],
-	}
-}
-
-func (p *sizeClasses) name() string    { return "size-classes" }
-func (p *sizeClasses) isEnabled() bool { return p.enabled }
-
-func (p *sizeClasses) layout(samples []metrics.Sample) any {
-	// Perform a sanity check on the number of buckets on the 'allocs' and
-	// 'frees' size classes histograms. Statsviz plots a single histogram based
-	// on those 2 so we want them to have the same number of buckets, which
-	// should be true.
-	allocsBySize := samples[p.idxallocs].Value.Float64Histogram()
-	freesBySize := samples[p.idxfrees].Value.Float64Histogram()
-	if len(allocsBySize.Buckets) != len(freesBySize.Buckets) {
-		panic("different number of buckets in allocs and frees size classes histograms!")
-	}
-
-	// Pre-allocate here so we never do it in values.
-	p.sizeClasses = make([]uint64, len(allocsBySize.Counts))
-
-	// No downsampling for the size classes histogram (factor=1) but we still
-	// need to adapt boundaries for plotly heatmaps.
-	buckets := downsampleBuckets(allocsBySize, 1)
-
-	return Heatmap{
-		Name:       p.name(),
-		Title:      "Size Classes",
-		Type:       "heatmap",
-		UpdateFreq: 5,
-		Colorscale: BlueShades,
-		Buckets:    floatseq(len(buckets)),
-		CustomData: buckets,
-		Hover: HeapmapHover{
-			YName: "size class",
-			YUnit: "bytes",
-			ZName: "objects",
-		},
-		InfoText: `This heatmap shows the distribution of size classes, using <b>/gc/heap/allocs-by-size</b> and <b>/gc/heap/frees-by-size</b>.`,
-		Layout: HeatmapLayout{
-			YAxis: HeatmapYaxis{
-				Title:    "size class",
-				TickMode: "array",
-				TickVals: []float64{1, 9, 17, 25, 31, 37, 43, 50, 58, 66},
-				TickText: []float64{1 << 4, 1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15},
-			},
-		},
 	}
 }
 
@@ -533,188 +386,80 @@ func (p *sizeClasses) values(samples []metrics.Sample) any {
 	allocsBySize := samples[p.idxallocs].Value.Float64Histogram()
 	freesBySize := samples[p.idxfrees].Value.Float64Histogram()
 
+	if p.sizeClasses == nil {
+		p.sizeClasses = make([]uint64, len(allocsBySize.Counts))
+	}
+
 	for i := range p.sizeClasses {
 		p.sizeClasses[i] = allocsBySize.Counts[i] - freesBySize.Counts[i]
 	}
 	return p.sizeClasses
 }
 
-/*
- * gc pauses
- */
+// gc pauses
 
 type gcpauses struct {
-	enabled    bool
 	histfactor int
 	counts     [maxBuckets]uint64
 
 	idxgcpauses int
 }
 
-func makeGCPausesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/gc/pauses:seconds",
-	)
-
+func makeGCPauses(indices ...int) runtimeMetric {
 	return &gcpauses{
-		enabled:     allFound,
 		idxgcpauses: indices[0],
 	}
 }
 
-func (p *gcpauses) name() string    { return "gc-pauses" }
-func (p *gcpauses) isEnabled() bool { return p.enabled }
-
-func (p *gcpauses) layout(samples []metrics.Sample) any {
-	gcpauses := samples[p.idxgcpauses].Value.Float64Histogram()
-	p.histfactor = downsampleFactor(len(gcpauses.Buckets), maxBuckets)
-	buckets := downsampleBuckets(gcpauses, p.histfactor)
-
-	return Heatmap{
-		Name:       p.name(),
-		Title:      "Stop-the-world Pause Latencies",
-		Type:       "heatmap",
-		UpdateFreq: 5,
-		Colorscale: PinkShades,
-		Buckets:    floatseq(len(buckets)),
-		CustomData: buckets,
-		Hover: HeapmapHover{
-			YName: "pause duration",
-			YUnit: "duration",
-			ZName: "pauses",
-		},
-		Layout: HeatmapLayout{
-			YAxis: HeatmapYaxis{
-				Title:    "pause duration",
-				TickMode: "array",
-				TickVals: []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86},
-				TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
-			},
-		},
-		InfoText: `This heatmap shows the distribution of individual GC-related stop-the-world pause latencies, uses <b>/gc/pauses:seconds</b>,.`,
-	}
-}
-
 func (p *gcpauses) values(samples []metrics.Sample) any {
+	if p.histfactor == 0 {
+		gcpauses := samples[p.idxgcpauses].Value.Float64Histogram()
+		p.histfactor = downsampleFactor(len(gcpauses.Buckets), maxBuckets)
+	}
+
 	gcpauses := samples[p.idxgcpauses].Value.Float64Histogram()
 	return downsampleCounts(gcpauses, p.histfactor, p.counts[:])
 }
 
-/*
- * time spent in runnable state
- */
+// runnable time
 
 type runnableTime struct {
-	enabled    bool
 	histfactor int
 	counts     [maxBuckets]uint64
 
 	idxschedlat int
 }
 
-func makeRunnableTimePlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/sched/latencies:seconds",
-	)
-
+func makeRunnableTime(indices ...int) runtimeMetric {
 	return &runnableTime{
-		enabled:     allFound,
 		idxschedlat: indices[0],
 	}
 }
 
-func (p *runnableTime) name() string    { return "runnable-time" }
-func (p *runnableTime) isEnabled() bool { return p.enabled }
-
-func (p *runnableTime) layout(samples []metrics.Sample) any {
-	schedlat := samples[p.idxschedlat].Value.Float64Histogram()
-	p.histfactor = downsampleFactor(len(schedlat.Buckets), maxBuckets)
-	buckets := downsampleBuckets(schedlat, p.histfactor)
-
-	return Heatmap{
-		Name:       p.name(),
-		Title:      "Time Goroutines Spend in 'Runnable' state",
-		Type:       "heatmap",
-		UpdateFreq: 5,
-		Colorscale: GreenShades,
-		Buckets:    floatseq(len(buckets)),
-		CustomData: buckets,
-		Hover: HeapmapHover{
-			YName: "duration",
-			YUnit: "duration",
-			ZName: "goroutines",
-		},
-		Layout: HeatmapLayout{
-			YAxis: HeatmapYaxis{
-				Title:    "duration",
-				TickMode: "array",
-				TickVals: []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86},
-				TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
-			},
-		},
-		InfoText: `This heatmap shows the distribution of the time goroutines have spent in the scheduler in a runnable state before actually running, uses <b>/sched/latencies:seconds</b>.`,
-	}
-}
-
 func (p *runnableTime) values(samples []metrics.Sample) any {
+	if p.histfactor == 0 {
+		schedlat := samples[p.idxschedlat].Value.Float64Histogram()
+		p.histfactor = downsampleFactor(len(schedlat.Buckets), maxBuckets)
+	}
+
 	schedlat := samples[p.idxschedlat].Value.Float64Histogram()
 
 	return downsampleCounts(schedlat, p.histfactor, p.counts[:])
 }
 
-/*
- * scheduling events
- */
+// sched events
 
 type schedEvents struct {
-	enabled bool
-
 	idxschedlat   int
 	idxGomaxprocs int
 	lasttot       uint64
 }
 
-func makeSchedEventsPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/sched/latencies:seconds",
-		"/sched/gomaxprocs:threads",
-	)
-
+func makeSchedEvents(indices ...int) runtimeMetric {
 	return &schedEvents{
-		enabled:       allFound,
 		idxschedlat:   indices[0],
 		idxGomaxprocs: indices[1],
 		lasttot:       math.MaxUint64,
-	}
-}
-
-func (p *schedEvents) name() string    { return "sched-events" }
-func (p *schedEvents) isEnabled() bool { return p.enabled }
-
-func (p *schedEvents) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:   p.name(),
-		Title:  "Goroutine Scheduling Events",
-		Type:   "scatter",
-		Events: "lastgc",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title: "events",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "events per unit of time",
-				Unitfmt: "%{y}",
-			},
-			{
-				Name:    "events per unit of time, per P",
-				Unitfmt: "%{y}",
-			},
-		},
-		InfoText: `<i>Events per second</i> is the sum of all buckets in <b>/sched/latencies:seconds</b>, that is, it tracks the total number of goroutine scheduling events. That number is multiplied by the constant 8.
-<i>Events per second per P (processor)</i> is <i>Events per second</i> divided by current <b>GOMAXPROCS</b>, from <b>/sched/gomaxprocs:threads</b>.
-<b>NOTE</b>: the multiplying factor comes from internal Go runtime source code and might change from version to version.`,
 	}
 }
 
@@ -749,49 +494,17 @@ func (p *schedEvents) values(samples []metrics.Sample) any {
 	}
 }
 
-/*
- * cgo
- */
+// cgo
 
 type cgo struct {
-	enabled  bool
 	idxgo2c  int
 	lastgo2c uint64
 }
 
-func makeCGOPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/cgo/go-to-c-calls:calls",
-	)
-
+func makeCGO(indices ...int) runtimeMetric {
 	return &cgo{
-		enabled:  allFound,
 		idxgo2c:  indices[0],
 		lastgo2c: math.MaxUint64,
-	}
-}
-
-func (p *cgo) name() string    { return "cgo" }
-func (p *cgo) isEnabled() bool { return p.enabled }
-
-func (p *cgo) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:  p.name(),
-		Title: "CGO Calls",
-		Type:  "bar",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title: "calls",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "calls from go to c",
-				Unitfmt: "%{y}",
-				Color:   "red",
-			},
-		},
-		InfoText: "Shows the count of calls made from Go to C by the current process, per unit of time. Uses <b>/cgo/go-to-c-calls:calls</b>",
 	}
 }
 
@@ -807,46 +520,15 @@ func (p *cgo) values(samples []metrics.Sample) any {
 	return []uint64{curgo2c}
 }
 
-/*
- * gc stack size
- */
+// gc stack size
 
 type gcStackSize struct {
-	enabled  bool
 	idxstack int
 }
 
-func makeGCStackSizePlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/gc/stack/starting-size:bytes",
-	)
-
+func makeGCStackSize(indices ...int) runtimeMetric {
 	return &gcStackSize{
-		enabled:  allFound,
 		idxstack: indices[0],
-	}
-}
-
-func (p *gcStackSize) name() string    { return "gc-stack-size" }
-func (p *gcStackSize) isEnabled() bool { return p.enabled }
-
-func (p *gcStackSize) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:  p.name(),
-		Title: "Starting Size of Goroutines Stacks",
-		Type:  "scatter",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title: "bytes",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "new goroutines stack size",
-				Unitfmt: "%{y:.4s}B",
-			},
-		},
-		InfoText: "Shows the stack size of new goroutines, uses <b>/gc/stack/starting-size:bytes</b>",
 	}
 }
 
@@ -855,13 +537,9 @@ func (p *gcStackSize) values(samples []metrics.Sample) any {
 	return []uint64{stackSize}
 }
 
-/*
- * GC cycles
- */
+// gc cycles
 
 type gcCycles struct {
-	enabled bool
-
 	idxAutomatic int
 	idxForced    int
 	idxTotal     int
@@ -869,48 +547,11 @@ type gcCycles struct {
 	lastAuto, lastForced, lastTotal uint64
 }
 
-func makeGCCyclesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/gc/cycles/automatic:gc-cycles",
-		"/gc/cycles/forced:gc-cycles",
-		"/gc/cycles/total:gc-cycles",
-	)
-
+func makeGCCycles(indices ...int) runtimeMetric {
 	return &gcCycles{
-		enabled:      allFound,
 		idxAutomatic: indices[0],
 		idxForced:    indices[1],
 		idxTotal:     indices[2],
-	}
-}
-
-func (p *gcCycles) name() string    { return "gc-cycles" }
-func (p *gcCycles) isEnabled() bool { return p.enabled }
-
-func (p *gcCycles) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:  p.name(),
-		Title: "Completed GC Cycles",
-		Type:  "bar",
-		Layout: ScatterLayout{
-			BarMode: "stack",
-			Yaxis: ScatterYAxis{
-				Title: "cycles",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "automatic",
-				Unitfmt: "%{y}",
-				Type:    "bar",
-			},
-			{
-				Name:    "forced",
-				Unitfmt: "%{y}",
-				Type:    "bar",
-			},
-		},
-		InfoText: `Number of completed GC cycles, either forced of generated by the Go runtime.`,
 	}
 }
 
@@ -937,73 +578,21 @@ func (p *gcCycles) values(samples []metrics.Sample) any {
 	return ret
 }
 
-/*
-* mspan mcache
- */
+// memory classes
 
 type memoryClasses struct {
-	enabled bool
-
 	idxOSStacks    int
 	idxOther       int
 	idxProfBuckets int
 	idxTotal       int
 }
 
-func makeMemoryClassesPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/memory/classes/os-stacks:bytes",
-		"/memory/classes/other:bytes",
-		"/memory/classes/profiling/buckets:bytes",
-		"/memory/classes/total:bytes",
-	)
+func makeMemoryClasses(indices ...int) runtimeMetric {
 	return &memoryClasses{
-		enabled:        allFound,
 		idxOSStacks:    indices[0],
 		idxOther:       indices[1],
 		idxProfBuckets: indices[2],
 		idxTotal:       indices[3],
-	}
-}
-
-func (p *memoryClasses) name() string    { return "memory-classes" }
-func (p *memoryClasses) isEnabled() bool { return p.enabled }
-
-func (p *memoryClasses) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:   p.name(),
-		Title:  "Memory classes",
-		Type:   "scatter",
-		Events: "lastgc",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title:      "bytes",
-				TickSuffix: "B",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "os stacks",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "other",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "profiling buckets",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "total",
-				Unitfmt: "%{y:.4s}B",
-			},
-		},
-
-		InfoText: `<i>OS stacks</i> is <b>/memory/classes/os-stacks</b>, stack memory allocated by the underlying operating system.
-<i>Other</i> is <b>/memory/classes/other</b>, memory used by execution trace buffers, structures for debugging the runtime, finalizer and profiler specials, and more.
-<i>Profiling buckets</i> is <b>/memory/classes/profiling/buckets</b>, memory that is used by the stack trace hash map used for profiling.
-<i>Total</i> is <b>/memory/classes/total</b>, all memory mapped by the Go runtime into the current process as read-write.`,
 	}
 }
 
@@ -1021,13 +610,9 @@ func (p *memoryClasses) values(samples []metrics.Sample) any {
 	}
 }
 
-/*
-* cpu classes (gc)
- */
+// cpu classes (gc)
 
 type cpuClassesGC struct {
-	enabled bool
-
 	idxMarkAssist    int
 	idxMarkDedicated int
 	idxMarkIdle      int
@@ -1043,71 +628,13 @@ type cpuClassesGC struct {
 	lastTotal         float64
 }
 
-func makeCPUClassesGCPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/cpu/classes/gc/mark/assist:cpu-seconds",
-		"/cpu/classes/gc/mark/dedicated:cpu-seconds",
-		"/cpu/classes/gc/mark/idle:cpu-seconds",
-		"/cpu/classes/gc/pause:cpu-seconds",
-		"/cpu/classes/gc/total:cpu-seconds",
-	)
-
+func makeCPUClassesGC(indices ...int) runtimeMetric {
 	return &cpuClassesGC{
-		enabled:          allFound,
 		idxMarkAssist:    indices[0],
 		idxMarkDedicated: indices[1],
 		idxMarkIdle:      indices[2],
 		idxPause:         indices[3],
 		idxTotal:         indices[4],
-	}
-}
-
-func (p *cpuClassesGC) name() string    { return "cpu-classes-gc" }
-func (p *cpuClassesGC) isEnabled() bool { return p.enabled }
-
-func (p *cpuClassesGC) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:   p.name(),
-		Title:  "CPU classes (GC)",
-		Type:   "scatter",
-		Events: "lastgc",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title:      "cpu-seconds per seconds",
-				TickSuffix: "s",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "mark assist",
-				Unitfmt: "%{y:.4s}s",
-			},
-			{
-				Name:    "mark dedicated",
-				Unitfmt: "%{y:.4s}s",
-			},
-			{
-				Name:    "mark idle",
-				Unitfmt: "%{y:.4s}s",
-			},
-			{
-				Name:    "pause",
-				Unitfmt: "%{y:.4s}s",
-			},
-			{
-				Name:    "total",
-				Unitfmt: "%{y:.4s}s",
-			},
-		},
-
-		InfoText: `Cumulative metrics are converted to rates by Statsviz so as to be more easily comparable and readable.
-All this metrics are overestimates, and not directly comparable to system CPU time measurements. Compare only with other /cpu/classes metrics.
-
-<i>mark assist</i> is <b>/cpu/classes/gc/mark/assist</b>, estimated total CPU time goroutines spent performing GC tasks to assist the GC and prevent it from falling behind the application.
-<i>mark dedicated</i> is <b>/cpu/classes/gc/mark/dedicated</b>, Estimated total CPU time spent performing GC tasks on processors (as defined by GOMAXPROCS) dedicated to those tasks.
-<i>mark idle</i> is <b>/cpu/classes/gc/mark/idle</b>, estimated total CPU time spent performing GC tasks on spare CPU resources that the Go scheduler could not otherwise find a use for.
-<i>pause</i> is <b>/cpu/classes/gc/pause</b>, estimated total CPU time spent with the application paused by the GC.
-<i>total</i> is <b>/cpu/classes/gc/total</b>, estimated total CPU time spent performing GC tasks.`,
 	}
 }
 
@@ -1153,54 +680,18 @@ func (p *cpuClassesGC) values(samples []metrics.Sample) any {
 	}
 }
 
-/*
-* mutex wait
- */
+// mutex wait
+
 type mutexWait struct {
-	enabled      bool
 	idxMutexWait int
 
 	lastTime      time.Time
 	lastMutexWait float64
 }
 
-func makeMutexWaitPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/cpu/classes/gc/mark/assist:cpu-seconds",
-	)
-
+func makeMutexWait(indices ...int) runtimeMetric {
 	return &mutexWait{
-		enabled:      allFound,
 		idxMutexWait: indices[0],
-	}
-}
-
-func (p *mutexWait) name() string    { return "mutex-wait" }
-func (p *mutexWait) isEnabled() bool { return p.enabled }
-
-func (p *mutexWait) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:   p.name(),
-		Title:  "Time Goroutines Spend Blocked on Mutexes",
-		Type:   "scatter",
-		Events: "lastgc",
-		Layout: ScatterLayout{
-			Yaxis: ScatterYAxis{
-				Title:      "seconds per seconds",
-				TickSuffix: "s",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "mutex wait",
-				Unitfmt: "%{y:.4s}s",
-			},
-		},
-
-		InfoText: `Cumulative metrics are converted to rates by Statsviz so as to be more easily comparable and readable.
-<i>mutex wait</i> is <b>/sync/mutex/wait/total</b>, approximate cumulative time goroutines have spent blocked on a sync.Mutex or sync.RWMutex.
-
-This metric is useful for identifying global changes in lock contention. Collect a mutex or block profile using the runtime/pprof package for more detailed contention data.`,
 	}
 }
 
@@ -1224,71 +715,19 @@ func (p *mutexWait) values(samples []metrics.Sample) any {
 	}
 }
 
-/*
- * gc scan
- */
+// gc scan
 
 type gcScan struct {
-	enabled bool
-
 	idxGlobals int
 	idxHeap    int
 	idxStack   int
 }
 
-func makeGCScanPlot(list *List, name string) runtimeMetric {
-	indices, allFound := list.mapMetricsToIndices(
-		"/gc/scan/globals:bytes",
-		"/gc/scan/heap:bytes",
-		"/gc/scan/stack:bytes",
-	)
-
+func makeGCScan(indices ...int) runtimeMetric {
 	return &gcScan{
-		enabled:    allFound,
 		idxGlobals: indices[0],
 		idxHeap:    indices[1],
 		idxStack:   indices[2],
-	}
-}
-
-func (p *gcScan) name() string    { return "gc-scan" }
-func (p *gcScan) isEnabled() bool { return p.enabled }
-
-func (p *gcScan) layout(_ []metrics.Sample) any {
-	return Scatter{
-		Name:   p.name(),
-		Title:  "GC Scan",
-		Type:   "bar",
-		Events: "lastgc",
-		Layout: ScatterLayout{
-			BarMode: "stack",
-			Yaxis: ScatterYAxis{
-				TickSuffix: "B",
-				Title:      "bytes",
-			},
-		},
-		Subplots: []Subplot{
-			{
-				Name:    "scannable globals",
-				Unitfmt: "%{y:.4s}B",
-				Type:    "bar",
-			},
-			{
-				Name:    "scannable heap",
-				Unitfmt: "%{y:.4s}B",
-				Type:    "bar",
-			},
-			{
-				Name:    "scanned stack",
-				Unitfmt: "%{y:.4s}B",
-				Type:    "bar",
-			},
-		},
-		InfoText: `This plot shows the amount of memory that is scannable by the GC.
-<i>scannable globals</i> is <b>/gc/scan/globals</b>, the total amount of global variable space that is scannable.
-<i>scannable heap</i> is <b>/gc/scan/heap</b>, the total amount of heap space that is scannable.
-<i>scanned stack</i> is <b>/gc/scan/stack</b>, the number of bytes of stack that were scanned last GC cycle.
-`,
 	}
 }
 
