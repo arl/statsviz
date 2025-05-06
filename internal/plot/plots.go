@@ -68,11 +68,17 @@ func (p *heapGlobal) name() string    { return "heap-global" }
 func (p *heapGlobal) isEnabled() bool { return p.enabled }
 
 func (p *heapGlobal) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:   p.name(),
 		Title:  "Heap (global)",
 		Type:   "scatter",
 		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title:      "bytes",
+				TickSuffix: "B",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:       "heap in-use",
@@ -97,9 +103,6 @@ func (p *heapGlobal) layout(_ []metrics.Sample) any {
 <i>Heap free</i> is <b>/memory/classes/heap/free</b>, that is free memory that could be returned to the OS, but has not been.
 <i>Heap released</i> is <b>/memory/classes/heap/free</b>, memory that is free memory that has been returned to the OS.`,
 	}
-	s.Layout.Yaxis.TickSuffix = "B"
-	s.Layout.Yaxis.Title = "bytes"
-	return s
 }
 
 func (p *heapGlobal) values(samples []metrics.Sample) any {
@@ -156,11 +159,17 @@ func (p *heapDetails) name() string    { return "heap-details" }
 func (p *heapDetails) isEnabled() bool { return p.enabled }
 
 func (p *heapDetails) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:   p.name(),
 		Title:  "Heap (details)",
 		Type:   "scatter",
 		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title:      "bytes",
+				TickSuffix: "B",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "heap sys",
@@ -184,9 +193,6 @@ func (p *heapDetails) layout(_ []metrics.Sample) any {
 <i>Heap stacks</i> is <b>/memory/classes/heap/stacks</b>, the memory used for stack space.
 <i>Heap goal</i> is <b>gc/heap/goal</b>, the heap size target for the end of the GC cycle.`,
 	}
-	s.Layout.Yaxis.TickSuffix = "B"
-	s.Layout.Yaxis.Title = "bytes"
-	return s
 }
 
 func (p *heapDetails) values(samples []metrics.Sample) any {
@@ -234,11 +240,16 @@ func (p *liveObjects) name() string    { return "live-objects" }
 func (p *liveObjects) isEnabled() bool { return p.enabled }
 
 func (p *liveObjects) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:   p.name(),
 		Title:  "Live Objects in Heap",
 		Type:   "bar",
 		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title: "bytes",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "live objects",
@@ -248,8 +259,6 @@ func (p *liveObjects) layout(_ []metrics.Sample) any {
 		},
 		InfoText: `<i>Live objects</i> is <b>/gc/heap/objects</b>. It's the number of objects, live or unswept, occupying heap memory.`,
 	}
-	s.Layout.Yaxis.Title = "objects"
-	return s
 }
 
 func (p *liveObjects) values(samples []metrics.Sample) any {
@@ -287,11 +296,16 @@ func (p *liveBytes) name() string    { return "live-bytes" }
 func (p *liveBytes) isEnabled() bool { return p.enabled }
 
 func (p *liveBytes) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:   p.name(),
 		Title:  "Live Bytes in Heap",
 		Type:   "bar",
 		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title: "bytes",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "live bytes",
@@ -301,8 +315,6 @@ func (p *liveBytes) layout(_ []metrics.Sample) any {
 		},
 		InfoText: `<i>Live bytes</i> is <b>/gc/heap/allocs - /gc/heap/frees</b>. It's the number of bytes currently allocated (and not yet GC'ec) to the heap by the application.`,
 	}
-	s.Layout.Yaxis.Title = "bytes"
-	return s
 }
 
 func (p *liveBytes) values(samples []metrics.Sample) any {
@@ -347,11 +359,17 @@ func (p *mspanMcache) name() string    { return "mspan-mcache" }
 func (p *mspanMcache) isEnabled() bool { return p.enabled }
 
 func (p *mspanMcache) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:   p.name(),
 		Title:  "MSpan/MCache",
 		Type:   "scatter",
 		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title:      "bytes",
+				TickSuffix: "B",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "mspan in-use",
@@ -376,9 +394,6 @@ func (p *mspanMcache) layout(_ []metrics.Sample) any {
 <i>Mcache free</i> is <b>/memory/classes/metadata/mcache/free</b>, the memory that is reserved for runtime mcache structures, but not in-use.
 `,
 	}
-	s.Layout.Yaxis.Title = "bytes"
-	s.Layout.Yaxis.TickSuffix = "B"
-	return s
 }
 
 func (p *mspanMcache) values(samples []metrics.Sample) any {
@@ -419,11 +434,16 @@ func (p *goroutines) name() string    { return "goroutines" }
 func (p *goroutines) isEnabled() bool { return p.enabled }
 
 func (p *goroutines) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:   p.name(),
 		Title:  "Goroutines",
 		Type:   "scatter",
 		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title: "goroutines",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "goroutines",
@@ -432,9 +452,6 @@ func (p *goroutines) layout(_ []metrics.Sample) any {
 		},
 		InfoText: "<i>Goroutines</i> is <b>/sched/goroutines</b>, the count of live goroutines.",
 	}
-
-	s.Layout.Yaxis.Title = "goroutines"
-	return s
 }
 
 func (p *goroutines) values(samples []metrics.Sample) any {
@@ -487,7 +504,7 @@ func (p *sizeClasses) layout(samples []metrics.Sample) any {
 	// need to adapt boundaries for plotly heatmaps.
 	buckets := downsampleBuckets(allocsBySize, 1)
 
-	h := Heatmap{
+	return Heatmap{
 		Name:       p.name(),
 		Title:      "Size Classes",
 		Type:       "heatmap",
@@ -510,7 +527,6 @@ func (p *sizeClasses) layout(samples []metrics.Sample) any {
 			},
 		},
 	}
-	return h
 }
 
 func (p *sizeClasses) values(samples []metrics.Sample) any {
@@ -554,7 +570,7 @@ func (p *gcpauses) layout(samples []metrics.Sample) any {
 	p.histfactor = downsampleFactor(len(gcpauses.Buckets), maxBuckets)
 	buckets := downsampleBuckets(gcpauses, p.histfactor)
 
-	h := Heatmap{
+	return Heatmap{
 		Name:       p.name(),
 		Title:      "Stop-the-world Pause Latencies",
 		Type:       "heatmap",
@@ -577,7 +593,6 @@ func (p *gcpauses) layout(samples []metrics.Sample) any {
 		},
 		InfoText: `This heatmap shows the distribution of individual GC-related stop-the-world pause latencies, uses <b>/gc/pauses:seconds</b>,.`,
 	}
-	return h
 }
 
 func (p *gcpauses) values(samples []metrics.Sample) any {
@@ -616,7 +631,7 @@ func (p *runnableTime) layout(samples []metrics.Sample) any {
 	p.histfactor = downsampleFactor(len(schedlat.Buckets), maxBuckets)
 	buckets := downsampleBuckets(schedlat, p.histfactor)
 
-	h := Heatmap{
+	return Heatmap{
 		Name:       p.name(),
 		Title:      "Time Goroutines Spend in 'Runnable' state",
 		Type:       "heatmap",
@@ -639,8 +654,6 @@ func (p *runnableTime) layout(samples []metrics.Sample) any {
 		},
 		InfoText: `This heatmap shows the distribution of the time goroutines have spent in the scheduler in a runnable state before actually running, uses <b>/sched/latencies:seconds</b>.`,
 	}
-
-	return h
 }
 
 func (p *runnableTime) values(samples []metrics.Sample) any {
@@ -679,11 +692,16 @@ func (p *schedEvents) name() string    { return "sched-events" }
 func (p *schedEvents) isEnabled() bool { return p.enabled }
 
 func (p *schedEvents) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:   p.name(),
 		Title:  "Goroutine Scheduling Events",
 		Type:   "scatter",
 		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title: "events",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "events per unit of time",
@@ -698,8 +716,6 @@ func (p *schedEvents) layout(_ []metrics.Sample) any {
 <i>Events per second per P (processor)</i> is <i>Events per second</i> divided by current <b>GOMAXPROCS</b>, from <b>/sched/gomaxprocs:threads</b>.
 <b>NOTE</b>: the multiplying factor comes from internal Go runtime source code and might change from version to version.`,
 	}
-	s.Layout.Yaxis.Title = "events"
-	return s
 }
 
 // gTrackingPeriod is currently always 8. Guard it behind build tags when that
@@ -759,10 +775,15 @@ func (p *cgo) name() string    { return "cgo" }
 func (p *cgo) isEnabled() bool { return p.enabled }
 
 func (p *cgo) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:  p.name(),
 		Title: "CGO Calls",
 		Type:  "bar",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title: "calls",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "calls from go to c",
@@ -772,9 +793,6 @@ func (p *cgo) layout(_ []metrics.Sample) any {
 		},
 		InfoText: "Shows the count of calls made from Go to C by the current process, per unit of time. Uses <b>/cgo/go-to-c-calls:calls</b>",
 	}
-
-	s.Layout.Yaxis.Title = "calls"
-	return s
 }
 
 // TODO show cgo calls per second
@@ -813,10 +831,15 @@ func (p *gcStackSize) name() string    { return "gc-stack-size" }
 func (p *gcStackSize) isEnabled() bool { return p.enabled }
 
 func (p *gcStackSize) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:  p.name(),
 		Title: "Starting Size of Goroutines Stacks",
 		Type:  "scatter",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title: "bytes",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "new goroutines stack size",
@@ -825,9 +848,6 @@ func (p *gcStackSize) layout(_ []metrics.Sample) any {
 		},
 		InfoText: "Shows the stack size of new goroutines, uses <b>/gc/stack/starting-size:bytes</b>",
 	}
-
-	s.Layout.Yaxis.Title = "bytes"
-	return s
 }
 
 func (p *gcStackSize) values(samples []metrics.Sample) any {
@@ -872,6 +892,12 @@ func (p *gcCycles) layout(_ []metrics.Sample) any {
 		Name:  p.name(),
 		Title: "Completed GC Cycles",
 		Type:  "bar",
+		Layout: ScatterLayout{
+			BarMode: "stack",
+			Yaxis: ScatterYAxis{
+				Title: "cycles",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "automatic",
@@ -885,12 +911,6 @@ func (p *gcCycles) layout(_ []metrics.Sample) any {
 			},
 		},
 		InfoText: `Number of completed GC cycles, either forced of generated by the Go runtime.`,
-		Layout: ScatterLayout{
-			BarMode: "stack",
-			Yaxis: ScatterYAxis{
-				Title: "cycles",
-			},
-		},
 	}
 }
 
@@ -950,11 +970,17 @@ func (p *memoryClasses) name() string    { return "memory-classes" }
 func (p *memoryClasses) isEnabled() bool { return p.enabled }
 
 func (p *memoryClasses) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:   p.name(),
 		Title:  "Memory classes",
 		Type:   "scatter",
 		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title:      "bytes",
+				TickSuffix: "B",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "os stacks",
@@ -979,9 +1005,6 @@ func (p *memoryClasses) layout(_ []metrics.Sample) any {
 <i>Profiling buckets</i> is <b>/memory/classes/profiling/buckets</b>, memory that is used by the stack trace hash map used for profiling.
 <i>Total</i> is <b>/memory/classes/total</b>, all memory mapped by the Go runtime into the current process as read-write.`,
 	}
-	s.Layout.Yaxis.Title = "bytes"
-	s.Layout.Yaxis.TickSuffix = "B"
-	return s
 }
 
 func (p *memoryClasses) values(samples []metrics.Sample) any {
@@ -1043,11 +1066,17 @@ func (p *cpuClassesGC) name() string    { return "cpu-classes-gc" }
 func (p *cpuClassesGC) isEnabled() bool { return p.enabled }
 
 func (p *cpuClassesGC) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:   p.name(),
 		Title:  "CPU classes (GC)",
 		Type:   "scatter",
 		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title:      "cpu-seconds per seconds",
+				TickSuffix: "s",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "mark assist",
@@ -1080,9 +1109,6 @@ All this metrics are overestimates, and not directly comparable to system CPU ti
 <i>pause</i> is <b>/cpu/classes/gc/pause</b>, estimated total CPU time spent with the application paused by the GC.
 <i>total</i> is <b>/cpu/classes/gc/total</b>, estimated total CPU time spent performing GC tasks.`,
 	}
-	s.Layout.Yaxis.Title = "cpu-seconds per seconds"
-	s.Layout.Yaxis.TickSuffix = "s"
-	return s
 }
 
 func (p *cpuClassesGC) values(samples []metrics.Sample) any {
@@ -1153,11 +1179,17 @@ func (p *mutexWait) name() string    { return "mutex-wait" }
 func (p *mutexWait) isEnabled() bool { return p.enabled }
 
 func (p *mutexWait) layout(_ []metrics.Sample) any {
-	s := Scatter{
+	return Scatter{
 		Name:   p.name(),
 		Title:  "Time Goroutines Spend Blocked on Mutexes",
 		Type:   "scatter",
 		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title:      "seconds per seconds",
+				TickSuffix: "s",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "mutex wait",
@@ -1170,9 +1202,6 @@ func (p *mutexWait) layout(_ []metrics.Sample) any {
 
 This metric is useful for identifying global changes in lock contention. Collect a mutex or block profile using the runtime/pprof package for more detailed contention data.`,
 	}
-	s.Layout.Yaxis.Title = "seconds per seconds"
-	s.Layout.Yaxis.TickSuffix = "s"
-	return s
 }
 
 func (p *mutexWait) values(samples []metrics.Sample) any {
@@ -1231,6 +1260,13 @@ func (p *gcScan) layout(_ []metrics.Sample) any {
 		Title:  "GC Scan",
 		Type:   "bar",
 		Events: "lastgc",
+		Layout: ScatterLayout{
+			BarMode: "stack",
+			Yaxis: ScatterYAxis{
+				TickSuffix: "B",
+				Title:      "bytes",
+			},
+		},
 		Subplots: []Subplot{
 			{
 				Name:    "scannable globals",
@@ -1253,13 +1289,6 @@ func (p *gcScan) layout(_ []metrics.Sample) any {
 <i>scannable heap</i> is <b>/gc/scan/heap</b>, the total amount of heap space that is scannable.
 <i>scanned stack</i> is <b>/gc/scan/stack</b>, the number of bytes of stack that were scanned last GC cycle.
 `,
-		Layout: ScatterLayout{
-			BarMode: "stack",
-			Yaxis: ScatterYAxis{
-				TickSuffix: "B",
-				Title:      "bytes",
-			},
-		},
 	}
 }
 

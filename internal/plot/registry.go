@@ -34,7 +34,7 @@ type List struct {
 	rtPlots   []runtimeMetric
 	userPlots []UserPlot
 
-	once sync.Once // ensure Config is called once
+	once sync.Once // ensure Config is built once
 	cfg  *Config
 
 	idxs        map[string]int // map metrics name to idx in samples and descs
@@ -84,9 +84,9 @@ func (pl *List) Config() *Config {
 		pl.rtPlots = makePlots(pl)
 
 		layouts := make([]any, 0, len(pl.rtPlots))
-		for i := range pl.rtPlots {
-			if pl.rtPlots[i].isEnabled() {
-				layouts = append(layouts, pl.rtPlots[i].layout(pl.samples))
+		for _, plot := range pl.rtPlots {
+			if plot.isEnabled() {
+				layouts = append(layouts, plot.layout(pl.samples))
 			}
 		}
 
