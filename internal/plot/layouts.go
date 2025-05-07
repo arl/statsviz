@@ -3,7 +3,7 @@ package plot
 import "runtime/metrics"
 
 var heapGlobalLayout = Scatter{
-	Name:   "TODO",
+	Name:   "TODO(set later)",
 	Title:  "Heap (global)",
 	Type:   "scatter",
 	Events: "lastgc",
@@ -39,7 +39,7 @@ var heapGlobalLayout = Scatter{
 }
 
 var heapDetailslLayout = Scatter{
-	Name:   "TODO",
+	Name:   "TODO(set later)",
 	Title:  "Heap (details)",
 	Type:   "scatter",
 	Events: "lastgc",
@@ -74,7 +74,7 @@ var heapDetailslLayout = Scatter{
 }
 
 var liveObjectsLayout = Scatter{
-	Name:   "TODO",
+	Name:   "TODO(set later)",
 	Title:  "Live Objects in Heap",
 	Type:   "bar",
 	Events: "lastgc",
@@ -94,7 +94,7 @@ var liveObjectsLayout = Scatter{
 }
 
 var liveBytesLayout = Scatter{
-	Name:   "TODO",
+	Name:   "TODO(set later)",
 	Title:  "Live Bytes in Heap",
 	Type:   "bar",
 	Events: "lastgc",
@@ -114,7 +114,7 @@ var liveBytesLayout = Scatter{
 }
 
 var mspanMCacheLayout = Scatter{
-	Name:   "TODO",
+	Name:   "TODO(set later)",
 	Title:  "MSpan/MCache",
 	Type:   "scatter",
 	Events: "lastgc",
@@ -150,7 +150,7 @@ var mspanMCacheLayout = Scatter{
 }
 
 var goroutinesLayout = Scatter{
-	Name:   "TODO",
+	Name:   "TODO(set later)",
 	Title:  "Goroutines",
 	Type:   "scatter",
 	Events: "lastgc",
@@ -187,7 +187,7 @@ func sizeClassesLayout(samples []metrics.Sample) Heatmap {
 	buckets := downsampleBuckets(allocsBySize, 1)
 
 	return Heatmap{
-		Name:       "TODO",
+		Name:       "TODO(set later)",
 		Title:      "Size Classes",
 		Type:       "heatmap",
 		UpdateFreq: 5,
@@ -219,7 +219,7 @@ func gcPausesLayout(samples []metrics.Sample) Heatmap {
 	buckets := downsampleBuckets(gcpauses, histfactor)
 
 	return Heatmap{
-		Name:       "TODO",
+		Name:       "TODO(set later)",
 		Title:      "Stop-the-world Pause Latencies",
 		Type:       "heatmap",
 		UpdateFreq: 5,
@@ -251,7 +251,7 @@ func runnableTimeLayout(samples []metrics.Sample) Heatmap {
 	buckets := downsampleBuckets(schedlat, histfactor)
 
 	return Heatmap{
-		Name:       "TODO",
+		Name:       "TODO(set later)",
 		Title:      "Time Goroutines Spend in 'Runnable' state",
 		Type:       "heatmap",
 		UpdateFreq: 5,
@@ -276,7 +276,7 @@ func runnableTimeLayout(samples []metrics.Sample) Heatmap {
 }
 
 var schedEventsLayout = Scatter{
-	Name:   "TODO",
+	Name:   "TODO(set later)",
 	Title:  "Goroutine Scheduling Events",
 	Type:   "scatter",
 	Events: "lastgc",
@@ -301,7 +301,7 @@ var schedEventsLayout = Scatter{
 }
 
 var cgoLayout = Scatter{
-	Name:  "TODO",
+	Name:  "TODO(set later)",
 	Title: "CGO Calls",
 	Type:  "bar",
 	Layout: ScatterLayout{
@@ -320,7 +320,7 @@ var cgoLayout = Scatter{
 }
 
 var gcStackSizeLayout = Scatter{
-	Name:  "TODO",
+	Name:  "TODO(set later)",
 	Title: "Starting Size of Goroutines Stacks",
 	Type:  "scatter",
 	Layout: ScatterLayout{
@@ -338,7 +338,7 @@ var gcStackSizeLayout = Scatter{
 }
 
 var gcCyclesLayout = Scatter{
-	Name:  "TODO",
+	Name:  "TODO(set later)",
 	Title: "Completed GC Cycles",
 	Type:  "bar",
 	Layout: ScatterLayout{
@@ -363,7 +363,7 @@ var gcCyclesLayout = Scatter{
 }
 
 var memoryClassesLayout = Scatter{
-	Name:   "TODO",
+	Name:   "TODO(set later)",
 	Title:  "Memory classes",
 	Type:   "scatter",
 	Events: "lastgc",
@@ -399,7 +399,7 @@ var memoryClassesLayout = Scatter{
 }
 
 var cpuClassesLayout = Scatter{
-	Name:   "TODO",
+	Name:   "TODO(set later)",
 	Title:  "CPU classes (GC)",
 	Type:   "scatter",
 	Events: "lastgc",
@@ -443,7 +443,7 @@ All this metrics are overestimates, and not directly comparable to system CPU ti
 }
 
 var mutexWaitLayout = Scatter{
-	Name:   "TODO",
+	Name:   "TODO(set later)",
 	Title:  "Time Goroutines Spend Blocked on Mutexes",
 	Type:   "scatter",
 	Events: "lastgc",
@@ -467,7 +467,7 @@ This metric is useful for identifying global changes in lock contention. Collect
 }
 
 var gcScanLayout = Scatter{
-	Name:   "TODO",
+	Name:   "TODO(set later)",
 	Title:  "GC Scan",
 	Type:   "bar",
 	Events: "lastgc",

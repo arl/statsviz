@@ -11,25 +11,27 @@ import (
 	"time"
 )
 
-type plotFunc func(l *List, name string) runtimeMetric
-
 // IsReservedPlotName reports whether that name is reserved for Statsviz plots
 // and thus can't be chosen by user (for user plots).
 func IsReservedPlotName(name string) bool {
+	if name == "timestamp" || name == "lastgc" {
+		return true
+	}
 	return slices.ContainsFunc(plotDescs, func(pd plotDesc) bool {
 		return pd.name == name
 	})
 }
 
-// TODO: rename this to something meaningful
-type runtimeMetric interface {
-	values([]metrics.Sample) any
+// a metricsGetter extracts, from a sample of runtime metrics, a slice with all
+// the metrics necessary for a single plot.
+type metricsGetter interface {
+	values([]metrics.Sample) any // []uint64 | []float64
 }
 
 // List holds all the plots that statsviz knows about. Some plots might be
 // disabled, if they rely on metrics that are unknown to the current Go version.
 type List struct {
-	rtPlots   []rtplot
+	rtPlots   []runtimePlot
 	userPlots []UserPlot
 
 	once sync.Once // ensure Config is built once
@@ -43,10 +45,10 @@ type List struct {
 	samples []metrics.Sample
 }
 
-type rtplot struct {
+type runtimePlot struct {
 	name   string
-	rt     runtimeMetric
-	layout any
+	rt     metricsGetter
+	layout any // Scatter | Heatmap
 }
 
 func NewList(userPlots []UserPlot) (*List, error) {
@@ -70,17 +72,13 @@ func NewList(userPlots []UserPlot) (*List, error) {
 	return pl, nil
 }
 
-func (pl *List) enabledPlots() []rtplot {
-	plots := make([]rtplot, 0, len(plotDescs))
+func (pl *List) enabledPlots() []runtimePlot {
+	plots := make([]runtimePlot, 0, len(plotDescs))
 
 	for _, plot := range plotDescs {
-		if plot.make == nil {
-			continue
-		}
-
 		indices, enabled := pl.indicesFor(plot.metrics...)
 		if enabled {
-			plots = append(plots, rtplot{
+			plots = append(plots, runtimePlot{
 				name:   plot.name,
 				rt:     plot.make(indices...),
 				layout: assignName(plot.layout, plot.name),

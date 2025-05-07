@@ -7,10 +7,12 @@ import (
 )
 
 type plotDesc struct {
+	// make creates the state (support struct) for the plot.
+	make func(indices ...int) metricsGetter
+
 	name    string
 	metrics []string
 	layout  any
-	make    func(indices ...int) runtimeMetric
 }
 
 var (
@@ -194,10 +196,6 @@ func init() {
 			layout: gcScanLayout,
 			make:   makeGCScan,
 		},
-
-		// reserved time serie names
-		{name: "timestamp", make: nil}, // x axis
-		{name: "lastgc", make: nil},    // gc events (vertical lines)
 	}
 }
 
@@ -210,7 +208,7 @@ type heapGlobal struct {
 	idxreleased int
 }
 
-func makeHeapGlobal(indices ...int) runtimeMetric {
+func makeHeapGlobal(indices ...int) metricsGetter {
 	return &heapGlobal{
 		idxobj:      indices[0],
 		idxunused:   indices[1],
@@ -244,7 +242,7 @@ type heapDetails struct {
 	idxgoal     int
 }
 
-func makeHeapDetails(indices ...int) runtimeMetric {
+func makeHeapDetails(indices ...int) metricsGetter {
 	return &heapDetails{
 		idxobj:      indices[0],
 		idxunused:   indices[1],
@@ -281,7 +279,7 @@ type liveObjects struct {
 	idxobjects int
 }
 
-func makeLiveObjects(indices ...int) runtimeMetric {
+func makeLiveObjects(indices ...int) metricsGetter {
 	return &liveObjects{
 		idxobjects: indices[0],
 	}
@@ -301,7 +299,7 @@ type liveBytes struct {
 	idxfrees  int
 }
 
-func makeLiveBytes(indices ...int) runtimeMetric {
+func makeLiveBytes(indices ...int) metricsGetter {
 	return &liveBytes{
 		idxallocs: indices[0],
 		idxfrees:  indices[1],
@@ -327,7 +325,7 @@ type mspanMcache struct {
 	idxmcacheFree  int
 }
 
-func makeMSpanMCache(indices ...int) runtimeMetric {
+func makeMSpanMCache(indices ...int) metricsGetter {
 	return &mspanMcache{
 		idxmspanInuse:  indices[0],
 		idxmspanFree:   indices[1],
@@ -355,7 +353,7 @@ type goroutines struct {
 	idxgs int
 }
 
-func makeGoroutines(indices ...int) runtimeMetric {
+func makeGoroutines(indices ...int) metricsGetter {
 	return &goroutines{
 		idxgs: indices[0],
 	}
@@ -374,7 +372,7 @@ type sizeClasses struct {
 	idxfrees  int
 }
 
-func makeSizeClasses(indices ...int) runtimeMetric {
+func makeSizeClasses(indices ...int) metricsGetter {
 	return &sizeClasses{
 		idxallocs: indices[0],
 		idxfrees:  indices[1],
@@ -404,7 +402,7 @@ type gcpauses struct {
 	idxgcpauses int
 }
 
-func makeGCPauses(indices ...int) runtimeMetric {
+func makeGCPauses(indices ...int) metricsGetter {
 	return &gcpauses{
 		idxgcpauses: indices[0],
 	}
@@ -429,7 +427,7 @@ type runnableTime struct {
 	idxschedlat int
 }
 
-func makeRunnableTime(indices ...int) runtimeMetric {
+func makeRunnableTime(indices ...int) metricsGetter {
 	return &runnableTime{
 		idxschedlat: indices[0],
 	}
@@ -454,7 +452,7 @@ type schedEvents struct {
 	lasttot       uint64
 }
 
-func makeSchedEvents(indices ...int) runtimeMetric {
+func makeSchedEvents(indices ...int) metricsGetter {
 	return &schedEvents{
 		idxschedlat:   indices[0],
 		idxGomaxprocs: indices[1],
@@ -500,7 +498,7 @@ type cgo struct {
 	lastgo2c uint64
 }
 
-func makeCGO(indices ...int) runtimeMetric {
+func makeCGO(indices ...int) metricsGetter {
 	return &cgo{
 		idxgo2c:  indices[0],
 		lastgo2c: math.MaxUint64,
@@ -525,7 +523,7 @@ type gcStackSize struct {
 	idxstack int
 }
 
-func makeGCStackSize(indices ...int) runtimeMetric {
+func makeGCStackSize(indices ...int) metricsGetter {
 	return &gcStackSize{
 		idxstack: indices[0],
 	}
@@ -546,7 +544,7 @@ type gcCycles struct {
 	lastAuto, lastForced, lastTotal uint64
 }
 
-func makeGCCycles(indices ...int) runtimeMetric {
+func makeGCCycles(indices ...int) metricsGetter {
 	return &gcCycles{
 		idxAutomatic: indices[0],
 		idxForced:    indices[1],
@@ -586,7 +584,7 @@ type memoryClasses struct {
 	idxTotal       int
 }
 
-func makeMemoryClasses(indices ...int) runtimeMetric {
+func makeMemoryClasses(indices ...int) metricsGetter {
 	return &memoryClasses{
 		idxOSStacks:    indices[0],
 		idxOther:       indices[1],
@@ -627,7 +625,7 @@ type cpuClassesGC struct {
 	lastTotal         float64
 }
 
-func makeCPUClassesGC(indices ...int) runtimeMetric {
+func makeCPUClassesGC(indices ...int) metricsGetter {
 	return &cpuClassesGC{
 		idxMarkAssist:    indices[0],
 		idxMarkDedicated: indices[1],
@@ -688,7 +686,7 @@ type mutexWait struct {
 	lastMutexWait float64
 }
 
-func makeMutexWait(indices ...int) runtimeMetric {
+func makeMutexWait(indices ...int) metricsGetter {
 	return &mutexWait{
 		idxMutexWait: indices[0],
 	}
@@ -722,7 +720,7 @@ type gcScan struct {
 	idxStack   int
 }
 
-func makeGCScan(indices ...int) runtimeMetric {
+func makeGCScan(indices ...int) metricsGetter {
 	return &gcScan{
 		idxGlobals: indices[0],
 		idxHeap:    indices[1],
