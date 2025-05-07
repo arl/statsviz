@@ -7,12 +7,13 @@ import (
 )
 
 type plotDesc struct {
-	// make creates the state (support struct) for the plot.
-	make func(indices ...int) metricsGetter
-
 	name    string
+	tags    []string
 	metrics []string
 	layout  any
+
+	// make creates the state (support struct) for the plot.
+	make func(indices ...int) metricsGetter
 }
 
 var (
@@ -36,18 +37,8 @@ func init() {
 
 	plotDescs = []plotDesc{
 		{
-			name: "heap-global",
-			metrics: []string{
-				"/memory/classes/heap/objects:bytes",
-				"/memory/classes/heap/unused:bytes",
-				"/memory/classes/heap/free:bytes",
-				"/memory/classes/heap/released:bytes",
-			},
-			layout: heapGlobalLayout,
-			make:   makeHeapGlobal,
-		},
-		{
-			name: "heap-details",
+			name: "heap",
+			tags: []string{"gc"},
 			metrics: []string{
 				"/memory/classes/heap/objects:bytes",
 				"/memory/classes/heap/unused:bytes",
@@ -61,6 +52,7 @@ func init() {
 		},
 		{
 			name: "live-objects",
+			tags: []string{"gc"},
 			metrics: []string{
 				"/gc/heap/objects:objects",
 			},
@@ -69,6 +61,7 @@ func init() {
 		},
 		{
 			name: "live-bytes",
+			tags: []string{"gc"},
 			metrics: []string{
 				"/gc/heap/allocs:bytes",
 				"/gc/heap/frees:bytes",
@@ -78,6 +71,7 @@ func init() {
 		},
 		{
 			name: "mspan-mcache",
+			tags: []string{"gc"},
 			metrics: []string{
 				"/memory/classes/metadata/mspan/inuse:bytes",
 				"/memory/classes/metadata/mspan/free:bytes",
@@ -89,6 +83,7 @@ func init() {
 		},
 		{
 			name: "goroutines",
+			tags: []string{"scheduler"},
 			metrics: []string{
 				"/sched/goroutines:goroutines",
 			},
@@ -97,6 +92,7 @@ func init() {
 		},
 		{
 			name: "size-classes",
+			tags: []string{"gc"},
 			metrics: []string{
 				"/gc/heap/allocs-by-size:bytes",
 				"/gc/heap/frees-by-size:bytes",
@@ -106,6 +102,7 @@ func init() {
 		},
 		{
 			name: "gc-pauses",
+			tags: []string{"scheduler"},
 			metrics: []string{
 				"/gc/pauses:seconds",
 			},
@@ -114,6 +111,7 @@ func init() {
 		},
 		{
 			name: "runnable-time",
+			tags: []string{"scheduler"},
 			metrics: []string{
 				"/sched/latencies:seconds",
 			},
@@ -122,6 +120,7 @@ func init() {
 		},
 		{
 			name: "sched-events",
+			tags: []string{"scheduler"},
 			metrics: []string{
 				"/sched/latencies:seconds",
 				"/sched/gomaxprocs:threads",
@@ -131,6 +130,7 @@ func init() {
 		},
 		{
 			name: "cgo",
+			tags: []string{"misc"},
 			metrics: []string{
 				"/cgo/go-to-c-calls:calls",
 			},
@@ -139,6 +139,7 @@ func init() {
 		},
 		{
 			name: "gc-stack-size",
+			tags: []string{"gc"},
 			metrics: []string{
 				"/gc/stack/starting-size:bytes",
 			},
@@ -147,6 +148,7 @@ func init() {
 		},
 		{
 			name: "gc-cycles",
+			tags: []string{"gc"},
 			metrics: []string{
 				"/gc/cycles/automatic:gc-cycles",
 				"/gc/cycles/forced:gc-cycles",
@@ -157,6 +159,7 @@ func init() {
 		},
 		{
 			name: "memory-classes",
+			tags: []string{"gc"},
 			metrics: []string{
 				"/memory/classes/os-stacks:bytes",
 				"/memory/classes/other:bytes",
@@ -168,6 +171,7 @@ func init() {
 		},
 		{
 			name: "cpu-classes-gc",
+			tags: []string{"gc"},
 			metrics: []string{
 				"/cpu/classes/gc/mark/assist:cpu-seconds",
 				"/cpu/classes/gc/mark/dedicated:cpu-seconds",
@@ -180,14 +184,16 @@ func init() {
 		},
 		{
 			name: "mutex-wait",
+			tags: []string{"misc"},
 			metrics: []string{
-				"/cpu/classes/gc/mark/assist:cpu-seconds",
+				"/sync/mutex/wait/total:seconds",
 			},
 			layout: mutexWaitLayout,
 			make:   makeMutexWait,
 		},
 		{
 			name: "gc-scan",
+			tags: []string{"gc"},
 			metrics: []string{
 				"/gc/scan/globals:bytes",
 				"/gc/scan/heap:bytes",
@@ -196,38 +202,6 @@ func init() {
 			layout: gcScanLayout,
 			make:   makeGCScan,
 		},
-	}
-}
-
-// heap (global)
-
-type heapGlobal struct {
-	idxobj      int
-	idxunused   int
-	idxfree     int
-	idxreleased int
-}
-
-func makeHeapGlobal(indices ...int) metricsGetter {
-	return &heapGlobal{
-		idxobj:      indices[0],
-		idxunused:   indices[1],
-		idxfree:     indices[2],
-		idxreleased: indices[3],
-	}
-}
-
-func (p *heapGlobal) values(samples []metrics.Sample) any {
-	heapObjects := samples[p.idxobj].Value.Uint64()
-	heapUnused := samples[p.idxunused].Value.Uint64()
-
-	heapInUse := heapObjects + heapUnused
-	heapFree := samples[p.idxfree].Value.Uint64()
-	heapReleased := samples[p.idxreleased].Value.Uint64()
-	return []uint64{
-		heapInUse,
-		heapFree,
-		heapReleased,
 	}
 }
 

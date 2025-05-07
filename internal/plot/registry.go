@@ -81,7 +81,7 @@ func (pl *List) enabledPlots() []runtimePlot {
 			plots = append(plots, runtimePlot{
 				name:   plot.name,
 				rt:     plot.make(indices...),
-				layout: assignName(plot.layout, plot.name),
+				layout: complete(plot.layout, plot.name, plot.tags),
 			})
 		}
 	}
@@ -89,13 +89,16 @@ func (pl *List) enabledPlots() []runtimePlot {
 	return plots
 }
 
-func assignName(layout any, name string) any {
+// complete the layout with names and tags.
+func complete(layout any, name string, tags []string) any {
 	switch layout := layout.(type) {
 	case Scatter:
 		layout.Name = name
+		layout.Tags = tags
 		return layout
 	case Heatmap:
 		layout.Name = name
+		layout.Tags = tags
 		return layout
 	default:
 		panic(fmt.Sprintf("unknown plot layout type %T", layout))
