@@ -60,7 +60,7 @@ func NewList(userPlots []UserPlot) (*List, error) {
 		descs:       descs,
 		samples:     make([]metrics.Sample, len(descs)),
 		userPlots:   userPlots,
-		usedMetrics: map[string]struct{}{},
+		usedMetrics: make(map[string]struct{}),
 	}
 	for i := range pl.samples {
 		pl.samples[i].Name = pl.descs[i].Name
@@ -70,7 +70,7 @@ func NewList(userPlots []UserPlot) (*List, error) {
 	return pl, nil
 }
 
-func enabledPlots() []rtplot {
+func (pl *List) enabledPlots() []rtplot {
 	plots := make([]rtplot, 0, len(plotDescs))
 
 	for _, plot := range plotDescs {
@@ -78,7 +78,7 @@ func enabledPlots() []rtplot {
 			continue
 		}
 
-		indices, enabled := indicesFor(plot.metrics...)
+		indices, enabled := pl.indicesFor(plot.metrics...)
 		if enabled {
 			plots = append(plots, rtplot{
 				name:   plot.name,
@@ -106,7 +106,7 @@ func assignName(layout any, name string) any {
 
 func (pl *List) Config() *Config {
 	pl.once.Do(func() {
-		pl.rtPlots = enabledPlots()
+		pl.rtPlots = pl.enabledPlots()
 
 		layouts := make([]any, len(pl.rtPlots))
 		for i := range pl.rtPlots {
@@ -184,12 +184,12 @@ func (pl *List) WriteValues(w io.Writer) error {
 
 // indicesFor retrieves indices for the specified metrics, and a boolean
 // indicating whether they were all found.
-func indicesFor(metricNames ...string) ([]int, bool) {
+func (pl *List) indicesFor(metricNames ...string) ([]int, bool) {
 	indices := make([]int, len(metricNames))
 	allFound := true
 
 	for i, name := range metricNames {
-		usedMetrics[name] = struct{}{} // record the metrics we use
+		pl.usedMetrics[name] = struct{}{} // record the metrics we use
 
 		idx, ok := metricIdx[name]
 		if !ok {

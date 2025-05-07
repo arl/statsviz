@@ -18,7 +18,6 @@ var (
 
 	metricDescs = metrics.All()
 	metricIdx   map[string]int
-	usedMetrics = make(map[string]struct{})
 )
 
 func init() {
