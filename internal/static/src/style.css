@@ -129,6 +129,19 @@ body {
   opacity: 1;
 }
 
+/* Smooth transition for tag buttons */
+#navCategories .btn-outline-primary {
+  transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+  height: 1.7rem;
+}
+
+/* Slight brighten & lift on hover */
+#navCategories .btn-check + .btn-outline-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
 /* Remove absolute positioning to keep pills inside navbar */
 /* Pills remain centered via navbar flexbox */
 @media (min-width: 992px) {
