@@ -17,11 +17,11 @@ export function initNav(onUpdate) {
   });
 
   // Pause/Resume button.
-  const pauseBtn = document.getElementById("pauseBtn");
-  pauseBtn.addEventListener("click", (e) => {
+  const pauseToggle = document.getElementById("pauseToggle");
+  pauseToggle.addEventListener("click", (e) => {
     paused = !paused;
-    pauseBtn.textContent = paused ? "Resume" : "Pause";
-    pauseBtn.classList.toggle("active", paused);
+    pauseToggle.classList.toggle("active", paused);
+    pauseToggle == paused;
     onUpdate(true);
   });
 

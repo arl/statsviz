@@ -9,6 +9,7 @@ import { formatFunction } from "./utils.js";
 import Plotly from "plotly.js-cartesian-dist";
 import tippy, { followCursor } from "tippy.js";
 import "tippy.js/dist/tippy.css";
+import "bootstrap-icons/font/bootstrap-icons.min.css";
 
 const plotsDiv = document.getElementById("plots");
 

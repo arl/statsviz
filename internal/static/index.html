@@ -8,158 +8,196 @@
   </head>
   <body>
     <!-- Top Navbar -->
-    <nav id="top-navbar" class="navbar">
-      <button
-        id="sidebarToggleBtn"
-        class="btn btn-outline-secondary position-absolute start-0"
-        type="button"
-        data-bs-toggle="offcanvas"
-        data-bs-target="#sidebar"
-        aria-controls="sidebar"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div
-        id="navCategories"
-        class="btn-group"
-        role="group"
-        aria-label="Tag filters"
-      >
-        <input
-          type="checkbox"
-          class="btn-check"
-          id="tag-gc"
-          data-tag="gc"
-          autocomplete="off"
-          checked
+    <nav
+      id="top-navbar"
+      class="navbar navbar-expand-lg navbar-light bg-light px-4"
+    >
+      <!-- Left: Logo + Title -->
+      <div class="d-flex align-items-center">
+        <img
+          src="/path/to/logo.svg"
+          alt="Statsviz"
+          width="32"
+          height="32"
+          class="me-2"
         />
-        <label class="btn btn-sm btn-outline-primary" for="tag-gc">GC</label>
+        <span class="navbar-brand mb-0 h1">Statsviz</span>
+      </div>
 
-        <input
-          type="checkbox"
-          class="btn-check"
-          id="tag-scheduler"
-          data-tag="scheduler"
-          autocomplete="off"
-          checked
-        />
-        <label class="btn btn-sm btn-outline-primary" for="tag-scheduler"
-          >Scheduler</label
+      <!-- Center: controls -->
+      <div class="mx-auto d-flex align-items-center gap-3">
+        <!-- 1) Tag toggles -->
+        <div
+          id="navCategories"
+          class="btn-group"
+          role="group"
+          aria-label="Tag filters"
         >
+          <input
+            type="checkbox"
+            class="btn-check"
+            id="tag-gc"
+            data-tag="gc"
+            autocomplete="off"
+            checked
+          />
+          <label
+            class="btn btn-sm btn-outline-primary"
+            for="tag-gc"
+            data-bs-toggle="tooltip"
+            title="Show/Hide GC plots"
+            >GC</label
+          >
 
-        <input
-          type="checkbox"
-          class="btn-check"
-          id="tag-misc"
-          data-tag="misc"
-          autocomplete="off"
-          checked
-        />
-        <label class="btn btn-sm btn-outline-primary" for="tag-misc"
-          >Misc</label
+          <input
+            type="checkbox"
+            class="btn-check"
+            id="tag-scheduler"
+            data-tag="scheduler"
+            autocomplete="off"
+            checked
+          />
+          <label
+            class="btn btn-sm btn-outline-primary"
+            for="tag-scheduler"
+            data-bs-toggle="tooltip"
+            title="Show/Hide Scheduler plots"
+            >Scheduler</label
+          >
+
+          <input
+            type="checkbox"
+            class="btn-check"
+            id="tag-misc"
+            data-tag="misc"
+            autocomplete="off"
+            checked
+          />
+          <label
+            class="btn btn-sm btn-outline-primary"
+            for="tag-misc"
+            data-bs-toggle="tooltip"
+            title="Show/Hide Misc plots"
+            >Misc</label
+          >
+        </div>
+
+        <!-- 2) Time range -->
+        <div class="btn-group" role="group" aria-label="Time range">
+          <input
+            type="radio"
+            class="btn-check"
+            name="range"
+            id="range1"
+            value="1"
+            autocomplete="off"
+            checked
+          />
+          <label
+            class="btn btn-sm btn-outline-secondary"
+            for="range1"
+            data-bs-toggle="tooltip"
+            title="Last 1 minute"
+            >1m</label
+          >
+          <input
+            type="radio"
+            class="btn-check"
+            name="range"
+            id="range5"
+            value="5"
+            autocomplete="off"
+          />
+          <label
+            class="btn btn-sm btn-outline-secondary"
+            for="range5"
+            data-bs-toggle="tooltip"
+            title="Last 5 minutes"
+            >5m</label
+          >
+          <input
+            type="radio"
+            class="btn-check"
+            name="range"
+            id="range10"
+            value="10"
+            autocomplete="off"
+          />
+          <label
+            class="btn btn-sm btn-outline-secondary"
+            for="range10"
+            data-bs-toggle="tooltip"
+            title="Last 10 minutes"
+            >10m</label
+          >
+        </div>
+
+        <!-- 3) Show GC toggle -->
+        <div class="form-check form-switch">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="gcToggle"
+            checked
+            data-bs-toggle="tooltip"
+            title="Show GC Events"
+          />
+          <label class="form-check-label visually-hidden" for="gcToggle"
+            >GC</label
+          >
+        </div>
+
+        <!-- 4) Pause toggle -->
+        <div class="form-check form-switch">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="pauseToggle"
+            data-bs-toggle="tooltip"
+            title="Pause / Resume live updates"
+          />
+          <label class="form-check-label visually-hidden" for="pauseToggle"
+            >Pause</label
+          >
+        </div>
+      </div>
+
+      <!-- Right: links and dark-mode -->
+      <div class="d-flex align-items-center gap-3">
+        <a
+          href="https://pkg.go.dev/runtime/metrics"
+          target="_blank"
+          class="text-decoration-none"
+          data-bs-toggle="tooltip"
+          title="runtime/metrics"
         >
+          <i class="bi bi-book"></i>
+        </a>
+        <a
+          href="https://github.com/arl/statsviz"
+          target="_blank"
+          class="text-decoration-none"
+          data-bs-toggle="tooltip"
+          title="GitHub (stat sviz)"
+        >
+          <i class="bi bi-github"></i>
+        </a>
+        <div class="form-check form-switch m-0">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="themeToggle"
+            data-bs-toggle="tooltip"
+            title="Toggle Dark Mode"
+          />
+          <label class="form-check-label visually-hidden" for="themeToggle"
+            >Dark Mode</label
+          >
+        </div>
       </div>
     </nav>
 
     <div class="d-flex flex-grow-1">
-      <!-- Sidebar -->
-      <div
-        class="offcanvas offcanvas-start"
-        tabindex="-1"
-        id="sidebar"
-        aria-labelledby="sidebarLabel"
-      >
-        <div class="offcanvas-header">
-          <h5 id="sidebarLabel" class="d-flex align-items-center">Statsviz</h5>
-          <button
-            type="button"
-            class="btn-close text-reset"
-            data-bs-dismiss="offcanvas"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="offcanvas-body d-flex flex-column">
-          <div>
-            <button id="pauseBtn" class="btn btn-outline-primary w-100 mb-3">
-              Pause
-            </button>
-            <div class="form-check form-switch mb-3">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                id="gcToggle"
-                checked
-              />
-              <label class="form-check-label" for="gcToggle"
-                >Show GC Events</label
-              >
-            </div>
-            <h6>Time Range</h6>
-            <div class="btn-group mb-3" role="group" aria-label="Time range">
-              <input
-                type="radio"
-                class="btn-check"
-                name="range"
-                id="range1"
-                autocomplete="off"
-                value="1"
-              />
-              <label class="btn btn-outline-secondary" for="range1">1m</label>
-              <input
-                type="radio"
-                class="btn-check"
-                name="range"
-                id="range5"
-                autocomplete="off"
-                value="5"
-              />
-              <label class="btn btn-outline-secondary" for="range5">5m</label>
-              <input
-                type="radio"
-                class="btn-check"
-                name="range"
-                id="range10"
-                autocomplete="off"
-                value="10"
-              />
-              <label class="btn btn-outline-secondary" for="range10">10m</label>
-            </div>
-          </div>
-          <div class="mt-auto">
-            <hr />
-            <a href="https://pkg.go.dev/runtime/metrics" target="_blank"
-              >runtime/metrics</a
-            ><br />
-            <a
-              href="https://github.com/arl/statsviz"
-              target="_blank"
-              class="d-flex align-items-center mt-3"
-            >
-              statsviz
-              <img
-                id="github-logo"
-                src="./github-mark.svg"
-                alt="GitHub"
-                width="20"
-                height="20"
-                class="ms-1"
-              />
-            </a>
-            <div class="form-check form-switch mt-4">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                id="themeToggle"
-              />
-              <label class="form-check-label" for="themeToggle"
-                >Dark Mode</label
-              >
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Main Content -->
       <main id="main-content" class="w-100">
         <div class="plots-container" id="plots"></div>

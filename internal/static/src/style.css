@@ -7,19 +7,25 @@ body {
   min-height: 0;
 }
 
-/* Navbar styling for light and dark themes */
+/* Top‐nav flex distribution */
 #top-navbar {
-  flex: 0 0 auto;
-  z-index: 1020;
-  background-color: var(--bs-body-bg);
-  border-bottom: 1px solid var(--bs-border-color);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  justify-content: center;
-  position: relative;
-  padding-top: 0px;
-  padding-bottom: 0px;
+  justify-content: space-between;
+}
+
+/* Center group: keep controls from wrapping */
+#top-navbar .mx-auto {
+  flex-wrap: nowrap;
+}
+
+/* Icon links styling */
+#top-navbar a {
+  font-size: 1.25rem;
+  color: var(--bs-body-color);
+}
+#top-navbar a:hover {
+  color: var(--bs-primary);
 }
 
 /* Wrapper for sidebar and content allows shrink */
