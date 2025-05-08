@@ -63,6 +63,10 @@ class Plot {
     return this.#cfg.name;
   }
 
+  hasTag(tag) {
+    return this.#cfg.tags.includes(tag);
+  }
+
   hide() {
     this.#htmlElt.hidden = true;
   }

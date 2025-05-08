@@ -19,24 +19,45 @@
       >
         <span class="navbar-toggler-icon"></span>
       </button>
-      <ul
+
+      <div
         id="navCategories"
-        class="nav nav-pills flex-column flex-lg-row mb-0 justify-content-center w-100"
-        role="tablist"
+        class="btn-group"
+        role="group"
+        aria-label="Tag filters"
       >
-        <li class="nav-item">
-          <span class="nav-link" data-category="runtime">Runtime</span>
-        </li>
-        <li class="nav-item">
-          <span class="nav-link" data-category="memory">Memory</span>
-        </li>
-        <li class="nav-item">
-          <span class="nav-link" data-category="gc">GC</span>
-        </li>
-        <li class="nav-item">
-          <span class="nav-link" data-category="custom">Custom</span>
-        </li>
-      </ul>
+        <input
+          type="checkbox"
+          class="btn-check"
+          id="tag-gc"
+          data-tag="gc"
+          autocomplete="off"
+          checked
+        />
+        <label class="btn btn-outline-primary" for="tag-gc">GC</label>
+
+        <input
+          type="checkbox"
+          class="btn-check"
+          id="tag-scheduler"
+          data-tag="scheduler"
+          autocomplete="off"
+          checked
+        />
+        <label class="btn btn-outline-primary" for="tag-scheduler"
+          >Scheduler</label
+        >
+
+        <input
+          type="checkbox"
+          class="btn-check"
+          id="tag-misc"
+          data-tag="misc"
+          autocomplete="off"
+          checked
+        />
+        <label class="btn btn-outline-primary" for="tag-misc">Misc</label>
+      </div>
     </nav>
 
     <div class="d-flex flex-grow-1">

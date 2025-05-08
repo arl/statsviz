@@ -37,6 +37,33 @@ export function initNav(onUpdate) {
     onUpdate(true);
   });
 
+  // Plot tags toggling
+  const tagInputs = document.querySelectorAll("#navCategories input[data-tag]");
+
+  // Ensure initial state: all checked → all plots shown
+  tagInputs.forEach((input) => {
+    input.checked = true; // redundant if HTML has checked, but safe
+  });
+
+  tagInputs.forEach((input) => {
+    const tag = input.dataset.tag;
+
+    // On each toggle, show or hide matching plots
+    input.addEventListener("change", () => {
+      if (input.checked) {
+        plotMgr.plots.forEach((p) => {
+          if (p.hasTag(tag)) p.show();
+        });
+      } else {
+        plotMgr.plots.forEach((p) => {
+          if (p.hasTag(tag)) p.hide();
+        });
+      }
+      // Redraw after visibility change
+      onUpdate(true);
+    });
+  });
+
   // Time range selection
   const rangeInputs = document.querySelectorAll('input[name="range"]');
 

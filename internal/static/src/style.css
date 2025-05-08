@@ -92,20 +92,41 @@ body {
 }
 
 /* Category pills styling */
-.nav-pills .nav-link {
+.nav-link {
   margin: 0.5rem;
   border-radius: 0.5rem;
   text-align: center;
   font-weight: 500;
 }
 
-.nav-pills .nav-link.active {
+.nav-link.active {
   background-color: var(--bs-primary);
   color: #fff;
 }
 
 .nav-link {
   cursor: pointer;
+}
+
+/* Tighten up tag-filter group */
+#navCategories {
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+/* Muted look for inactive tags */
+#navCategories .btn-check:not(:checked) + .btn-outline-primary {
+  opacity: 0.5;
+  color: var(--bs-secondary);
+  border-color: var(--bs-secondary);
+}
+
+/* Strong look for active tags */
+#navCategories .btn-check:checked + .btn-outline-primary {
+  background-color: var(--bs-primary);
+  color: #fff;
+  border-color: var(--bs-primary);
+  opacity: 1;
 }
 
 /* Remove absolute positioning to keep pills inside navbar */
