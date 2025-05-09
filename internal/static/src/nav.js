@@ -1,7 +1,7 @@
 import * as theme from "./theme.js";
 import { plotMgr } from "./app.js";
 
-export let paused = false;
+export let running = true;
 export let gcEnabled = true;
 export let timerange = 60;
 
@@ -19,9 +19,9 @@ export function initNav(onUpdate) {
   // Pause/Resume button.
   const pauseToggle = document.getElementById("pauseToggle");
   pauseToggle.addEventListener("click", (e) => {
-    paused = !paused;
-    pauseToggle.classList.toggle("active", paused);
-    pauseToggle == paused;
+    running = !running;
+    pauseToggle.classList.toggle("active", running);
+    pauseToggle == running;
     onUpdate(true);
   });
 

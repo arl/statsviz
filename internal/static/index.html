@@ -24,141 +24,171 @@
         <span class="navbar-brand mb-0 h1">Statsviz</span>
       </div>
 
-      <!-- Center: controls -->
-      <div class="mx-auto d-flex align-items-center gap-3">
+      <!-- Center controls -->
+      <div
+        class="center-controls d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-3 gap-lg-5 w-100"
+      >
         <!-- 1) Tag toggles -->
-        <div
-          id="navCategories"
-          class="btn-group"
-          role="group"
-          aria-label="Tag filters"
-        >
-          <input
-            type="checkbox"
-            class="btn-check"
-            id="tag-gc"
-            data-tag="gc"
-            autocomplete="off"
-            checked
-          />
-          <label
-            class="btn btn-sm btn-outline-primary"
-            for="tag-gc"
-            data-bs-toggle="tooltip"
-            title="Show/Hide GC plots"
-            >GC</label
-          >
+        <div class="w-100 w-lg-auto">
+          <div id="navCategories" class="btn-group" role="group">
+            <input
+              type="checkbox"
+              class="btn-check"
+              id="tag-gc"
+              data-tag="gc"
+              autocomplete="off"
+              checked
+            />
+            <label
+              class="btn btn-sm btn-outline-primary"
+              for="tag-gc"
+              data-bs-toggle="tooltip"
+              title="Show/Hide GC plots"
+              >GC</label
+            >
 
-          <input
-            type="checkbox"
-            class="btn-check"
-            id="tag-scheduler"
-            data-tag="scheduler"
-            autocomplete="off"
-            checked
-          />
-          <label
-            class="btn btn-sm btn-outline-primary"
-            for="tag-scheduler"
-            data-bs-toggle="tooltip"
-            title="Show/Hide Scheduler plots"
-            >Scheduler</label
-          >
+            <input
+              type="checkbox"
+              class="btn-check"
+              id="tag-scheduler"
+              data-tag="scheduler"
+              autocomplete="off"
+              checked
+            />
+            <label
+              class="btn btn-sm btn-outline-primary"
+              for="tag-scheduler"
+              data-bs-toggle="tooltip"
+              title="Show/Hide Scheduler plots"
+              >Scheduler</label
+            >
 
-          <input
-            type="checkbox"
-            class="btn-check"
-            id="tag-misc"
-            data-tag="misc"
-            autocomplete="off"
-            checked
-          />
-          <label
-            class="btn btn-sm btn-outline-primary"
-            for="tag-misc"
-            data-bs-toggle="tooltip"
-            title="Show/Hide Misc plots"
-            >Misc</label
-          >
+            <input
+              type="checkbox"
+              class="btn-check"
+              id="tag-misc"
+              data-tag="misc"
+              autocomplete="off"
+              checked
+            />
+            <label
+              class="btn btn-sm btn-outline-primary"
+              for="tag-misc"
+              data-bs-toggle="tooltip"
+              title="Show/Hide Misc plots"
+              >Misc</label
+            >
+          </div>
         </div>
 
         <!-- 2) Time range -->
-        <div class="btn-group" role="group" aria-label="Time range">
-          <input
-            type="radio"
-            class="btn-check"
-            name="range"
-            id="range1"
-            value="1"
-            autocomplete="off"
-            checked
-          />
-          <label
-            class="btn btn-sm btn-outline-secondary"
-            for="range1"
-            data-bs-toggle="tooltip"
-            title="Last 1 minute"
-            >1m</label
-          >
-          <input
-            type="radio"
-            class="btn-check"
-            name="range"
-            id="range5"
-            value="5"
-            autocomplete="off"
-          />
-          <label
-            class="btn btn-sm btn-outline-secondary"
-            for="range5"
-            data-bs-toggle="tooltip"
-            title="Last 5 minutes"
-            >5m</label
-          >
-          <input
-            type="radio"
-            class="btn-check"
-            name="range"
-            id="range10"
-            value="10"
-            autocomplete="off"
-          />
-          <label
-            class="btn btn-sm btn-outline-secondary"
-            for="range10"
-            data-bs-toggle="tooltip"
-            title="Last 10 minutes"
-            >10m</label
-          >
+        <div class="w-100 w-lg-auto">
+          <div class="btn-group" role="group" aria-label="Time range">
+            <input
+              type="radio"
+              class="btn-check"
+              name="range"
+              id="range1"
+              value="1"
+              autocomplete="off"
+              checked
+            />
+            <label
+              class="btn btn-sm btn-outline-secondary"
+              for="range1"
+              data-bs-toggle="tooltip"
+              title="Last 1 minute"
+              >1m</label
+            >
+            <input
+              type="radio"
+              class="btn-check"
+              name="range"
+              id="range5"
+              value="5"
+              autocomplete="off"
+            />
+            <label
+              class="btn btn-sm btn-outline-secondary"
+              for="range5"
+              data-bs-toggle="tooltip"
+              title="Last 5 minutes"
+              >5m</label
+            >
+            <input
+              type="radio"
+              class="btn-check"
+              name="range"
+              id="range10"
+              value="10"
+              autocomplete="off"
+            />
+            <label
+              class="btn btn-sm btn-outline-secondary"
+              for="range10"
+              data-bs-toggle="tooltip"
+              title="Last 10 minutes"
+              >10m</label
+            >
+          </div>
         </div>
 
         <!-- 3) Show GC toggle -->
-        <div class="form-check form-switch">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="gcToggle"
-            checked
+        <div class="d-flex align-items-center gap-2 w-100 w-lg-auto">
+          <i
+            class="bi bi-eye-slash"
             data-bs-toggle="tooltip"
-            title="Show GC Events"
-          />
-          <label class="form-check-label visually-hidden" for="gcToggle"
-            >GC</label
-          >
+            title="Show GC events"
+            aria-hidden="true"
+          ></i>
+          <div class="form-check form-switch m-0">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="gcToggle"
+              data-bs-toggle="tooltip"
+              title="Toggle GC events"
+              checked
+            />
+            <label class="form-check-label visually-hidden" for="gcToggle"
+              >GC</label
+            >
+          </div>
+          <i
+            class="bi bi-eye-slash"
+            data-bs-toggle="tooltip"
+            title="Hide GC events"
+            aria-hidden="true"
+          ></i>
         </div>
 
-        <!-- 4) Pause toggle -->
-        <div class="form-check form-switch">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="pauseToggle"
+        <!-- 4) Pause/Resume toggle -->
+        <div class="d-flex align-items-center gap-2 w-100 w-lg-auto">
+          <i
+            class="bi bi-pause-fill"
             data-bs-toggle="tooltip"
-            title="Pause / Resume live updates"
-          />
-          <label class="form-check-label visually-hidden" for="pauseToggle"
-            >Pause</label
-          >
+            title="Pause updates"
+            aria-hidden="true"
+          ></i>
+          <div class="form-check form-switch m-0">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="pauseToggle"
+              data-bs-toggle="tooltip"
+              title="Pause / Resume live updates"
+              checked
+            />
+            <label class="form-check-label visually-hidden" for="pauseToggle"
+              >Pause</label
+            >
+          </div>
+          <i
+            class="bi bi-play-fill"
+            data-bs-toggle="tooltip"
+            title="Resume updates"
+            aria-hidden="true"
+          ></i>
         </div>
       </div>
 

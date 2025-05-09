@@ -8,5 +8,9 @@ connect();
 theme.updateThemeMode();
 
 document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
-  new Tooltip(el);
+  new Tooltip(el, {
+    trigger: "hover focus",
+    delay: { show: 400, hide: 100 },
+    animation: true,
+  });
 });

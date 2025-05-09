@@ -28,36 +28,29 @@ body {
   color: var(--bs-primary);
 }
 
+/* On small: one per row, modest gap */
+.center-controls {
+  gap: 0.75rem;
+}
+
+.center-controls > div {
+  display: flex;
+  justify-content: center;
+}
+
+/* On large: row + generous gap */
+@media (min-width: 992px) {
+  .center-controls {
+    flex-direction: row; /* already set by flex-lg-row */
+    gap: 2rem; /* larger horizontal spacing */
+  }
+}
+
 /* Wrapper for sidebar and content allows shrink */
 .d-flex.flex-grow-1 {
   flex: 1 1 auto;
   display: flex;
   min-height: 0;
-}
-
-/* Sidebar styles */
-#sidebar {
-  flex: 0 0 240px;
-  max-width: 240px;
-  overflow-y: auto;
-  border-right: 1px solid var(--bs-border-color);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background-color: var(--bs-body-bg);
-  padding: 1rem;
-}
-
-/* Sidebar control spacing */
-#sidebar .form-check,
-#sidebar .btn-group,
-#sidebar button {
-  margin-bottom: 2.5rem;
-}
-#sidebar h5,
-#sidebar h6 {
-  margin-top: 0;
-  margin-bottom: 0.75rem;
 }
 
 /* Plots container margins */
