@@ -57,7 +57,7 @@ body {
 #main-content {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 0.35rem;
+  padding: 1px;
   background-color: darkgrey;
 }
 
@@ -65,7 +65,7 @@ body {
 .plots-container {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.35rem;
+  gap: 1px;
   overflow-x: hidden;
   /* no width transitions or animations on this container */
 }
