@@ -39,7 +39,7 @@ body {
 }
 
 /* On large: row + generous gap */
-@media (min-width: 992px) {
+@media (min-width: 800px) {
   .center-controls {
     flex-direction: row; /* already set by flex-lg-row */
     gap: 2rem; /* larger horizontal spacing */
@@ -107,49 +107,26 @@ body {
   cursor: pointer;
 }
 
-/* Tighten up tag-filter group */
-#navCategories {
-  gap: 0.5rem;
-  padding: 0.5rem;
-}
-
-/* Muted look for inactive tags */
-#navCategories .btn-check:not(:checked) + .btn-outline-primary {
+.nav-radio .btn-check:not(:checked) {
   opacity: 0.5;
-  color: var(--bs-secondary);
-  border-color: var(--bs-secondary);
 }
 
 /* Strong look for active tags */
-#navCategories .btn-check:checked + .btn-outline-primary {
-  background-color: var(--bs-primary);
+.nav-radio .btn-check:checked {
   color: #fff;
-  border-color: var(--bs-primary);
   opacity: 1;
 }
 
 /* Smooth transition for tag buttons */
-#navCategories .btn-outline-primary {
+.nav-radio {
   transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
-  height: 1.7rem;
 }
 
 /* Slight brighten & lift on hover */
-#navCategories .btn-check + .btn-outline-primary:hover {
+.nav-radio .btn-check + :hover {
   filter: brightness(1.1);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
-}
-
-/* Remove absolute positioning to keep pills inside navbar */
-/* Pills remain centered via navbar flexbox */
-@media (min-width: 992px) {
-  #navCategories {
-    position: static;
-    transform: none;
-    margin-top: 0;
-    flex-direction: row;
-  }
 }
 
 .tooltip-table {

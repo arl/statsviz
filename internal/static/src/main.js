@@ -10,7 +10,8 @@ theme.updateThemeMode();
 document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
   new Tooltip(el, {
     trigger: "hover focus",
-    delay: { show: 400, hide: 100 },
+    delay: { show: 700, hide: 100 },
     animation: true,
+    placement: "bottom",
   });
 });

@@ -7,27 +7,26 @@ export let timerange = 60;
 
 export function initNav(onUpdate) {
   // Show GC toggle.
-  const gcToggle = document.getElementById("gcToggle");
+  const gcbtn = document.getElementById("btn-gc-events");
 
-  gcToggle.checked = gcEnabled;
-  gcToggle.addEventListener("change", (e) => {
+  gcbtn.checked = gcEnabled;
+  gcbtn.addEventListener("change", (e) => {
     gcEnabled = !gcEnabled;
-    gcToggle.checked = gcEnabled;
+    gcbtn.checked = gcEnabled;
     onUpdate(true);
   });
 
   // Pause/Resume button.
-  const pauseToggle = document.getElementById("pauseToggle");
-  pauseToggle.addEventListener("click", (e) => {
+  const playbtn = document.getElementById("btn-play");
+  playbtn.addEventListener("click", (e) => {
     running = !running;
-    pauseToggle.classList.toggle("active", running);
-    pauseToggle == running;
+    playbtn.checked = running;
     onUpdate(true);
   });
 
   // Dark mode toggle.
-  const themeToggle = document.getElementById("themeToggle");
-  themeToggle.addEventListener("change", (e) => {
+  const themebtn = document.getElementById("btn-darkmode");
+  themebtn.addEventListener("change", (e) => {
     const themeMode = theme.getThemeMode();
     const newTheme = (themeMode === "dark" && "light") || "dark";
     localStorage.setItem("theme-mode", newTheme);

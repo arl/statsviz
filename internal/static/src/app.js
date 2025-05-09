@@ -9,9 +9,10 @@ export let statsMgr;
 export let plotMgr;
 
 export const drawPlots = (force) => {
-  if (running) return;
-  const data = statsMgr.slice(timerange);
-  plotMgr.update(data, gcEnabled, timerange, force);
+  if (running) {
+    const data = statsMgr.slice(timerange);
+    plotMgr.update(data, gcEnabled, timerange, force);
+  }
 };
 
 export const connect = () => {

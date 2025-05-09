@@ -16,9 +16,8 @@ export const getThemeMode = () => {
   return themeMode;
 };
 
-const themeToggle = document.getElementById("themeToggle"),
-  navbar = document.getElementById("top-navbar"),
-  gitHubLogo = document.getElementById("github-logo");
+const darkmodeButton = document.getElementById("btn-darkmode"),
+  navbar = document.getElementById("top-navbar");
 
 /**
  * Set light or dark theme
@@ -29,12 +28,12 @@ export const updateThemeMode = () => {
   if (themeMode === "dark") {
     document.body.classList.add("dark-mode");
     navbar.setAttribute("data-bs-theme", "dark");
-    themeToggle.setAttribute("checked", "");
-    if (gitHubLogo) gitHubLogo.src = "./github-mark-white.svg";
+    navbar.classList.add("bg-dark");
+    darkmodeButton.setAttribute("checked", "");
   } else {
     document.body.classList.remove("dark-mode");
     navbar.setAttribute("data-bs-theme", "light");
-    themeToggle.removeAttribute("checked");
-    if (gitHubLogo) gitHubLogo.src = "./github-mark.svg";
+    navbar.classList.remove("bg-dark");
+    darkmodeButton.removeAttribute("checked");
   }
 };

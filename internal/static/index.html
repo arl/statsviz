@@ -8,19 +8,9 @@
   </head>
   <body>
     <!-- Top Navbar -->
-    <nav
-      id="top-navbar"
-      class="navbar navbar-expand-lg navbar-light bg-light px-4"
-    >
+    <nav id="top-navbar" class="navbar navbar-expand-lg px-4">
       <!-- Left: Logo + Title -->
       <div class="d-flex align-items-center">
-        <img
-          src="/path/to/logo.svg"
-          alt="Statsviz"
-          width="32"
-          height="32"
-          class="me-2"
-        />
         <span class="navbar-brand mb-0 h1">Statsviz</span>
       </div>
 
@@ -30,60 +20,59 @@
       >
         <!-- 1) Tag toggles -->
         <div class="w-100 w-lg-auto">
-          <div id="navCategories" class="btn-group" role="group">
-            <input
-              type="checkbox"
-              class="btn-check"
-              id="tag-gc"
-              data-tag="gc"
-              autocomplete="off"
-              checked
-            />
-            <label
-              class="btn btn-sm btn-outline-primary"
-              for="tag-gc"
-              data-bs-toggle="tooltip"
-              title="Show/Hide GC plots"
-              >GC</label
+          <div
+            id="navCategories"
+            class="btn-group navCategories nav-radio"
+            role="group"
+          >
+            <div
+              class="btn-group"
+              role="group"
+              aria-label="Basic checkbox toggle button group"
             >
+              <input
+                type="checkbox"
+                class="btn-check"
+                id="tag-gc"
+                data-tag="gc"
+                autocomplete="off"
+              />
+              <label class="btn btn-sm btn-outline-secondary" for="tag-gc"
+                >GC</label
+              >
 
-            <input
-              type="checkbox"
-              class="btn-check"
-              id="tag-scheduler"
-              data-tag="scheduler"
-              autocomplete="off"
-              checked
-            />
-            <label
-              class="btn btn-sm btn-outline-primary"
-              for="tag-scheduler"
-              data-bs-toggle="tooltip"
-              title="Show/Hide Scheduler plots"
-              >Scheduler</label
-            >
+              <input
+                type="checkbox"
+                class="btn-check"
+                id="tag-scheduler"
+                data-tag="scheduler"
+                autocomplete="off"
+                checked
+              />
+              <label
+                class="btn btn-sm btn-outline-secondary"
+                for="tag-scheduler"
+                >Scheduler</label
+              >
 
-            <input
-              type="checkbox"
-              class="btn-check"
-              id="tag-misc"
-              data-tag="misc"
-              autocomplete="off"
-              checked
-            />
-            <label
-              class="btn btn-sm btn-outline-primary"
-              for="tag-misc"
-              data-bs-toggle="tooltip"
-              title="Show/Hide Misc plots"
-              >Misc</label
-            >
+              <input
+                type="checkbox"
+                class="btn-check"
+                id="tag-misc"
+                data-tag="misc"
+                autocomplete="off"
+                checked
+              />
+              <label class="btn btn-sm btn-outline-secondary" for="tag-misc"
+                >Misc</label
+              >
+            </div>
           </div>
         </div>
 
         <!-- 2) Time range -->
         <div class="w-100 w-lg-auto">
-          <div class="btn-group" role="group" aria-label="Time range">
+          <div class="btn-group nav-radio" role="group" aria-label="Time range">
             <input
               type="radio"
               class="btn-check"
@@ -134,61 +123,41 @@
         </div>
 
         <!-- 3) Show GC toggle -->
-        <div class="d-flex align-items-center gap-2 w-100 w-lg-auto">
-          <i
-            class="bi bi-eye-slash"
+        <div class="w-100 w-lg-auto">
+          <input
+            type="checkbox"
+            class="btn-check"
+            id="btn-gc-events"
+            checked
+            autocomplete="off"
+          />
+          <label
+            class="btn btn-sm btn-outline-secondary"
+            for="btn-gc-events"
             data-bs-toggle="tooltip"
-            title="Show GC events"
-            aria-hidden="true"
-          ></i>
-          <div class="form-check form-switch m-0">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              id="gcToggle"
-              data-bs-toggle="tooltip"
-              title="Toggle GC events"
-              checked
-            />
-            <label class="form-check-label visually-hidden" for="gcToggle"
-              >GC</label
-            >
-          </div>
-          <i
-            class="bi bi-eye-slash"
-            data-bs-toggle="tooltip"
-            title="Hide GC events"
-            aria-hidden="true"
-          ></i>
+            title="Show/hide GC events"
+            ><i class="bi bi-trash3-fill"></i
+          ></label>
+          <br />
         </div>
 
-        <!-- 4) Pause/Resume toggle -->
-        <div class="d-flex align-items-center gap-2 w-100 w-lg-auto">
-          <i
-            class="bi bi-pause-fill"
+        <!-- 4) Pause / Resume -->
+        <div class="w-100 w-lg-auto">
+          <input
+            type="checkbox"
+            class="btn-check"
+            id="btn-play"
+            checked
+            autocomplete="off"
+          />
+          <label
+            class="btn btn-sm btn-outline-secondary"
+            for="btn-play"
             data-bs-toggle="tooltip"
-            title="Pause updates"
-            aria-hidden="true"
-          ></i>
-          <div class="form-check form-switch m-0">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              id="pauseToggle"
-              data-bs-toggle="tooltip"
-              title="Pause / Resume live updates"
-              checked
-            />
-            <label class="form-check-label visually-hidden" for="pauseToggle"
-              >Pause</label
-            >
-          </div>
-          <i
-            class="bi bi-play-fill"
-            data-bs-toggle="tooltip"
-            title="Resume updates"
-            aria-hidden="true"
-          ></i>
+            title="Pause/Resume Live Updates"
+            ><i class="bi bi-play-fill"></i
+          ></label>
+          <br />
         </div>
       </div>
 
@@ -198,8 +167,7 @@
           href="https://pkg.go.dev/runtime/metrics"
           target="_blank"
           class="text-decoration-none"
-          data-bs-toggle="tooltip"
-          title="runtime/metrics"
+          title="runtime/metrics doc"
         >
           <i class="bi bi-book"></i>
         </a>
@@ -207,22 +175,26 @@
           href="https://github.com/arl/statsviz"
           target="_blank"
           class="text-decoration-none"
-          data-bs-toggle="tooltip"
-          title="GitHub (stat sviz)"
         >
           <i class="bi bi-github"></i>
         </a>
-        <div class="form-check form-switch m-0">
+
+        <div class="w-100 w-lg-auto">
           <input
-            class="form-check-input"
             type="checkbox"
-            id="themeToggle"
-            data-bs-toggle="tooltip"
-            title="Toggle Dark Mode"
+            class="btn-check"
+            id="btn-darkmode"
+            checked
+            autocomplete="off"
           />
-          <label class="form-check-label visually-hidden" for="themeToggle"
-            >Dark Mode</label
-          >
+          <label
+            class="btn btn-sm btn-outline-secondary"
+            for="btn-darkmode"
+            data-bs-toggle="tooltip"
+            title="Light/Dark mode"
+            ><i class="bi bi-moon-fill"></i
+          ></label>
+          <br />
         </div>
       </div>
     </nav>
