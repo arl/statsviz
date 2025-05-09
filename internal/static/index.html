@@ -15,10 +15,10 @@
 
       <!-- Center controls -->
       <div
-        class="center-controls d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-3 gap-lg-5 w-100"
+        class="center-controls d-flex flex-column flex-lg-row align-items-center gap-6 gap-lg-1 w-100"
       >
-        <!-- 1) Tag toggles -->
-        <div class="w-100 w-lg-auto">
+        <!-- Plots tags -->
+        <div class="w-100 w-lg-auto d-flex justify-content-center">
           <div
             id="navCategories"
             class="btn-group navCategories nav-radio"
@@ -69,8 +69,8 @@
           </div>
         </div>
 
-        <!-- 2) Time range -->
-        <div class="w-100">
+        <!-- Time range -->
+        <div class="w-100 w-lg-auto d-flex justify-content-center">
           <div class="btn-group nav-radio" role="group" aria-label="Time range">
             <input
               type="radio"
@@ -121,8 +121,10 @@
           </div>
         </div>
 
-        <!-- 3) Show GC toggle -->
-        <div class="w-100 w-lg-auto">
+        <div
+          class="w-100 w-lg-auto d-flex justify-content-center align-items-center gap-2"
+        >
+          <!-- GC events -->
           <input
             type="checkbox"
             class="btn-check"
@@ -138,10 +140,8 @@
             ><i class="bi bi-trash3-fill"></i
           ></label>
           <br />
-        </div>
 
-        <!-- 4) Pause / Resume -->
-        <div class="w-100 w-lg-auto">
+          <!-- Play/Pause -->
           <input
             type="checkbox"
             class="btn-check"
@@ -160,7 +160,7 @@
         </div>
       </div>
 
-      <!-- Right: links and dark-mode -->
+      <!-- Links and options -->
       <div class="d-flex align-items-center gap-3">
         <a
           href="https://pkg.go.dev/runtime/metrics"

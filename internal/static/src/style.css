@@ -46,6 +46,11 @@ body {
   }
 }
 
+@media (max-width: 991px) {
+  .center-controls {
+    align-items: center; /* center each full-width row */
+  }
+}
 /* Wrapper for sidebar and content allows shrink */
 .d-flex.flex-grow-1 {
   flex: 1 1 auto;
