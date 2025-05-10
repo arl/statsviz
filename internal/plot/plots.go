@@ -170,17 +170,26 @@ func init() {
 			make:   makeMemoryClasses,
 		},
 		{
-			name: "cpu-classes-gc",
+			name: "gc-cpu-classes",
 			tags: []string{"gc"},
 			metrics: []string{
 				"/cpu/classes/gc/mark/assist:cpu-seconds",
 				"/cpu/classes/gc/mark/dedicated:cpu-seconds",
 				"/cpu/classes/gc/mark/idle:cpu-seconds",
 				"/cpu/classes/gc/pause:cpu-seconds",
-				"/cpu/classes/gc/total:cpu-seconds",
 			},
-			layout: cpuClassesLayout,
-			make:   makeCPUClassesGC,
+			layout: gcCPUClassesLayout,
+			make:   makeGCCPUClasses,
+		},
+		{
+			name: "gc-scavenger",
+			tags: []string{"gc"},
+			metrics: []string{
+				"/cpu/classes/scavenge/assist:cpu-seconds",
+				"/cpu/classes/scavenge/background:cpu-seconds",
+			},
+			layout: gcScavengerLayout,
+			make:   makeGCScavenger,
 		},
 		{
 			name: "mutex-wait",
@@ -581,9 +590,9 @@ func (p *memoryClasses) values(samples []metrics.Sample) any {
 	}
 }
 
-// cpu classes (gc)
+// gc (cpu classes)
 
-type cpuClassesGC struct {
+type gcCPUClasses struct {
 	idxMarkAssist    int
 	idxMarkDedicated int
 	idxMarkIdle      int
@@ -596,32 +605,28 @@ type cpuClassesGC struct {
 	lastMarkDedicated float64
 	lastMarkIdle      float64
 	lastPause         float64
-	lastTotal         float64
 }
 
-func makeCPUClassesGC(indices ...int) metricsGetter {
-	return &cpuClassesGC{
+func makeGCCPUClasses(indices ...int) metricsGetter {
+	return &gcCPUClasses{
 		idxMarkAssist:    indices[0],
 		idxMarkDedicated: indices[1],
 		idxMarkIdle:      indices[2],
 		idxPause:         indices[3],
-		idxTotal:         indices[4],
 	}
 }
 
-func (p *cpuClassesGC) values(samples []metrics.Sample) any {
+func (p *gcCPUClasses) values(samples []metrics.Sample) any {
 	curMarkAssist := samples[p.idxMarkAssist].Value.Float64()
 	curMarkDedicated := samples[p.idxMarkDedicated].Value.Float64()
 	curMarkIdle := samples[p.idxMarkIdle].Value.Float64()
 	curPause := samples[p.idxPause].Value.Float64()
-	curTotal := samples[p.idxTotal].Value.Float64()
 
 	if p.lastTime.IsZero() {
 		p.lastMarkAssist = curMarkAssist
 		p.lastMarkDedicated = curMarkDedicated
 		p.lastMarkIdle = curMarkIdle
 		p.lastPause = curPause
-		p.lastTotal = curTotal
 		p.lastTime = time.Now()
 
 		return []float64{0, 0, 0, 0, 0}
@@ -633,13 +638,11 @@ func (p *cpuClassesGC) values(samples []metrics.Sample) any {
 	markDedicated := (curMarkDedicated - p.lastMarkDedicated) / t
 	markIdle := (curMarkIdle - p.lastMarkIdle) / t
 	pause := (curPause - p.lastPause) / t
-	total := (curTotal - p.lastTotal) / t
 
 	p.lastMarkAssist = curMarkAssist
 	p.lastMarkDedicated = curMarkDedicated
 	p.lastMarkIdle = curMarkIdle
 	p.lastPause = curPause
-	p.lastTotal = curTotal
 	p.lastTime = time.Now()
 
 	return []float64{
@@ -647,7 +650,51 @@ func (p *cpuClassesGC) values(samples []metrics.Sample) any {
 		markDedicated,
 		markIdle,
 		pause,
-		total,
+	}
+}
+
+// gc (scavenger)
+
+type gcScavenger struct {
+	idxScavengeAssist     int
+	idxScavengeBackground int
+
+	lastTime time.Time
+
+	lastScavengeAssist     float64
+	lastScavengeBackground float64
+}
+
+func makeGCScavenger(indices ...int) metricsGetter {
+	return &gcScavenger{
+		idxScavengeAssist:     indices[0],
+		idxScavengeBackground: indices[1],
+	}
+}
+
+func (p *gcScavenger) values(samples []metrics.Sample) any {
+	curScavengeAssist := samples[p.idxScavengeAssist].Value.Float64()
+	curScavengeBackground := samples[p.idxScavengeBackground].Value.Float64()
+
+	if p.lastTime.IsZero() {
+		p.lastScavengeAssist = curScavengeAssist
+		p.lastScavengeBackground = curScavengeBackground
+		p.lastTime = time.Now()
+
+		return []float64{0, 0, 0, 0, 0}
+	}
+
+	t := time.Since(p.lastTime).Seconds()
+
+	scavengeAssist := (curScavengeAssist - p.lastScavengeAssist) / t
+	scavengeBackground := (curScavengeBackground - p.lastScavengeBackground) / t
+
+	p.lastScavengeAssist = curScavengeAssist
+	p.lastScavengeBackground = curScavengeBackground
+
+	return []float64{
+		scavengeAssist,
+		scavengeBackground,
 	}
 }
 
