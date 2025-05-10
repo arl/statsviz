@@ -398,9 +398,9 @@ var memoryClassesLayout = Scatter{
 <i>Total</i> is <b>/memory/classes/total</b>, all memory mapped by the Go runtime into the current process as read-write.`,
 }
 
-var gcCPUClassesLayout = Scatter{
+var cpuGCLayout = Scatter{
 	Name:   "TODO(set later)",
-	Title:  "Garbage Collector (CPU classes)",
+	Title:  "CPU (Garbage Collector)",
 	Type:   "scatter",
 	Events: "lastgc",
 	Layout: ScatterLayout{
@@ -434,12 +434,14 @@ All this metrics are overestimates, and not directly comparable to system CPU ti
 <i>mark assist</i> is <b>/cpu/classes/gc/mark/assist</b>, estimated total CPU time goroutines spent performing GC tasks to assist the GC and prevent it from falling behind the application.
 <i>mark dedicated</i> is <b>/cpu/classes/gc/mark/dedicated</b>, Estimated total CPU time spent performing GC tasks on processors (as defined by GOMAXPROCS) dedicated to those tasks.
 <i>mark idle</i> is <b>/cpu/classes/gc/mark/idle</b>, estimated total CPU time spent performing GC tasks on spare CPU resources that the Go scheduler could not otherwise find a use for.
-<i>pause</i> is <b>/cpu/classes/gc/pause</b>, estimated total CPU time spent with the application paused by the GC.`,
+<i>pause</i> is <b>/cpu/classes/gc/pause</b>, estimated total CPU time spent with the application paused by the GC.
+
+All metrics are rates in CPU-seconds per second.`,
 }
 
-var gcScavengerLayout = Scatter{
+var cpuScavengerLayout = Scatter{
 	Name:   "TODO(set later)",
-	Title:  "GC (Scavenger)",
+	Title:  "CPU (Scavenger)",
 	Type:   "bar",
 	Events: "lastgc",
 	Layout: ScatterLayout{
@@ -464,7 +466,51 @@ var gcScavengerLayout = Scatter{
 	InfoText: `Breakdown of how the GC scavenger returns memory to the OS (eagerly vs background).
 <i>assist is</i> the rate of <b>/cpu/classes/scavenge/assist</b>, the CPU time spent returning unused memory eagerly in response to memory pressure.
 <i>background is</i> the rate of <b>/cpu/classes/scavenge/background</b>, the CPU time spent performing background tasks to return unused memory to the OS.
+
 Both metrics are rates in CPU-seconds per second.`,
+}
+
+var cpuOverallLayout = Scatter{
+	Name:   "TODO(set later)",
+	Title:  "CPU (Overall)",
+	Type:   "bar",
+	Events: "lastgc",
+	Layout: ScatterLayout{
+		BarMode: "stack",
+		Yaxis: ScatterYAxis{
+			Title:      "cpu-seconds per seconds",
+			TickSuffix: "s",
+		},
+	},
+	Subplots: []Subplot{
+		{
+			Name:    "user",
+			Unitfmt: "%{y:.4s}s",
+			Type:    "bar",
+		},
+		{
+			Name:    "scavenge",
+			Unitfmt: "%{y:.4s}s",
+			Type:    "bar",
+		},
+		{
+			Name:    "idle",
+			Unitfmt: "%{y:.4s}s",
+			Type:    "bar",
+		},
+		{
+			Name:    "total",
+			Unitfmt: "%{y:.4s}s",
+			Type:    "scatter",
+		},
+	},
+	InfoText: `Shows the fraction of CPU spent in your code vs. runtime vs. wasted. Helps track overall utilization and potential headroom.
+<i>user is</i> the rate of <b>/cpu/classes/user:cpu-seconds</b>, the CPU time spent running user Go code.
+<i>scavenge is</i> the rate of <b>/cpu/classes/scavenge:cpu-seconds</b>, the CPU time spent performing tasks that return unused memory to the OS.
+<i>idle is</i> the rate of <b>/cpu/classes/idle:cpu-seconds</b>, the CPU time spent performing GC tasks on spare CPU resources that the Go scheduler could not otherwise find a use for.
+<i>total is</i> the rate of <b>/cpu/classes/total:cpu-seconds</b>, the available CPU time for user Go code or the Go runtime, as defined by GOMAXPROCS. In other words, GOMAXPROCS integrated over the wall-clock duration this process has been executing for.
+
+All metrics are rates in CPU-seconds per second.`,
 }
 
 var mutexWaitLayout = Scatter{
