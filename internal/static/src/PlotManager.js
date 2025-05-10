@@ -54,7 +54,8 @@ export default class PlotManager {
     const xrange = [now - timeRange * 1000, now];
 
     this.plots.forEach((p) => {
-      if (!p.hidden) p.update(xrange, data, shapes, force);
+      if (p.isVisible()) p.update(xrange, data, shapes, force);
+      else console.log(`Skipping ${p.name()} because it's hidden`);
     });
   }
 
