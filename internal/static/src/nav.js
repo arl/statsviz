@@ -36,32 +36,35 @@ export function initNav(onUpdate) {
     onUpdate(true);
   });
 
-  // Plot tags toggling
-  const tagInputs = document.querySelectorAll("#navCategories input[data-tag]");
+  // Plot tags toggling.
+  const tagInputs = Array.from(
+    document.querySelectorAll("#navCategories input[data-tag]")
+  );
 
-  // Ensure initial state: all checked → all plots shown
+  // Ensure initial state: all tags selected
+  tagInputs.forEach((input) => (input.checked = true));
+
+  // Update plot visibility based on selected tags
+  const updateByTags = () => {
+    const activeTags = tagInputs
+      .filter((i) => i.checked)
+      .map((i) => i.dataset.tag);
+
+    plotMgr.plots.forEach((p) => {
+      p.setVisible(activeTags.some((tag) => p.hasTag(tag)));
+    });
+  };
+
+  // Listen for tag changes
   tagInputs.forEach((input) => {
-    input.checked = true; // redundant if HTML has checked, but safe
-  });
-
-  tagInputs.forEach((input) => {
-    const tag = input.dataset.tag;
-
-    // On each toggle, show or hide matching plots
     input.addEventListener("change", () => {
-      if (input.checked) {
-        plotMgr.plots.forEach((p) => {
-          if (p.hasTag(tag)) p.show();
-        });
-      } else {
-        plotMgr.plots.forEach((p) => {
-          if (p.hasTag(tag)) p.hide();
-        });
-      }
-      // Redraw after visibility change
+      updateByTags();
       onUpdate(true);
     });
   });
+
+  // Apply initial tag filter
+  updateByTags();
 
   // Time range selection
   const rangeInputs = document.querySelectorAll('input[name="range"]');

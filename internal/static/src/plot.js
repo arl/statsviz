@@ -68,12 +68,8 @@ class Plot {
     return this.#cfg.tags.includes(tag);
   }
 
-  hide() {
-    this.#htmlElt.hidden = true;
-  }
-
-  show() {
-    this.#htmlElt.hidden = false;
+  setVisible(visible) {
+    this.#htmlElt.hidden = !visible;
   }
 
   isVisible() {

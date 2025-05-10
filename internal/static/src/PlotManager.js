@@ -55,7 +55,6 @@ export default class PlotManager {
 
     this.plots.forEach((p) => {
       if (p.isVisible()) p.update(xrange, data, shapes, force);
-      else console.log(`Skipping ${p.name()} because it's hidden`);
     });
   }
 

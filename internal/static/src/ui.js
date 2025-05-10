@@ -9,12 +9,12 @@ export const onClickPlotMaximize = (cfg) => (_gd, _ev) => {
 
   if (isOnlyVisible) {
     // Show plots.
-    plotMgr.plots.forEach((p) => p.show());
+    plotMgr.plots.forEach((p) => p.setVisible(true));
     clicked.minimize();
   } else {
     // Hide all plots except the clicked one.
     plotMgr.plots.forEach((p) => {
-      if (p !== clicked) p.hide();
+      if (p !== clicked) p.setVisible(false);
     });
     clicked.maximize();
   }
