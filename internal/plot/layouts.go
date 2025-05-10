@@ -516,7 +516,7 @@ All metrics are rates in CPU-seconds per second.`,
 var mutexWaitLayout = Scatter{
 	Name:   "TODO(set later)",
 	Title:  "Time Goroutines Spend Blocked on Mutexes",
-	Type:   "scatter",
+	Type:   "bar",
 	Events: "lastgc",
 	Layout: ScatterLayout{
 		Yaxis: ScatterYAxis{
@@ -528,6 +528,7 @@ var mutexWaitLayout = Scatter{
 		{
 			Name:    "mutex wait",
 			Unitfmt: "%{y:.4s}s",
+			Type:    "bar",
 		},
 	},
 
