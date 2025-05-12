@@ -203,7 +203,7 @@ func sizeClassesLayout(samples []metrics.Sample) Heatmap {
 }
 
 func gcPausesLayout(samples []metrics.Sample) Heatmap {
-	idxgcpauses := metricIdx["/gc/pauses:seconds"]
+	idxgcpauses := metricIdx["/sched/pauses/total/gc:seconds"]
 
 	gcpauses := samples[idxgcpauses].Value.Float64Histogram()
 	histfactor := downsampleFactor(len(gcpauses.Buckets), maxBuckets)
@@ -439,7 +439,7 @@ var cpuScavengerLayout = Scatter{
 	Layout: ScatterLayout{
 		BarMode: "stack",
 		Yaxis: ScatterYAxis{
-			Title:      "cpu-seconds per seconds",
+			Title:      "cpu-seconds / second",
 			TickSuffix: "s",
 		},
 	},
@@ -470,7 +470,7 @@ var cpuOverallLayout = Scatter{
 	Layout: ScatterLayout{
 		BarMode: "stack",
 		Yaxis: ScatterYAxis{
-			Title:      "cpu-seconds per seconds",
+			Title:      "cpu-seconds / second",
 			TickSuffix: "s",
 		},
 	},
@@ -518,7 +518,7 @@ var mutexWaitLayout = Scatter{
 	Events: "lastgc",
 	Layout: ScatterLayout{
 		Yaxis: ScatterYAxis{
-			Title:      "seconds per seconds",
+			Title:      "seconds / second",
 			TickSuffix: "s",
 		},
 	},
@@ -571,4 +571,30 @@ This plot shows the amount of memory that is scannable by the GC.
 <i>scannable heap</i> is <b>/gc/scan/heap</b>, the total amount of heap space that is scannable.
 <i>scanned stack</i> is <b>/gc/scan/stack</b>, the number of bytes of stack that were scanned last GC cycle.
 `,
+}
+
+var allocFreeRatesLayout = Scatter{
+	Name:  "heap alloc/free rates",
+	Title: "Heap Allocation & Free Rates",
+	Type:  "scatter",
+	Layout: ScatterLayout{
+		Yaxis: ScatterYAxis{
+			Title: "objects / second",
+		},
+	},
+	Subplots: []Subplot{
+		{
+			Name:    "allocs/sec",
+			Unitfmt: "%{y:.4s}",
+			Color:   RGBString(66, 133, 244),
+		},
+		{
+			Name:    "frees/sec",
+			Unitfmt: "%{y:.4s}",
+			Color:   RGBString(219, 68, 55),
+		},
+	},
+	InfoText: `
+<i>Allocations per second</i> is derived by differencing the cumulative <b>/gc/heap/allocs:objects</b> metric.
+<i>Frees per second</i> is similarly derived from <b>/gc/heap/frees:objects</b>.`,
 }

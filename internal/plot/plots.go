@@ -237,6 +237,16 @@ func init() {
 			layout: gcScanLayout,
 			make:   makeGCScan,
 		},
+		{
+			name: "alloc-free-rate",
+			tags: []string{"gc"},
+			metrics: []string{
+				"/gc/heap/allocs:objects",
+				"/gc/heap/frees:objects",
+			},
+			layout: allocFreeRatesLayout,
+			make:   makeAllocFreeRates,
+		},
 	}
 }
 
@@ -889,6 +899,47 @@ func (p *gcScan) values(samples []metrics.Sample) any {
 		globals,
 		heap,
 		stack,
+	}
+}
+
+// alloc/free rates
+type allocFreeRates struct {
+	idxallocs int
+	idxfrees  int
+
+	lasttime   time.Time
+	lastallocs uint64
+	lastfrees  uint64
+}
+
+func makeAllocFreeRates(indices ...int) metricsGetter {
+	return &allocFreeRates{
+		idxallocs: indices[0],
+		idxfrees:  indices[1],
+	}
+}
+
+func (p *allocFreeRates) values(samples []metrics.Sample) any {
+	if p.lasttime.IsZero() {
+		p.lasttime = time.Now()
+		p.lastallocs = samples[p.idxallocs].Value.Uint64()
+		p.lastfrees = samples[p.idxfrees].Value.Uint64()
+
+		return []float64{0, 0}
+	}
+
+	t := time.Since(p.lasttime).Seconds()
+
+	allocs := float64(samples[p.idxallocs].Value.Uint64()-p.lastallocs) / t
+	frees := float64(samples[p.idxfrees].Value.Uint64()-p.lastfrees) / t
+
+	p.lastallocs = samples[p.idxallocs].Value.Uint64()
+	p.lastfrees = samples[p.idxfrees].Value.Uint64()
+	p.lasttime = time.Now()
+
+	return []float64{
+		allocs,
+		frees,
 	}
 }
 
