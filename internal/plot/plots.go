@@ -37,7 +37,20 @@ func init() {
 
 	plotDescs = []plotDesc{
 		{
-			name: "heap",
+			name: "garbage collection",
+			tags: []string{"gc"},
+			metrics: []string{
+				"/gc/gomemlimit:bytes",
+				"/gc/heap/live:bytes",
+				"/gc/heap/goal:bytes",
+				"/memory/classes/total:bytes",
+				"/memory/classes/heap/released:bytes",
+			},
+			layout: garbageCollectionLayout,
+			make:   makeGarbageCollection,
+		},
+		{
+			name: "heap (details)",
 			tags: []string{"gc"},
 			metrics: []string{
 				"/memory/classes/heap/objects:bytes",
@@ -224,6 +237,44 @@ func init() {
 			layout: gcScanLayout,
 			make:   makeGCScan,
 		},
+	}
+}
+
+// garbage collection
+type garbageCollection struct {
+	idxmemlimit     int
+	idxheaplive     int
+	idxheapgoal     int
+	idxmemtotal     int
+	idxheapreleased int
+}
+
+func makeGarbageCollection(indices ...int) metricsGetter {
+	return &garbageCollection{
+		idxmemlimit:     indices[0],
+		idxheaplive:     indices[1],
+		idxheapgoal:     indices[2],
+		idxmemtotal:     indices[3],
+		idxheapreleased: indices[4],
+	}
+}
+
+func (p *garbageCollection) values(samples []metrics.Sample) any {
+	memLimit := samples[p.idxmemlimit].Value.Uint64()
+	heapLive := samples[p.idxheaplive].Value.Uint64()
+	heapGoal := samples[p.idxheapgoal].Value.Uint64()
+	memTotal := samples[p.idxmemtotal].Value.Uint64()
+	heapReleased := samples[p.idxheapreleased].Value.Uint64()
+
+	if memLimit == math.MaxInt64 {
+		memLimit = 0
+	}
+
+	return []uint64{
+		memLimit,
+		memTotal - heapReleased,
+		heapLive,
+		heapGoal,
 	}
 }
 

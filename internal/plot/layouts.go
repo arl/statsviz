@@ -1,10 +1,12 @@
 package plot
 
-import "runtime/metrics"
+import (
+	"runtime/metrics"
+)
 
-var heapGlobalLayout = Scatter{
-	Name:   "TODO(set later)",
-	Title:  "Heap (global)",
+var garbageCollectionLayout = Scatter{
+	Name:   "garbage collection",
+	Title:  "GC Memory Summary",
 	Type:   "scatter",
 	Events: "lastgc",
 	Layout: ScatterLayout{
@@ -14,28 +16,16 @@ var heapGlobalLayout = Scatter{
 		},
 	},
 	Subplots: []Subplot{
-		{
-			Name:       "heap in-use",
-			Unitfmt:    "%{y:.4s}B",
-			HoverOn:    "points+fills",
-			StackGroup: "one",
-		},
-		{
-			Name:       "heap free",
-			Unitfmt:    "%{y:.4s}B",
-			HoverOn:    "points+fills",
-			StackGroup: "one",
-		},
-		{
-			Name:       "heap released",
-			Unitfmt:    "%{y:.4s}B",
-			HoverOn:    "points+fills",
-			StackGroup: "one",
-		},
+		{Name: "memory limit", Unitfmt: "%{y:.4s}B"},
+		{Name: "in-use memory", Unitfmt: "%{y:.4s}B"},
+		{Name: "heap live", Unitfmt: "%{y:.4s}B"},
+		{Name: "heap goal", Unitfmt: "%{y:.4s}B"},
 	},
-	InfoText: `<i>Heap in use</i> is <b>/memory/classes/heap/objects + /memory/classes/heap/unused</b>. It amounts to the memory occupied by live objects and dead objects that are not yet marked free by the GC, plus some memory reserved for heap objects.
-<i>Heap free</i> is <b>/memory/classes/heap/free</b>, that is free memory that could be returned to the OS, but has not been.
-<i>Heap released</i> is <b>/memory/classes/heap/free</b>, memory that is free memory that has been returned to the OS.`,
+	InfoText: `
+<i>Memory limit</i> is <b>/gc/gomemlimit</b>, the total amount of memory that the Go runtime can use.
+<i>In-use memory</i> is the total mapped memory minus released heap memory (<b>/memory/classes/total - /memory/classes/heap/released</b>).
+<i>Heap live</i> is <b>/gc/heap/live</b>, the current size of all live heap objects.
+<i>Heap goal</i> is <b>/gc/heap/goal</b>, the target heap size at the end of each GC cycle.`,
 }
 
 var heapDetailslLayout = Scatter{
