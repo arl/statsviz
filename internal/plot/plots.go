@@ -198,6 +198,7 @@ func init() {
 				"/cpu/classes/user:cpu-seconds",
 				"/cpu/classes/scavenge/total:cpu-seconds",
 				"/cpu/classes/idle:cpu-seconds",
+				"/cpu/classes/gc/total:cpu-seconds",
 				"/cpu/classes/total:cpu-seconds",
 			},
 			layout: cpuOverallLayout,
@@ -716,13 +717,15 @@ type cpuOverall struct {
 	idxUser     int
 	idxScavenge int
 	idxIdle     int
+	idxGCtotal  int
 	idxTotal    int
 
 	lastTime     time.Time
 	lastUser     float64
-	lastTotal    float64
 	lastScavenge float64
 	lastIdle     float64
+	lastGCtotal  float64
+	lastTotal    float64
 }
 
 func makeCPUoverall(indices ...int) metricsGetter {
@@ -730,7 +733,8 @@ func makeCPUoverall(indices ...int) metricsGetter {
 		idxUser:     indices[0],
 		idxScavenge: indices[1],
 		idxIdle:     indices[2],
-		idxTotal:    indices[3],
+		idxGCtotal:  indices[3],
+		idxTotal:    indices[4],
 	}
 }
 
@@ -738,15 +742,17 @@ func (p *cpuOverall) values(samples []metrics.Sample) any {
 	curUser := samples[p.idxUser].Value.Float64()
 	curScavenge := samples[p.idxScavenge].Value.Float64()
 	curIdle := samples[p.idxIdle].Value.Float64()
+	curGCtotal := samples[p.idxGCtotal].Value.Float64()
 	curTotal := samples[p.idxTotal].Value.Float64()
 
 	if p.lastTime.IsZero() {
 		p.lastUser = curUser
 		p.lastScavenge = curScavenge
 		p.lastIdle = curIdle
+		p.lastGCtotal = curGCtotal
 		p.lastTotal = curTotal
-		p.lastTime = time.Now()
 
+		p.lastTime = time.Now()
 		return []float64{0, 0, 0, 0, 0}
 	}
 
@@ -755,17 +761,20 @@ func (p *cpuOverall) values(samples []metrics.Sample) any {
 	user := (curUser - p.lastUser) / t
 	scavenge := (curScavenge - p.lastScavenge) / t
 	idle := (curIdle - p.lastIdle) / t
+	gcTotal := (curGCtotal - p.lastGCtotal) / t
 	total := (curTotal - p.lastTotal) / t
 
 	p.lastUser = curUser
 	p.lastScavenge = curScavenge
 	p.lastIdle = curIdle
+	p.lastGCtotal = curGCtotal
 	p.lastTotal = curTotal
 
 	return []float64{
 		user,
 		scavenge,
 		idle,
+		gcTotal,
 		total,
 	}
 }
