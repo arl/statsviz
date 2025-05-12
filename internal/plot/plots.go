@@ -117,7 +117,7 @@ func init() {
 			name: "gc-pauses",
 			tags: []string{"scheduler"},
 			metrics: []string{
-				"/gc/pauses:seconds",
+				"/sched/pauses/total/gc:seconds",
 			},
 			layout: gcPausesLayout(samples),
 			make:   makeGCPauses,

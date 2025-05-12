@@ -22,10 +22,10 @@ var garbageCollectionLayout = Scatter{
 		{Name: "heap goal", Unitfmt: "%{y:.4s}B"},
 	},
 	InfoText: `
-<i>Memory limit</i> is <b>/gc/gomemlimit</b>, the total amount of memory that the Go runtime can use.
+<i>Memory limit</i> is <b>/gc/gomemlimit:bytes</b>, the Go runtime memory limit configured by the user (via GOMEMLIMIT or debug.SetMemoryLimt), otherwise 0. 
 <i>In-use memory</i> is the total mapped memory minus released heap memory (<b>/memory/classes/total - /memory/classes/heap/released</b>).
-<i>Heap live</i> is <b>/gc/heap/live</b>, the current size of all live heap objects.
-<i>Heap goal</i> is <b>/gc/heap/goal</b>, the target heap size at the end of each GC cycle.`,
+<i>Heap live</i> is <b>/gc/heap/live:bytes</b>, heap memory occupied by live objects.  
+<i>Heap goal</i> is <b>/gc/heap/goal:bytes</b>, the heap size target at the end of each GC cycle.`,
 }
 
 var heapDetailslLayout = Scatter{
@@ -57,7 +57,8 @@ var heapDetailslLayout = Scatter{
 			Unitfmt: "%{y:.4s}B",
 		},
 	},
-	InfoText: `<i>Heap</i> sys is <b>/memory/classes/heap/objects + /memory/classes/heap/unused + /memory/classes/heap/released + /memory/classes/heap/free</b>. It's an estimate of all the heap memory obtained form the OS.
+	InfoText: `
+<i>Heap</i> sys is <b>/memory/classes/heap/{objects + unused + released + free}</b>. It's an estimate of all the heap memory obtained from the OS.
 <i>Heap objects</i> is <b>/memory/classes/heap/objects</b>, the memory occupied by live objects and dead objects that have not yet been marked free by the GC.
 <i>Heap stacks</i> is <b>/memory/classes/heap/stacks</b>, the memory used for stack space.
 <i>Heap goal</i> is <b>gc/heap/goal</b>, the heap size target for the end of the GC cycle.`,
@@ -70,7 +71,7 @@ var liveObjectsLayout = Scatter{
 	Events: "lastgc",
 	Layout: ScatterLayout{
 		Yaxis: ScatterYAxis{
-			Title: "bytes",
+			Title: "objects",
 		},
 	},
 	Subplots: []Subplot{
@@ -132,7 +133,8 @@ var mspanMCacheLayout = Scatter{
 			Unitfmt: "%{y:.4s}B",
 		},
 	},
-	InfoText: `<i>Mspan in-use</i> is <b>/memory/classes/metadata/mspan/inuse</b>, the memory that is occupied by runtime mspan structures that are currently being used.
+	InfoText: `
+<i>Mspan in-use</i> is <b>/memory/classes/metadata/mspan/inuse</b>, the memory that is occupied by runtime mspan structures that are currently being used.
 <i>Mspan free</i> is <b>/memory/classes/metadata/mspan/free</b>, the memory that is reserved for runtime mspan structures, but not in-use.
 <i>Mcache in-use</i> is <b>/memory/classes/metadata/mcache/inuse</b>, the memory that is occupied by runtime mcache structures that are currently being used.
 <i>Mcache free</i> is <b>/memory/classes/metadata/mcache/free</b>, the memory that is reserved for runtime mcache structures, but not in-use.
@@ -140,10 +142,9 @@ var mspanMCacheLayout = Scatter{
 }
 
 var goroutinesLayout = Scatter{
-	Name:   "TODO(set later)",
-	Title:  "Goroutines",
-	Type:   "scatter",
-	Events: "lastgc",
+	Name:  "TODO(set later)",
+	Title: "Goroutines",
+	Type:  "scatter",
 	Layout: ScatterLayout{
 		Yaxis: ScatterYAxis{
 			Title: "goroutines",
@@ -229,7 +230,7 @@ func gcPausesLayout(samples []metrics.Sample) Heatmap {
 				TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
 			},
 		},
-		InfoText: `This heatmap shows the distribution of individual GC-related stop-the-world pause latencies, uses <b>/gc/pauses:seconds</b>,.`,
+		InfoText: `This heatmap shows the distribution of individual GC-related stop-the-world pause latencies, uses <b>/sched/pauses/total/gc:seconds</b>,.`,
 	}
 }
 
@@ -311,7 +312,7 @@ var cgoLayout = Scatter{
 
 var gcStackSizeLayout = Scatter{
 	Name:  "TODO(set later)",
-	Title: "Starting Size of Goroutines Stacks",
+	Title: "Goroutine stack starting size",
 	Type:  "scatter",
 	Layout: ScatterLayout{
 		Yaxis: ScatterYAxis{
@@ -382,7 +383,8 @@ var memoryClassesLayout = Scatter{
 		},
 	},
 
-	InfoText: `<i>OS stacks</i> is <b>/memory/classes/os-stacks</b>, stack memory allocated by the underlying operating system.
+	InfoText: `
+<i>OS stacks</i> is <b>/memory/classes/os-stacks</b>, stack memory allocated by the underlying operating system.
 <i>Other</i> is <b>/memory/classes/other</b>, memory used by execution trace buffers, structures for debugging the runtime, finalizer and profiler specials, and more.
 <i>Profiling buckets</i> is <b>/memory/classes/profiling/buckets</b>, memory that is used by the stack trace hash map used for profiling.
 <i>Total</i> is <b>/memory/classes/total</b>, all memory mapped by the Go runtime into the current process as read-write.`,
@@ -511,7 +513,7 @@ All metrics are rates in CPU-seconds per second.`,
 
 var mutexWaitLayout = Scatter{
 	Name:   "TODO(set later)",
-	Title:  "Time Goroutines Spend Blocked on Mutexes",
+	Title:  "Mutex wait time",
 	Type:   "bar",
 	Events: "lastgc",
 	Layout: ScatterLayout{
@@ -563,7 +565,8 @@ var gcScanLayout = Scatter{
 			Type:    "bar",
 		},
 	},
-	InfoText: `This plot shows the amount of memory that is scannable by the GC.
+	InfoText: `
+This plot shows the amount of memory that is scannable by the GC.
 <i>scannable globals</i> is <b>/gc/scan/globals</b>, the total amount of global variable space that is scannable.
 <i>scannable heap</i> is <b>/gc/scan/heap</b>, the total amount of heap space that is scannable.
 <i>scanned stack</i> is <b>/gc/scan/stack</b>, the number of bytes of stack that were scanned last GC cycle.
