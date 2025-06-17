@@ -2,7 +2,7 @@ import * as ui from "./ui.js";
 import Plotly from "plotly.js-cartesian-dist";
 import { formatFunction } from "./utils.js";
 
-const debugMode = true;
+const debugMode = false;
 
 export const defaultPlotHeight = 480;
 
