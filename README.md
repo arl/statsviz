@@ -25,7 +25,7 @@ Visualize real time plots of your Go program runtime metrics, including heap, ob
   - [How Does That Work?](#how-does-that-work)
   - [Documentation](#documentation)
     - [Go API](#go-api)
-    - [User interface](#user-interface)
+    - [Web User Interface](#web-user-interface)
     - [Plots](#plots)
     - [User Plots](#user-plots)
   - [Examples](#examples)
@@ -98,95 +98,130 @@ Data points are in a browser-side circular-buffer.
 
 Check out the API reference on [pkg.go.dev](https://pkg.go.dev/github.com/arl/statsviz#section-documentation).
 
-### User interface
+### Web User Interface
 
-Controls at the top of the page act on all plots:
 
-<img alt="menu" src="https://github.com/arl/statsviz/raw/readme-docs/menu-002.png">
+#### Top Bar
 
-- the groom shows/hides the vertical lines representing garbage collections.
-- the time range selector defines the visualized time span.
-- the play/pause icons stops and resume the refresh of the plots.
-- the light/dark selector switches between light and dark modes.
+<img alt="webui-annotated" src="https://github.com/arl/statsviz/raw/readme-docs/webui-annotated.png">
 
-On top of each plot there are 2 icons:
+##### Category Selector
 
-<img alt="menu" src="https://github.com/arl/statsviz/raw/readme-docs/plot.menu-001.png">
+<img alt="menu-categories" src="https://github.com/arl/statsviz/raw/readme-docs/menu-categories.png">
 
-- the camera downloads a PNG image of the plot.
-- the info icon shows details about the metrics displayed.
+Each plot belongs to one or more categories. The category selector allows you to filter the visible plots by categories.
+
+##### Visible Time Range
+
+<img alt="menu-timerange" src="https://github.com/arl/statsviz/raw/readme-docs/menu-timerange.png">
+
+Use the time range selector to define the visualized time span.
+
+##### Show/Hide GC events
+
+<img alt="menu-gc-events" src="https://github.com/arl/statsviz/raw/readme-docs/menu-gc-events.png">
+
+Show or hide the vertical lines representing garbage collection events.
+
+##### Pause updates
+
+<img alt="menu-play" src="https://github.com/arl/statsviz/raw/readme-docs/menu-play.png">
+
+Pause or resume the plot updates.
+
+
+#### Plot Controls
+
+<img alt="webui-annotated" src="https://github.com/arl/statsviz/raw/readme-docs/plot-controls-annotated.png">
+
 
 ### Plots
 
-Depending on your go version, some plots may not be available.
+The visible set of plots depend on your Go version since some plots are only available in newer versions.
 
-#### Heap (global)
+#### Allocation and Free Rate
 
-<img width="50%" alt="heap-global" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-global.png">
-
-#### Heap (details)
-
-<img width="50%" alt="heap-details" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/heap-details.png">
-
-#### Live Objects in Heap
-
-<img width="50%" alt="live-objects" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-objects.png">
-
-#### Live Bytes in Heap
-
-<img width="50%" alt="live-bytes" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/live-bytes.png">
-
-#### MSpan/MCache
-
-<img width="50%" alt="mspan-mcache" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/mspan-mcache.png">
-
-#### Memory classes
-
-<img width="50%" alt="memory-classes" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/memory-classes.png">
-
-#### Goroutines
-
-<img width="50%" alt="goroutines" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/goroutines.png">
-
-#### Size Classes
-
-<img width="50%" alt="size-classes" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/size-classes.png">
-
-#### GC Scan
-
-<img width="50%" alt="gc-scan" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-scan.png">
-
-#### GC Cycles
-
-<img width="50%" alt="gc-cycles" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-cycles.png">
-
-#### Stop-the-world Pause Latencies
-
-<img width="50%" alt="gc-pauses" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-pauses.png">
-
-#### CPU Classes (GC)
-
-<img width="50%" alt="cpu-classes-gc" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cpu-classes-gc.png">
-
-#### Time Goroutines Spend in 'Runnable' state
-
-<img width="50%" alt="runnable-time" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/runnable-time.png">
-
-#### Time Goroutines Spend Blocked on Mutexes
-
-<img width="50%" alt="mutex-wait" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/mutex-wait.png">
-
-#### Starting Size of Goroutines Stacks
-
-<img width="50%" alt="gc-stack-size" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/gc-stack-size.png">
-
-#### Goroutine Scheduling Events
-
-<img width="50%" alt="sched-events" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/sched-events.png">
+<img width="50%" alt="alloc-free-rate" src="https://github.com/arl/statsviz/raw/readme-docs/plots/alloc-free-rate.png">
 
 #### CGO Calls
 
-<img width="50%" alt="cgo" src="https://github.com/arl/statsviz/raw/readme-docs/runtime-metrics/cgo.png">
+<img width="50%" alt="cgo" src="https://github.com/arl/statsviz/raw/readme-docs/plots/cgo.png">
+
+#### CPU (GC)
+
+<img width="50%" alt="cpu-gc" src="https://github.com/arl/statsviz/raw/readme-docs/plots/cpu-gc.png">
+
+#### CPU (Overall)
+
+<img width="50%" alt="cpu-overall" src="https://github.com/arl/statsviz/raw/readme-docs/plots/cpu-overall.png">
+
+#### CPU (Scavenger)
+
+<img width="50%" alt="cpu-scavenger" src="https://github.com/arl/statsviz/raw/readme-docs/plots/cpu-scavenger.png">
+
+#### Garbage Collection
+
+<img width="50%" alt="garbage-collection" src="https://github.com/arl/statsviz/raw/readme-docs/plots/garbage collection.png">
+
+#### GC Cycles
+
+<img width="50%" alt="gc-cycles" src="https://github.com/arl/statsviz/raw/readme-docs/plots/gc-cycles.png">
+
+#### GC Pauses
+
+<img width="50%" alt="gc-pauses" src="https://github.com/arl/statsviz/raw/readme-docs/plots/gc-pauses.png">
+
+#### GC Scan
+
+<img width="50%" alt="gc-scan" src="https://github.com/arl/statsviz/raw/readme-docs/plots/gc-scan.png">
+
+#### GC Stack Size
+
+<img width="50%" alt="gc-stack-size" src="https://github.com/arl/statsviz/raw/readme-docs/plots/gc-stack-size.png">
+
+#### Goroutines
+
+<img width="50%" alt="goroutines" src="https://github.com/arl/statsviz/raw/readme-docs/plots/goroutines.png">
+
+#### Heap (Details)
+
+<img width="50%" alt="heap-details" src="https://github.com/arl/statsviz/raw/readme-docs/plots/heap (details).png">
+
+#### Live Bytes
+
+<img width="50%" alt="live-bytes" src="https://github.com/arl/statsviz/raw/readme-docs/plots/live-bytes.png">
+
+#### Live Objects
+
+<img width="50%" alt="live-objects" src="https://github.com/arl/statsviz/raw/readme-docs/plots/live-objects.png">
+
+#### Memory Classes
+
+<img width="50%" alt="memory-classes" src="https://github.com/arl/statsviz/raw/readme-docs/plots/memory-classes.png">
+
+#### MSpan/MCache
+
+<img width="50%" alt="mspan-mcache" src="https://github.com/arl/statsviz/raw/readme-docs/plots/mspan-mcache.png">
+
+#### Mutex Wait
+
+<img width="50%" alt="mutex-wait" src="https://github.com/arl/statsviz/raw/readme-docs/plots/mutex-wait.png">
+
+#### Runnable Time
+
+<img width="50%" alt="runnable-time" src="https://github.com/arl/statsviz/raw/readme-docs/plots/runnable-time.png">
+
+#### Scheduling Events
+
+<img width="50%" alt="sched-events" src="https://github.com/arl/statsviz/raw/readme-docs/plots/sched-events.png">
+
+#### Size Classes
+
+<img width="50%" alt="size-classes" src="https://github.com/arl/statsviz/raw/readme-docs/plots/size-classes.png">
+
+#### GC Pauses
+
+<img width="50%" alt="gc-pauses" src="https://github.com/arl/statsviz/raw/readme-docs/plots/gc-pauses.png">
 
 
 ### User Plots
