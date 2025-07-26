@@ -171,7 +171,9 @@ Pause or resume the plot updates.
 
 ### Plots
 
-The visible set of plots depend on your Go version since some plots are only available in newer versions.
+Which plots are visible depends on:
+ - your Go version,since some plots are only available in newer versions.
+ - what plot categories are currently selected. By default all plots are shown.
 
 #### Allocation and Free Rate
 
