@@ -165,16 +165,25 @@ func (s *Server) Index() http.HandlerFunc {
 	return http.StripPrefix(prefix, dist).ServeHTTP
 }
 
+func parseBoolEnv(name string) bool {
+	env := os.Getenv(name)
+	val, err := strconv.ParseBool(env)
+	if err != nil {
+		if env != "" {
+			fmt.Fprintf(os.Stderr, "statsviz: malformed %s %v\n", name, err)
+		}
+	}
+	return val
+}
+
+var debug = false
+
 var wsUpgrader = sync.OnceValue(func() websocket.Upgrader {
 	var checkOrigin func(r *http.Request) bool
 
 	// Allow all origins for testing.
-	val := os.Getenv("STATSVIZ_DEBUG")
-	if dbg, err := strconv.ParseBool(val); err != nil {
-		if val != "" {
-			fmt.Fprintf(os.Stderr, "statsviz: malformed STATSVIZ_DEBUG %v\n", err)
-		}
-	} else if dbg {
+	if debug = parseBoolEnv("STATSVIZ_DEBUG"); debug {
+		// passthrough
 		checkOrigin = func(r *http.Request) bool { return true }
 	}
 
@@ -185,8 +194,6 @@ var wsUpgrader = sync.OnceValue(func() websocket.Upgrader {
 	}
 })
 
-const printWSErrors = true
-
 // Ws returns the WebSocket handler used by Statsviz to send application
 // metrics. The underlying net.Conn is used to upgrade the HTTP server
 // connection to the WebSocket protocol.
@@ -195,7 +202,7 @@ func (s *Server) Ws() http.HandlerFunc {
 		upgrader := wsUpgrader()
 		ws, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			if printWSErrors {
+			if debug {
 				fmt.Fprintf(os.Stderr, "statsviz: failed to upgrade connection: %v\n", err)
 			}
 			return
@@ -211,12 +218,12 @@ func (s *Server) Ws() http.HandlerFunc {
 		// overkill for now.
 
 		if err := s.sendConfig(ws); err != nil {
-			if printWSErrors {
+			if debug {
 				fmt.Fprintf(os.Stderr, "statsviz: failed to send config: %v\n", err)
 			}
 		}
 		if err := s.sendStats(ws, s.interval); err != nil {
-			if printWSErrors {
+			if debug {
 				fmt.Fprintf(os.Stderr, "statsviz: failed to send stats: %v\n", err)
 			}
 		}

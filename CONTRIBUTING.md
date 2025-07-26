@@ -31,7 +31,6 @@ To bootstrap the UI for development:
  - run `go mod edit -replace=github.com/arl/statsviz=../../` to build the
    example with your local version of the Go code. If you haven't touched to the
    Go code you can skip this step.
- - run `export STATSVIZ_DEBUG=1 go run .` (`STATSVIZ_DEBUG=1` bypasses CORS)
 
 To build the production UI:
  - cd to `internal/static`
@@ -47,6 +46,14 @@ in the final binary, the `dist` directory is zipped into `dist.zip`. Use
 `dist.zip` is then decompressed into a `fs.FS`, served via
 `http.FileServerFS()`.
 
+
+## `STATSVIZ_DEBUG`
+
+Declare `STATSVIZ_DEBUG=1` environment variable when you develop in order to:
+ - print websocket errors on standard output.
+ - bypasses CORS checks
+
+Obviously, this is not recommended for production use!
 
 ## Documentation
 
