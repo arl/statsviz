@@ -1,34 +1,57 @@
-[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=round-square)](https://pkg.go.dev/github.com/arl/statsviz)
-[![Latest tag](https://img.shields.io/github/tag/arl/statsviz.svg)](https://github.com/arl/statsviz/tag/)
-[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
+<div align="center">
+ <a href="https://github.com/arl/statsviz" title="Statsviz's Github repository.">
+    <img src="https://raw.githubusercontent.com/arl/statsviz/readme-docs/logo.png?sanitize=true" width="100" height="auto"/>
+ </a>
+<br>
+<br>
+<br>
 
-[![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-linux/badge.svg)](https://github.com/arl/statsviz/actions)
-[![Test Actions Status](https://github.com/arl/statsviz/workflows/Tests-others/badge.svg)](https://github.com/arl/statsviz/actions)
-[![codecov](https://codecov.io/gh/arl/statsviz/branch/main/graph/badge.svg)](https://codecov.io/gh/arl/statsviz)
+<p align="center">
+  <a href="https://pkg.go.dev/github.com/arl/statsviz" title="Statsviz on pkg.go.dev">
+    <img src="https://pkg.go.dev/badge/github.com/arl/statsviz" alt="Go Reference">
+  </a>
+  <a href="https://img.shields.io/github/tag/arl/statsviz.svg" title="Latest tag">
+    <img src="https://img.shields.io/github/tag/arl/statsviz.svg" alt="Latest tag">
+  </a>
+  <a href="https://awesome.re/mentioned-badge.svg" title="Mentioned in Awesome Go">
+    <img src="https://awesome.re/mentioned-badge.svg" alt="Mentioned in Awesome Go">
+  </a>
+</p>
+<p align="center">
+  <a href="https://github.com/arl/statsviz/actions">
+    <img src="https://github.com/arl/statsviz/workflows/Tests-linux/badge.svg" alt="Linux CI">
+  </a>
+  <a href="https://github.com/arl/statsviz/actions">
+    <img src="https://github.com/arl/statsviz/workflows/Tests-others/badge.svg" alt="Others CI">
+  </a>
+  <a href="https://codecov.io/gh/arl/statsviz">
+    <img src="https://codecov.io/gh/arl/statsviz/branch/main/graph/badge.svg" alt="Codecov">
+  </a>
+</p>
+
+</div>
 
 # Statsviz
 
-<p align="center">
-  <img alt="Statsviz Gopher Logo" width="120" src="https://raw.githubusercontent.com/arl/statsviz/readme-docs/logo.png?sanitize=true">
-  <img alt="statsviz ui" width="450" align="right" src="https://github.com/arl/statsviz/raw/readme-docs/window.png">
-</p>
-<br/>
 
 Visualize real time plots of your Go program runtime metrics, including heap, objects, goroutines, GC pauses, scheduler and more, in your browser.
 
-<hr>
+<div align="center">
+<img alt="statsviz ui" width="300px" height="auto" src="https://github.com/arl/statsviz/raw/readme-docs/window-light.png">
+<img alt="statsviz ui" width="300px" height="auto" src="https://github.com/arl/statsviz/raw/readme-docs/window-dark.png">
+</div>
+
 
 - [Statsviz](#statsviz)
   - [Install](#install)
   - [Usage](#usage)
-  - [Advanced Usage](#advanced-usage)
+  - [Examples](#examples)
   - [How Does That Work?](#how-does-that-work)
   - [Documentation](#documentation)
     - [Go API](#go-api)
     - [Web User Interface](#web-user-interface)
     - [Plots](#plots)
     - [User Plots](#user-plots)
-  - [Examples](#examples)
   - [Questions / Troubleshooting](#questions--troubleshooting)
   - [Contributing](#contributing)
   - [Changelog](#changelog)
@@ -36,16 +59,11 @@ Visualize real time plots of your Go program runtime metrics, including heap, ob
 
 ## Install
 
-Download the latest version:
+Get the latest version:
 
 ```
 go get github.com/arl/statsviz@latest
 ```
-
-Please note that, as new metrics are added to the `/runtime/metrics` package, new plots are added to Statsviz.
-This also means that the presence of some plots on the dashboard depends on the Go version you're using.
-
-When in doubt, use the latest ;-)
 
 
 ## Usage
@@ -64,35 +82,51 @@ go func() {
 Open your browser at http://localhost:8080/debug/statsviz
 
 
-## Advanced Usage
+## Examples
 
-If you want more control over Statsviz HTTP handlers, examples are:
- - you're using some HTTP framework
- - you want to place Statsviz handler behind some middleware
+If you check any of the boxes below:
+  - [ ] you use some HTTP framework
+  - [ ] you want Statsviz to be located at `/my/path/to/statsviz` rather than `/debug/statsviz`
+  - [ ] you want Statsviz under `https://` rather than `http://`
+  - [ ] you want Statsviz behind some middleware
 
-then use `statsviz.NewServer` to obtain a `Server` instance. Both the `Index()` and `Ws()` methods return `http.HandlerFunc`.
+Then you should use `statsviz.NewServer` to obtain a `Server` instance.
+Both the `Index()` and `Ws()` methods return standard `http.HandlerFunc`.
 
 ```go
 srv, err := statsviz.NewServer(); // Create server or handle error
+if err != nil { /* handle error */ }
+
+// Do something with the handlers.
 srv.Index()                       // UI (dashboard) http.HandlerFunc
 srv.Ws()                          // Websocket http.HandlerFunc
 ```
 
-Please look at examples of usage in the [Examples](_example) directory.
+Examples for the following cases, and more, are found in the [\_example](./_example/README.md) directory:
+
+- use of `http.DefaultServeMux` or your own `http.ServeMux`
+- wrap HTTP handler behind a middleware
+- register the web page at `/foo/bar` instead of `/debug/statsviz`
+- use `https://` rather than `http://`
+- register Statsviz handlers with various Go HTTP libraries/frameworks:
+  - [echo](https://github.com/labstack/echo/)
+  - [fasthttp](https://github.com/valyala/fasthttp)
+  - [fiber](https://github.com/gofiber/fiber/)
+  - [gin](https://github.com/gin-gonic/gin)
+  - and many others thanks to many contributors!
 
 
 ## How Does That Work?
 
-`statsviz.Register` registers 2 HTTP handlers within the given `http.ServeMux`:
+Statsviz is made of two parts:
 
-- the `Index` handler serves Statsviz user interface at `/debug/statsviz` at the address served by your program.
+- The `Ws` serves a Websocket endpoint. When a client connects, your program's [runtime/metrics](https://pkg.go.dev/runtime/metrics) are sent to the browser, once per second, via the websocket connection.
 
-- The `Ws` serves a Websocket endpoint. When the browser connects to that endpoint, [runtime/metrics](https://pkg.go.dev/runtime/metrics) are sent to the browser, once per second.
-
-Data points are in a browser-side circular-buffer.
+- the `Index` http handler serves Statsviz user interface at `/debug/statsviz` at the address served by your program. When served, the UI connects to the Websocket endpoint and starts receiving data points.
 
 
 ## Documentation
+
 
 ### Go API
 
@@ -231,20 +265,6 @@ visualize your application metrics next to runtime metrics.
 
 Please see the [userplots example](_example/userplots/main.go).
 
-## Examples
-
-Check out the [\_example](./_example/README.md) directory to see various ways to use Statsviz, such as:
-
-- use of `http.DefaultServeMux` or your own `http.ServeMux`
-- wrap HTTP handler behind a middleware
-- register the web page at `/foo/bar` instead of `/debug/statsviz`
-- use `https://` rather than `http://`
-- register Statsviz handlers with various Go HTTP libraries/frameworks:
-  - [echo](https://github.com/labstack/echo/)
-  - [fasthttp](https://github.com/valyala/fasthttp)
-  - [fiber](https://github.com/gofiber/fiber/)
-  - [gin](https://github.com/gin-gonic/gin)
-  - and many others thanks to many contributors!
 
 ## Questions / Troubleshooting
 
