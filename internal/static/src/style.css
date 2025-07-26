@@ -1,0 +1,160 @@
+/* Layout tweaks */
+body {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Top‐nav flex distribution */
+#top-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Center group: keep controls from wrapping */
+#top-navbar .mx-auto {
+  flex-wrap: nowrap;
+}
+
+/* Icon links styling */
+#top-navbar a {
+  font-size: 1.25rem;
+  color: var(--bs-body-color);
+}
+#top-navbar a:hover {
+  color: var(--bs-primary);
+}
+
+/* On small: one per row, modest gap */
+.center-controls {
+  gap: 0.75rem;
+}
+
+.center-controls > div {
+  display: flex;
+  justify-content: center;
+}
+
+/* On large: row + generous gap */
+@media (min-width: 800px) {
+  .center-controls {
+    flex-direction: row; /* already set by flex-lg-row */
+    gap: 2rem; /* larger horizontal spacing */
+  }
+}
+
+@media (max-width: 991px) {
+  .center-controls {
+    align-items: center; /* center each full-width row */
+  }
+}
+/* Wrapper for sidebar and content allows shrink */
+.d-flex.flex-grow-1 {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+/* Plots container margins */
+#main-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+/* Prevent any horizontal scrollbar */
+.plots-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  overflow-x: hidden;
+}
+@media (min-width: 1024px) {
+  .plots-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1366px) {
+  .plots-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.plot-card {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  border-color: rgb(43, 44, 46);
+  border-style: solid;
+  border-width: 1px 0px 0px 1px;
+}
+
+/* Category pills styling */
+.nav-link {
+  margin: 0.5rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.nav-link.active {
+  background-color: var(--bs-primary);
+  color: #fff;
+}
+
+.nav-link {
+  cursor: pointer;
+}
+
+.nav-radio .btn-check:not(:checked) {
+  opacity: 0.5;
+}
+
+/* Strong look for active tags */
+.nav-radio .btn-check:checked {
+  color: #fff;
+  opacity: 1;
+}
+
+/* Smooth transition for tag buttons */
+.nav-radio {
+  transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+/* Slight brighten & lift on hover */
+.nav-radio .btn-check + :hover {
+  filter: brightness(1.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.tooltip-table {
+  display: table;
+  width: 160px;
+  border-collapse: collapse;
+}
+
+.tooltip-style {
+  font-family: "Open Sans", verdana, arial, sans-serif;
+  font-size: 12px;
+  fill: rgb(68, 68, 68);
+  fill-opacity: 1;
+  white-space: pre;
+}
+
+.tooltip-row {
+  display: table-row;
+}
+
+.tooltip-value,
+.tooltip-label {
+  display: table-cell;
+  padding: 0.3em;
+}
+
+.tooltip-label {
+  font-weight: bold;
+}
