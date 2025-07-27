@@ -90,8 +90,7 @@ If you check any of the boxes below:
   - [ ] you want Statsviz under `https://` rather than `http://`
   - [ ] you want Statsviz behind some middleware
 
-Then you should use `statsviz.NewServer` to obtain a `Server` instance.
-Both the `Index()` and `Ws()` methods return standard `http.HandlerFunc`.
+Then you should get a `statsviz.Server` instance, by calling `statsviz.NewServer()`, so that you can directly do whatever you want with the `http.HandlerFunc` returned by the `Index()` and `Ws()` methods.
 
 ```go
 srv, err := statsviz.NewServer(); // Create server or handle error
