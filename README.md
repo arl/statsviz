@@ -97,8 +97,8 @@ srv, err := statsviz.NewServer(); // Create server or handle error
 if err != nil { /* handle error */ }
 
 // Do something with the handlers.
-srv.Index()                       // UI (dashboard) http.HandlerFunc
-srv.Ws()                          // Websocket http.HandlerFunc
+srv.Index()             // UI (dashboard) http.HandlerFunc
+srv.Ws()                // Websocket http.HandlerFunc
 ```
 
 Examples for the following cases, and more, are found in the [\_example](./_example/README.md) directory:
