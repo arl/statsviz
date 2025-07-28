@@ -90,15 +90,15 @@ If you check any of the boxes below:
   - [ ] you want Statsviz under `https://` rather than `http://`
   - [ ] you want Statsviz behind some middleware
 
-Then you should get a `statsviz.Server` instance, by calling `statsviz.NewServer()`, so that you can directly do whatever you want with the `http.HandlerFunc` returned by the `Index()` and `Ws()` methods.
+Then you should call `statsviz.NewServer()` (with or without options depending on your use case) in order to access the `Index()` and `Ws()` methods.
 
 ```go
 srv, err := statsviz.NewServer(); // Create server or handle error
 if err != nil { /* handle error */ }
 
 // Do something with the handlers.
-srv.Index()             // UI (dashboard) http.HandlerFunc
-srv.Ws()                // Websocket http.HandlerFunc
+srv.Index()     // UI (dashboard) handler func
+srv.Ws()        // Websocket handler func
 ```
 
 Examples for the following cases, and more, are found in the [\_example](./_example/README.md) directory:
