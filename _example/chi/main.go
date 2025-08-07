@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/arl/statsviz"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 
 	example "github.com/arl/statsviz/_example"
 )
@@ -22,7 +22,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Get("/debug/statsviz/ws", srv.Ws())
 	r.Get("/debug/statsviz", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/debug/statsviz/", 301)
+		http.Redirect(w, r, "/debug/statsviz/", http.StatusMovedPermanently)
 	})
 	r.Handle("/debug/statsviz/*", srv.Index())
 
