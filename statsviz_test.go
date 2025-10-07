@@ -164,6 +164,16 @@ func TestRegister(t *testing.T) {
 		testRegister(t, mux, "http://example.com/debug/statsviz/")
 	})
 
+	t.Run("zero-value", func(t *testing.T) {
+		t.Parallel()
+
+		mux := http.NewServeMux()
+
+		var srv Server
+		srv.Register(mux)
+		testRegister(t, mux, "http://example.com/debug/statsviz/")
+	})
+
 	t.Run("root", func(t *testing.T) {
 		t.Parallel()
 

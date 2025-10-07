@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.5
 
 require (
-	github.com/arl/statsviz v0.7.0
+	github.com/arl/statsviz v0.7.1
 	github.com/labstack/echo/v4 v4.13.4
 )
 

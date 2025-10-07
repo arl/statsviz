@@ -5,7 +5,7 @@ go 1.23
 toolchain go1.24.5
 
 require (
-	github.com/arl/statsviz v0.7.0
+	github.com/arl/statsviz v0.7.1
 	github.com/gin-gonic/gin v1.10.1
 )
 

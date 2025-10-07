@@ -5,7 +5,7 @@ go 1.23
 toolchain go1.24.5
 
 require (
-	github.com/arl/statsviz v0.7.0
+	github.com/arl/statsviz v0.7.1
 	github.com/gofiber/adaptor/v2 v2.2.1
 	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/soheilhy/cmux v0.1.5
