@@ -1,13 +1,14 @@
 // Package statsviz allows visualizing Go runtime metrics data in real time in
 // your browser.
 //
-// Register a Statsviz HTTP handlers with your server's [http.ServeMux]
+// Register Statsviz HTTP handlers with your server's [http.ServeMux]
 // (preferred method):
 //
 //	mux := http.NewServeMux()
 //	statsviz.Register(mux)
 //
-// Alternatively, you can register with [http.DefaultServeMux]:
+// Alternatively, you can register with [http.DefaultServeMux]
+// though you shouldn't do that in production:
 //
 //	ss := statsviz.NewServer()
 //	ss.Register(http.DefaultServeMux)
@@ -27,7 +28,7 @@
 //
 // # Advanced usage:
 //
-// If you want more control over Statsviz HTTP handlers, examples are:
+// If you want more control over Statsviz HTTP handlers, for examples if:
 //   - you're using some HTTP framework
 //   - you want to place Statsviz handler behind some middleware
 //
