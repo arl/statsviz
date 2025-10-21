@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Wwork loops forever, generating allocations of various sizes, in order to
+// Work loops forever, generating allocations of various sizes, in order to
 // create artificial work for a nice 'demo effect'.
 func Work() {
 	m := make(map[int64]any)
