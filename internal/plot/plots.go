@@ -985,74 +985,74 @@ func floatseq(n int) []float64 {
 // stopping pauses (GC)
 
 type stoppingPausesGC struct {
-histfactor int
-counts     [maxBuckets]uint64
+	histfactor int
+	counts     [maxBuckets]uint64
 
-idxstoppinggc int
+	idxstoppinggc int
 }
 
 func makeStoppingPausesGC(indices ...int) metricsGetter {
-return &stoppingPausesGC{
-idxstoppinggc: indices[0],
-}
+	return &stoppingPausesGC{
+		idxstoppinggc: indices[0],
+	}
 }
 
 func (p *stoppingPausesGC) values(samples []metrics.Sample) any {
-if p.histfactor == 0 {
-stoppinggc := samples[p.idxstoppinggc].Value.Float64Histogram()
-p.histfactor = downsampleFactor(len(stoppinggc.Buckets), maxBuckets)
-}
+	if p.histfactor == 0 {
+		stoppinggc := samples[p.idxstoppinggc].Value.Float64Histogram()
+		p.histfactor = downsampleFactor(len(stoppinggc.Buckets), maxBuckets)
+	}
 
-stoppinggc := samples[p.idxstoppinggc].Value.Float64Histogram()
-return downsampleCounts(stoppinggc, p.histfactor, p.counts[:])
+	stoppinggc := samples[p.idxstoppinggc].Value.Float64Histogram()
+	return downsampleCounts(stoppinggc, p.histfactor, p.counts[:])
 }
 
 // stopping pauses (Other)
 
 type stoppingPausesOther struct {
-histfactor int
-counts     [maxBuckets]uint64
+	histfactor int
+	counts     [maxBuckets]uint64
 
-idxstoppingother int
+	idxstoppingother int
 }
 
 func makeStoppingPausesOther(indices ...int) metricsGetter {
-return &stoppingPausesOther{
-idxstoppingother: indices[0],
-}
+	return &stoppingPausesOther{
+		idxstoppingother: indices[0],
+	}
 }
 
 func (p *stoppingPausesOther) values(samples []metrics.Sample) any {
-if p.histfactor == 0 {
-stoppingother := samples[p.idxstoppingother].Value.Float64Histogram()
-p.histfactor = downsampleFactor(len(stoppingother.Buckets), maxBuckets)
-}
+	if p.histfactor == 0 {
+		stoppingother := samples[p.idxstoppingother].Value.Float64Histogram()
+		p.histfactor = downsampleFactor(len(stoppingother.Buckets), maxBuckets)
+	}
 
-stoppingother := samples[p.idxstoppingother].Value.Float64Histogram()
-return downsampleCounts(stoppingother, p.histfactor, p.counts[:])
+	stoppingother := samples[p.idxstoppingother].Value.Float64Histogram()
+	return downsampleCounts(stoppingother, p.histfactor, p.counts[:])
 }
 
 // total pauses (Other)
 
 type totalPausesOther struct {
-histfactor int
-counts     [maxBuckets]uint64
+	histfactor int
+	counts     [maxBuckets]uint64
 
-idxtotalother int
+	idxtotalother int
 }
 
 func makeTotalPausesOther(indices ...int) metricsGetter {
-return &totalPausesOther{
-idxtotalother: indices[0],
-}
+	return &totalPausesOther{
+		idxtotalother: indices[0],
+	}
 }
 
 func (p *totalPausesOther) values(samples []metrics.Sample) any {
-if p.histfactor == 0 {
-totalother := samples[p.idxtotalother].Value.Float64Histogram()
-p.histfactor = downsampleFactor(len(totalother.Buckets), maxBuckets)
-}
+	if p.histfactor == 0 {
+		totalother := samples[p.idxtotalother].Value.Float64Histogram()
+		p.histfactor = downsampleFactor(len(totalother.Buckets), maxBuckets)
+	}
 
-totalother := samples[p.idxtotalother].Value.Float64Histogram()
-return downsampleCounts(totalother, p.histfactor, p.counts[:])
+	totalother := samples[p.idxtotalother].Value.Float64Histogram()
+	return downsampleCounts(totalother, p.histfactor, p.counts[:])
 }
