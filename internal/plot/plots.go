@@ -247,6 +247,33 @@ func init() {
 			layout: allocFreeRatesLayout,
 			make:   makeAllocFreeRates,
 		},
+		{
+			name: "stopping-pauses-gc",
+			tags: []string{"scheduler"},
+			metrics: []string{
+				"/sched/pauses/stopping/gc:seconds",
+			},
+			layout: stoppingPausesGCLayout(samples),
+			make:   makeStoppingPausesGC,
+		},
+		{
+			name: "stopping-pauses-other",
+			tags: []string{"scheduler"},
+			metrics: []string{
+				"/sched/pauses/stopping/other:seconds",
+			},
+			layout: stoppingPausesOtherLayout(samples),
+			make:   makeStoppingPausesOther,
+		},
+		{
+			name: "total-pauses-other",
+			tags: []string{"scheduler"},
+			metrics: []string{
+				"/sched/pauses/total/other:seconds",
+			},
+			layout: totalPausesOtherLayout(samples),
+			make:   makeTotalPausesOther,
+		},
 	}
 }
 
@@ -953,4 +980,79 @@ func floatseq(n int) []float64 {
 		seq[i] = float64(i)
 	}
 	return seq
+}
+
+// stopping pauses (GC)
+
+type stoppingPausesGC struct {
+histfactor int
+counts     [maxBuckets]uint64
+
+idxstoppinggc int
+}
+
+func makeStoppingPausesGC(indices ...int) metricsGetter {
+return &stoppingPausesGC{
+idxstoppinggc: indices[0],
+}
+}
+
+func (p *stoppingPausesGC) values(samples []metrics.Sample) any {
+if p.histfactor == 0 {
+stoppinggc := samples[p.idxstoppinggc].Value.Float64Histogram()
+p.histfactor = downsampleFactor(len(stoppinggc.Buckets), maxBuckets)
+}
+
+stoppinggc := samples[p.idxstoppinggc].Value.Float64Histogram()
+return downsampleCounts(stoppinggc, p.histfactor, p.counts[:])
+}
+
+// stopping pauses (Other)
+
+type stoppingPausesOther struct {
+histfactor int
+counts     [maxBuckets]uint64
+
+idxstoppingother int
+}
+
+func makeStoppingPausesOther(indices ...int) metricsGetter {
+return &stoppingPausesOther{
+idxstoppingother: indices[0],
+}
+}
+
+func (p *stoppingPausesOther) values(samples []metrics.Sample) any {
+if p.histfactor == 0 {
+stoppingother := samples[p.idxstoppingother].Value.Float64Histogram()
+p.histfactor = downsampleFactor(len(stoppingother.Buckets), maxBuckets)
+}
+
+stoppingother := samples[p.idxstoppingother].Value.Float64Histogram()
+return downsampleCounts(stoppingother, p.histfactor, p.counts[:])
+}
+
+// total pauses (Other)
+
+type totalPausesOther struct {
+histfactor int
+counts     [maxBuckets]uint64
+
+idxtotalother int
+}
+
+func makeTotalPausesOther(indices ...int) metricsGetter {
+return &totalPausesOther{
+idxtotalother: indices[0],
+}
+}
+
+func (p *totalPausesOther) values(samples []metrics.Sample) any {
+if p.histfactor == 0 {
+totalother := samples[p.idxtotalother].Value.Float64Histogram()
+p.histfactor = downsampleFactor(len(totalother.Buckets), maxBuckets)
+}
+
+totalother := samples[p.idxtotalother].Value.Float64Histogram()
+return downsampleCounts(totalother, p.histfactor, p.counts[:])
 }
