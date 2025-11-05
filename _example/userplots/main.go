@@ -25,8 +25,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Point your browser to http://localhost:8093/debug/statsviz/")
-	log.Fatal(http.ListenAndServe(":8093", mux))
+	fmt.Println("Point your browser to http://localhost:8094/debug/statsviz/")
+	log.Fatal(http.ListenAndServe(":8094", mux))
 }
 
 func scatterPlot() statsviz.TimeSeriesPlot {
