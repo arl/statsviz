@@ -7,4 +7,4 @@ go mod tidy
 
 go build main.go
 ! exec ./main &
-checkui http://localhost:8093/debug/statsviz/
+checkui http://localhost:8094/debug/statsviz/
