@@ -4,6 +4,14 @@ import (
 	"runtime/metrics"
 )
 
+func floatseq(n int) []float64 {
+	seq := make([]float64, n)
+	for i := range n {
+		seq[i] = float64(i)
+	}
+	return seq
+}
+
 var garbageCollectionLayout = Scatter{
 	Name:   "garbage collection",
 	Title:  "GC Memory Summary",
@@ -199,38 +207,6 @@ func sizeClassesLayout(samples []metrics.Sample) Heatmap {
 				TickText: []float64{1 << 4, 1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15},
 			},
 		},
-	}
-}
-
-func gcPausesLayout(samples []metrics.Sample) Heatmap {
-	idxgcpauses := metricIdx["/sched/pauses/total/gc:seconds"]
-
-	gcpauses := samples[idxgcpauses].Value.Float64Histogram()
-	histfactor := downsampleFactor(len(gcpauses.Buckets), maxBuckets)
-	buckets := downsampleBuckets(gcpauses, histfactor)
-
-	return Heatmap{
-		Name:       "TODO(set later)",
-		Title:      "Stop-the-world Pause Latencies",
-		Type:       "heatmap",
-		UpdateFreq: 5,
-		Colorscale: PinkShades,
-		Buckets:    floatseq(len(buckets)),
-		CustomData: buckets,
-		Hover: HeapmapHover{
-			YName: "pause duration",
-			YUnit: "duration",
-			ZName: "pauses",
-		},
-		Layout: HeatmapLayout{
-			YAxis: HeatmapYaxis{
-				Title:    "pause duration",
-				TickMode: "array",
-				TickVals: []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86},
-				TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
-			},
-		},
-		InfoText: `This heatmap shows the distribution of individual GC-related stop-the-world pause latencies, uses <b>/sched/pauses/total/gc:seconds</b>,.`,
 	}
 }
 
@@ -599,71 +575,42 @@ var allocFreeRatesLayout = Scatter{
 <i>Frees per second</i> is similarly derived from <b>/gc/heap/frees:objects</b>.`,
 }
 
-func stoppingPausesGCLayout(samples []metrics.Sample) Heatmap {
-	idxstoppinggc := metricIdx["/sched/pauses/stopping/gc:seconds"]
+func gcTotalPausesLayout(samples []metrics.Sample) Heatmap {
+	idxgcpauses := metricIdx["/sched/pauses/total/gc:seconds"]
 
-	stoppinggc := samples[idxstoppinggc].Value.Float64Histogram()
-	histfactor := downsampleFactor(len(stoppinggc.Buckets), maxBuckets)
-	buckets := downsampleBuckets(stoppinggc, histfactor)
+	gcpauses := samples[idxgcpauses].Value.Float64Histogram()
+	histfactor := downsampleFactor(len(gcpauses.Buckets), maxBuckets)
+	buckets := downsampleBuckets(gcpauses, histfactor)
 
 	return Heatmap{
 		Name:       "TODO(set later)",
-		Title:      "Stop-the-world Stopping Latencies (GC)",
+		Title:      "Stop-the-world Pause Latencies (Total)",
 		Type:       "heatmap",
 		UpdateFreq: 5,
 		Colorscale: PinkShades,
 		Buckets:    floatseq(len(buckets)),
 		CustomData: buckets,
 		Hover: HeapmapHover{
-			YName: "stopping duration",
+			YName: "pause duration",
 			YUnit: "duration",
 			ZName: "pauses",
 		},
 		Layout: HeatmapLayout{
 			YAxis: HeatmapYaxis{
-				Title:    "stopping duration",
+				Title:    "pause duration",
 				TickMode: "array",
 				TickVals: []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86},
 				TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
 			},
 		},
-		InfoText: `This heatmap shows the distribution of individual GC-related stop-the-world stopping latencies. This is the time it takes from deciding to stop the world until all Ps are stopped. This is a subset of the total GC-related stop-the-world time. During this time, some threads may be executing. Uses <b>/sched/pauses/stopping/gc:seconds</b>.`,
+		InfoText: `This heatmap shows the distribution of individual <b>GC-related</b> stop-the-world <i>pause latencies</i>.
+This is the time from deciding to stop the world until the world is started again.
+Some of this time is spent getting all threads to stop (this is measured directly in <i>/sched/pauses/stopping/gc:seconds</i>), during which some threads may still be running.
+Uses <b>/sched/pauses/total/gc:seconds</b>.`,
 	}
 }
 
-func stoppingPausesOtherLayout(samples []metrics.Sample) Heatmap {
-	idxstoppingother := metricIdx["/sched/pauses/stopping/other:seconds"]
-
-	stoppingother := samples[idxstoppingother].Value.Float64Histogram()
-	histfactor := downsampleFactor(len(stoppingother.Buckets), maxBuckets)
-	buckets := downsampleBuckets(stoppingother, histfactor)
-
-	return Heatmap{
-		Name:       "TODO(set later)",
-		Title:      "Stop-the-world Stopping Latencies (Other)",
-		Type:       "heatmap",
-		UpdateFreq: 5,
-		Colorscale: PinkShades,
-		Buckets:    floatseq(len(buckets)),
-		CustomData: buckets,
-		Hover: HeapmapHover{
-			YName: "stopping duration",
-			YUnit: "duration",
-			ZName: "pauses",
-		},
-		Layout: HeatmapLayout{
-			YAxis: HeatmapYaxis{
-				Title:    "stopping duration",
-				TickMode: "array",
-				TickVals: []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86},
-				TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
-			},
-		},
-		InfoText: `This heatmap shows the distribution of individual non-GC-related stop-the-world stopping latencies. This is the time it takes from deciding to stop the world until all Ps are stopped. This is a subset of the total non-GC-related stop-the-world time. During this time, some threads may be executing. Uses <b>/sched/pauses/stopping/other:seconds</b>.`,
-	}
-}
-
-func totalPausesOtherLayout(samples []metrics.Sample) Heatmap {
+func otherTotalPausesLayout(samples []metrics.Sample) Heatmap {
 	idxtotalother := metricIdx["/sched/pauses/total/other:seconds"]
 
 	totalother := samples[idxtotalother].Value.Float64Histogram()
@@ -691,6 +638,79 @@ func totalPausesOtherLayout(samples []metrics.Sample) Heatmap {
 				TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
 			},
 		},
-		InfoText: `This heatmap shows the distribution of individual non-GC-related stop-the-world pause latencies. This is the time from deciding to stop the world until the world is started again. Some of this time is spent getting all threads to stop. Uses <b>/sched/pauses/total/other:seconds</b>.`,
+		InfoText: `This heatmap shows the distribution of individual <b>non-GC-related</b> stop-the-world <i>pause latencies</i>.
+This is the time from deciding to stop the world until the world is started again.
+Some of this time is spent getting all threads to stop (measured directly in <i>/sched/pauses/stopping/other:seconds</i>).
+Uses <b>/sched/pauses/total/other:seconds</b>.`,
+	}
+}
+
+func gcStoppingPausesLayout(samples []metrics.Sample) Heatmap {
+	idxstoppinggc := metricIdx["/sched/pauses/stopping/gc:seconds"]
+
+	stoppinggc := samples[idxstoppinggc].Value.Float64Histogram()
+	histfactor := downsampleFactor(len(stoppinggc.Buckets), maxBuckets)
+	buckets := downsampleBuckets(stoppinggc, histfactor)
+
+	return Heatmap{
+		Name:       "TODO(set later)",
+		Title:      "Stop-the-world Stopping Latencies (GC)",
+		Type:       "heatmap",
+		UpdateFreq: 5,
+		Colorscale: PinkShades,
+		Buckets:    floatseq(len(buckets)),
+		CustomData: buckets,
+		Hover: HeapmapHover{
+			YName: "stopping duration",
+			YUnit: "duration",
+			ZName: "pauses",
+		},
+		Layout: HeatmapLayout{
+			YAxis: HeatmapYaxis{
+				Title:    "stopping duration",
+				TickMode: "array",
+				TickVals: []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86},
+				TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
+			},
+		},
+		InfoText: `This heatmap shows the distribution of individual <b>GC-related</b> stop-the-world <i>stopping latencies</i>.
+This is the time it takes from deciding to stop the world until all Ps are stopped.
+During this time, some threads may be executing.
+Uses <b>/sched/pauses/stopping/gc:seconds</b>.`,
+	}
+}
+
+func otherStoppingPausesLayout(samples []metrics.Sample) Heatmap {
+	idxstoppingother := metricIdx["/sched/pauses/stopping/other:seconds"]
+
+	stoppingother := samples[idxstoppingother].Value.Float64Histogram()
+	histfactor := downsampleFactor(len(stoppingother.Buckets), maxBuckets)
+	buckets := downsampleBuckets(stoppingother, histfactor)
+
+	return Heatmap{
+		Name:       "TODO(set later)",
+		Title:      "Stop-the-world Stopping Latencies (Other)",
+		Type:       "heatmap",
+		UpdateFreq: 5,
+		Colorscale: PinkShades,
+		Buckets:    floatseq(len(buckets)),
+		CustomData: buckets,
+		Hover: HeapmapHover{
+			YName: "stopping duration",
+			YUnit: "duration",
+			ZName: "pauses",
+		},
+		Layout: HeatmapLayout{
+			YAxis: HeatmapYaxis{
+				Title:    "stopping duration",
+				TickMode: "array",
+				TickVals: []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86},
+				TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
+			},
+		},
+		InfoText: `This heatmap shows the distribution of individual <b>non-GC-related</b> stop-the-world <i>stopping latencies</i>.
+This is the time it takes from deciding to stop the world until all Ps are stopped.
+This is a subset of the total non-GC-related stop-the-world time. During this time, some threads may be executing.
+Uses <b>/sched/pauses/stopping/other:seconds</b>.`,
 	}
 }

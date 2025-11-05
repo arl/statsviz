@@ -114,15 +114,6 @@ func init() {
 			make:   makeSizeClasses,
 		},
 		{
-			name: "gc-pauses",
-			tags: []string{"scheduler"},
-			metrics: []string{
-				"/sched/pauses/total/gc:seconds",
-			},
-			layout: gcPausesLayout(samples),
-			make:   makeGCPauses,
-		},
-		{
 			name: "runnable-time",
 			tags: []string{"scheduler"},
 			metrics: []string{
@@ -248,22 +239,13 @@ func init() {
 			make:   makeAllocFreeRates,
 		},
 		{
-			name: "stopping-pauses-gc",
+			name: "total-pauses-gc",
 			tags: []string{"scheduler"},
 			metrics: []string{
-				"/sched/pauses/stopping/gc:seconds",
+				"/sched/pauses/total/gc:seconds",
 			},
-			layout: stoppingPausesGCLayout(samples),
-			make:   makeStoppingPausesGC,
-		},
-		{
-			name: "stopping-pauses-other",
-			tags: []string{"scheduler"},
-			metrics: []string{
-				"/sched/pauses/stopping/other:seconds",
-			},
-			layout: stoppingPausesOtherLayout(samples),
-			make:   makeStoppingPausesOther,
+			layout: gcTotalPausesLayout(samples),
+			make:   makeGCTotalPauses,
 		},
 		{
 			name: "total-pauses-other",
@@ -271,8 +253,26 @@ func init() {
 			metrics: []string{
 				"/sched/pauses/total/other:seconds",
 			},
-			layout: totalPausesOtherLayout(samples),
-			make:   makeTotalPausesOther,
+			layout: otherTotalPausesLayout(samples),
+			make:   makeOtherTotalPauses,
+		},
+		{
+			name: "stopping-pauses-gc",
+			tags: []string{"scheduler"},
+			metrics: []string{
+				"/sched/pauses/stopping/gc:seconds",
+			},
+			layout: gcStoppingPausesLayout(samples),
+			make:   makeGCStoppingPauses,
+		},
+		{
+			name: "stopping-pauses-other",
+			tags: []string{"scheduler"},
+			metrics: []string{
+				"/sched/pauses/stopping/other:seconds",
+			},
+			layout: otherStoppingPausesLayout(samples),
+			make:   makeGCStoppingOther,
 		},
 	}
 }
@@ -486,7 +486,7 @@ type gcpauses struct {
 	idxgcpauses int
 }
 
-func makeGCPauses(indices ...int) metricsGetter {
+func makeGCTotalPauses(indices ...int) metricsGetter {
 	return &gcpauses{
 		idxgcpauses: indices[0],
 	}
@@ -970,18 +970,6 @@ func (p *allocFreeRates) values(samples []metrics.Sample) any {
 	}
 }
 
-/*
- * helpers
- */
-
-func floatseq(n int) []float64 {
-	seq := make([]float64, n)
-	for i := range n {
-		seq[i] = float64(i)
-	}
-	return seq
-}
-
 // stopping pauses (GC)
 
 type stoppingPausesGC struct {
@@ -991,7 +979,7 @@ type stoppingPausesGC struct {
 	idxstoppinggc int
 }
 
-func makeStoppingPausesGC(indices ...int) metricsGetter {
+func makeGCStoppingPauses(indices ...int) metricsGetter {
 	return &stoppingPausesGC{
 		idxstoppinggc: indices[0],
 	}
@@ -1016,7 +1004,7 @@ type stoppingPausesOther struct {
 	idxstoppingother int
 }
 
-func makeStoppingPausesOther(indices ...int) metricsGetter {
+func makeGCStoppingOther(indices ...int) metricsGetter {
 	return &stoppingPausesOther{
 		idxstoppingother: indices[0],
 	}
@@ -1041,7 +1029,7 @@ type totalPausesOther struct {
 	idxtotalother int
 }
 
-func makeTotalPausesOther(indices ...int) metricsGetter {
+func makeOtherTotalPauses(indices ...int) metricsGetter {
 	return &totalPausesOther{
 		idxtotalother: indices[0],
 	}
