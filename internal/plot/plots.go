@@ -6,9 +6,18 @@ import (
 	"time"
 )
 
+type tag = string
+
+const (
+	tagGC        tag = "gc"
+	tagScheduler tag = "scheduler"
+	tagCPU       tag = "cpu"
+	tagMisc      tag = "misc"
+)
+
 type plotDesc struct {
 	name    string
-	tags    []string
+	tags    []tag
 	metrics []string
 	layout  any
 
@@ -38,7 +47,7 @@ func init() {
 	plotDescs = []plotDesc{
 		{
 			name: "garbage collection",
-			tags: []string{"gc"},
+			tags: []tag{tagGC},
 			metrics: []string{
 				"/gc/gomemlimit:bytes",
 				"/gc/heap/live:bytes",
@@ -51,7 +60,7 @@ func init() {
 		},
 		{
 			name: "heap (details)",
-			tags: []string{"gc"},
+			tags: []tag{tagGC},
 			metrics: []string{
 				"/memory/classes/heap/objects:bytes",
 				"/memory/classes/heap/unused:bytes",
@@ -65,7 +74,7 @@ func init() {
 		},
 		{
 			name: "live-objects",
-			tags: []string{"gc"},
+			tags: []tag{tagGC},
 			metrics: []string{
 				"/gc/heap/objects:objects",
 			},
@@ -74,7 +83,7 @@ func init() {
 		},
 		{
 			name: "live-bytes",
-			tags: []string{"gc"},
+			tags: []tag{tagGC},
 			metrics: []string{
 				"/gc/heap/allocs:bytes",
 				"/gc/heap/frees:bytes",
@@ -84,7 +93,7 @@ func init() {
 		},
 		{
 			name: "mspan-mcache",
-			tags: []string{"gc"},
+			tags: []tag{tagGC},
 			metrics: []string{
 				"/memory/classes/metadata/mspan/inuse:bytes",
 				"/memory/classes/metadata/mspan/free:bytes",
@@ -96,7 +105,7 @@ func init() {
 		},
 		{
 			name: "goroutines",
-			tags: []string{"scheduler"},
+			tags: []tag{tagScheduler},
 			metrics: []string{
 				"/sched/goroutines:goroutines",
 			},
@@ -105,7 +114,7 @@ func init() {
 		},
 		{
 			name: "size-classes",
-			tags: []string{"gc"},
+			tags: []tag{tagGC},
 			metrics: []string{
 				"/gc/heap/allocs-by-size:bytes",
 				"/gc/heap/frees-by-size:bytes",
@@ -115,7 +124,7 @@ func init() {
 		},
 		{
 			name: "runnable-time",
-			tags: []string{"scheduler"},
+			tags: []tag{tagScheduler},
 			metrics: []string{
 				"/sched/latencies:seconds",
 			},
@@ -124,7 +133,7 @@ func init() {
 		},
 		{
 			name: "sched-events",
-			tags: []string{"scheduler"},
+			tags: []tag{tagScheduler},
 			metrics: []string{
 				"/sched/latencies:seconds",
 				"/sched/gomaxprocs:threads",
@@ -134,7 +143,7 @@ func init() {
 		},
 		{
 			name: "cgo",
-			tags: []string{"misc"},
+			tags: []tag{tagMisc},
 			metrics: []string{
 				"/cgo/go-to-c-calls:calls",
 			},
@@ -143,7 +152,7 @@ func init() {
 		},
 		{
 			name: "gc-stack-size",
-			tags: []string{"gc"},
+			tags: []tag{tagGC},
 			metrics: []string{
 				"/gc/stack/starting-size:bytes",
 			},
@@ -152,7 +161,7 @@ func init() {
 		},
 		{
 			name: "gc-cycles",
-			tags: []string{"gc"},
+			tags: []tag{tagGC},
 			metrics: []string{
 				"/gc/cycles/automatic:gc-cycles",
 				"/gc/cycles/forced:gc-cycles",
@@ -163,7 +172,7 @@ func init() {
 		},
 		{
 			name: "memory-classes",
-			tags: []string{"gc"},
+			tags: []tag{tagGC},
 			metrics: []string{
 				"/memory/classes/os-stacks:bytes",
 				"/memory/classes/other:bytes",
@@ -175,7 +184,7 @@ func init() {
 		},
 		{
 			name: "cpu-gc",
-			tags: []string{"cpu", "gc"},
+			tags: []tag{tagCPU, tagGC},
 			metrics: []string{
 				"/cpu/classes/gc/mark/assist:cpu-seconds",
 				"/cpu/classes/gc/mark/dedicated:cpu-seconds",
@@ -187,7 +196,7 @@ func init() {
 		},
 		{
 			name: "cpu-scavenger",
-			tags: []string{"cpu", "gc"},
+			tags: []tag{tagCPU, tagGC},
 			metrics: []string{
 				"/cpu/classes/scavenge/assist:cpu-seconds",
 				"/cpu/classes/scavenge/background:cpu-seconds",
@@ -197,7 +206,7 @@ func init() {
 		},
 		{
 			name: "cpu-overall",
-			tags: []string{"cpu"},
+			tags: []tag{tagCPU},
 			metrics: []string{
 				"/cpu/classes/user:cpu-seconds",
 				"/cpu/classes/scavenge/total:cpu-seconds",
@@ -210,7 +219,7 @@ func init() {
 		},
 		{
 			name: "mutex-wait",
-			tags: []string{"misc"},
+			tags: []tag{tagMisc},
 			metrics: []string{
 				"/sync/mutex/wait/total:seconds",
 			},
@@ -219,7 +228,7 @@ func init() {
 		},
 		{
 			name: "gc-scan",
-			tags: []string{"gc"},
+			tags: []tag{tagGC},
 			metrics: []string{
 				"/gc/scan/globals:bytes",
 				"/gc/scan/heap:bytes",
@@ -230,7 +239,7 @@ func init() {
 		},
 		{
 			name: "alloc-free-rate",
-			tags: []string{"gc"},
+			tags: []tag{tagGC},
 			metrics: []string{
 				"/gc/heap/allocs:objects",
 				"/gc/heap/frees:objects",
@@ -240,7 +249,7 @@ func init() {
 		},
 		{
 			name: "total-pauses-gc",
-			tags: []string{"scheduler"},
+			tags: []tag{tagScheduler},
 			metrics: []string{
 				"/sched/pauses/total/gc:seconds",
 			},
@@ -249,7 +258,7 @@ func init() {
 		},
 		{
 			name: "total-pauses-other",
-			tags: []string{"scheduler"},
+			tags: []tag{tagScheduler},
 			metrics: []string{
 				"/sched/pauses/total/other:seconds",
 			},
@@ -258,7 +267,7 @@ func init() {
 		},
 		{
 			name: "stopping-pauses-gc",
-			tags: []string{"scheduler"},
+			tags: []tag{tagScheduler},
 			metrics: []string{
 				"/sched/pauses/stopping/gc:seconds",
 			},
@@ -267,7 +276,7 @@ func init() {
 		},
 		{
 			name: "stopping-pauses-other",
-			tags: []string{"scheduler"},
+			tags: []tag{tagScheduler},
 			metrics: []string{
 				"/sched/pauses/stopping/other:seconds",
 			},

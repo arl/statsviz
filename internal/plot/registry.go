@@ -90,7 +90,7 @@ func (pl *List) enabledPlots() []runtimePlot {
 }
 
 // complete the layout with names and tags.
-func complete(layout any, name string, tags []string) any {
+func complete(layout any, name string, tags []tag) any {
 	switch layout := layout.(type) {
 	case Scatter:
 		layout.Name = name
