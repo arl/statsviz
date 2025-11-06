@@ -193,7 +193,22 @@ var goroutinesLayout = Scatter{
 <i>Waiting</i> is <b>/sched/goroutines/waiting</b>, the approximate count of goroutines waiting on a resource (I/O or sync primitives).`,
 }
 
+var threadsLayout = Scatter{
+	Name:  "TODO(set later)",
+	Title: "Threads",
+	Type:  "scatter",
+	Layout: ScatterLayout{
+		Yaxis: ScatterYAxis{
+			Title: "bytes",
+		},
 	},
+	Subplots: []Subplot{
+		{
+			Name:    "threads",
+			Unitfmt: "%{y}",
+		},
+	},
+	InfoText: "Shows the current count of live threads that are owned by the Go runtime. Uses <b>/sched/threads/total:threads</b>",
 }
 
 func sizeClassesLayout(samples []metrics.Sample) Heatmap {

@@ -288,6 +288,15 @@ func init() {
 			layout: goroutinesLayout,
 			make:   makeGoroutines,
 		},
+		{
+			name: "threads",
+			tags: []tag{tagScheduler},
+			metrics: []string{
+				"/sched/threads/total:threads",
+			},
+			layout: threadsLayout,
+			make:   makeThreads,
+		},
 	}
 }
 
@@ -491,6 +500,23 @@ func (p *goroutines) values(samples []metrics.Sample) any {
 	}
 }
 
+// threads
+
+type threads struct {
+	idxthreads int
+}
+
+func makeThreads(indices ...int) metricsGetter {
+	return &threads{
+		idxthreads: indices[0],
+	}
+}
+
+func (p *threads) values(samples []metrics.Sample) any {
+	threads := samples[p.idxthreads].Value.Uint64()
+	return []uint64{
+		threads,
+	}
 }
 
 // size classes
