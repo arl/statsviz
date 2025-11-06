@@ -17,9 +17,11 @@ func Work() {
 	for {
 		select {
 		case <-clearTick.C:
-			m = make(map[int64]any)
 			if rand.Intn(100) < 5 {
 				runtime.GC()
+			}
+			if rand.Intn(100) < 2 {
+				m = make(map[int64]any)
 			}
 		case ts := <-tick.C:
 			m[ts.UnixNano()] = newStruct()
