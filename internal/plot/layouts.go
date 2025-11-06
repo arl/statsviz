@@ -163,8 +163,37 @@ var goroutinesLayout = Scatter{
 			Name:    "goroutines",
 			Unitfmt: "%{y}",
 		},
+		{
+			Name:    "created",
+			Unitfmt: "%{y}",
+			Type:    "bar",
+		},
+		{
+			Name:    "not in Go",
+			Unitfmt: "%{y}",
+		},
+		{
+			Name:    "runnable",
+			Unitfmt: "%{y}",
+		},
+		{
+			Name:    "running",
+			Unitfmt: "%{y}",
+		},
+		{
+			Name:    "waiting",
+			Unitfmt: "%{y}",
+		},
 	},
-	InfoText: "<i>Goroutines</i> is <b>/sched/goroutines</b>, the count of live goroutines.",
+	InfoText: `<i>Goroutines</i> is <b>/sched/goroutines</b>, the count of live goroutines.
+<i>Created</i> is the delta of <b>/sched/goroutines-created</b>, the cumulative number of created goroutines.
+<i>Not in Go</i> is <b>/sched/goroutines/not-in-go</b>, the approximate count of goroutines running or blocked in a system call or cgo call.
+<i>Runnable</i> is <b>/sched/goroutines/runnable</b>, the approximate count of goroutines ready to execute, but not executing.
+<i>Running</i> is <b>/sched/goroutines/running</b>, the approximate count of goroutines executing.
+<i>Waiting</i> is <b>/sched/goroutines/waiting</b>, the approximate count of goroutines waiting on a resource (I/O or sync primitives).`,
+}
+
+	},
 }
 
 func sizeClassesLayout(samples []metrics.Sample) Heatmap {

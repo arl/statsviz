@@ -104,15 +104,6 @@ func init() {
 			make:   makeMSpanMCache,
 		},
 		{
-			name: "goroutines",
-			tags: []tag{tagScheduler},
-			metrics: []string{
-				"/sched/goroutines:goroutines",
-			},
-			layout: goroutinesLayout,
-			make:   makeGoroutines,
-		},
-		{
 			name: "size-classes",
 			tags: []tag{tagGC},
 			metrics: []string{
@@ -283,6 +274,20 @@ func init() {
 			layout: otherStoppingPausesLayout(samples),
 			make:   makeGCStoppingOther,
 		},
+		{
+			name: "goroutines",
+			tags: []tag{tagScheduler},
+			metrics: []string{
+				"/sched/goroutines:goroutines",
+				"/sched/goroutines-created:goroutines",
+				"/sched/goroutines/not-in-go:goroutines",
+				"/sched/goroutines/runnable:goroutines",
+				"/sched/goroutines/running:goroutines",
+				"/sched/goroutines/waiting:goroutines",
+			},
+			layout: goroutinesLayout,
+			make:   makeGoroutines,
+		},
 	}
 }
 
@@ -443,17 +448,49 @@ func (p *mspanMcache) values(samples []metrics.Sample) any {
 // goroutines
 
 type goroutines struct {
-	idxgs int
+	idxGoroutines int
+	idxCreated    int
+	idxNotInGo    int
+	idxRunnable   int
+	idxRunning    int
+	idxWaiting    int
+
+	lastCreated uint64
 }
 
 func makeGoroutines(indices ...int) metricsGetter {
 	return &goroutines{
-		idxgs: indices[0],
+		idxGoroutines: indices[0],
+		idxCreated:    indices[1],
+		idxNotInGo:    indices[2],
+		idxRunnable:   indices[3],
+		idxRunning:    indices[4],
+		idxWaiting:    indices[5],
+		lastCreated:   math.MaxUint64,
 	}
 }
 
 func (p *goroutines) values(samples []metrics.Sample) any {
-	return []uint64{samples[p.idxgs].Value.Uint64()}
+	goroutines := samples[p.idxGoroutines].Value.Uint64()
+	created := samples[p.idxCreated].Value.Uint64()
+	notInGo := samples[p.idxNotInGo].Value.Uint64()
+	runnable := samples[p.idxRunnable].Value.Uint64()
+	running := samples[p.idxRunning].Value.Uint64()
+	waiting := samples[p.idxWaiting].Value.Uint64()
+
+	curCreated := created - p.lastCreated
+	p.lastCreated = created
+
+	return []uint64{
+		goroutines,
+		curCreated,
+		notInGo,
+		runnable,
+		running,
+		waiting,
+	}
+}
+
 }
 
 // size classes
