@@ -5,6 +5,65 @@ import (
 	"time"
 )
 
+var _ = register(description{
+	name: "cpu-gc",
+	tags: []tag{tagCPU, tagGC},
+	metrics: []string{
+		"/cpu/classes/gc/mark/assist:cpu-seconds",
+		"/cpu/classes/gc/mark/dedicated:cpu-seconds",
+		"/cpu/classes/gc/mark/idle:cpu-seconds",
+		"/cpu/classes/gc/pause:cpu-seconds",
+	},
+	layout: Scatter{
+		Name:   "TODO(set later)",
+		Title:  "CPU (Garbage Collector)",
+		Type:   "scatter",
+		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title:      "cpu-seconds per seconds",
+				TickSuffix: "s",
+			},
+		},
+		Subplots: []Subplot{
+			{
+				Name:    "mark assist",
+				Unitfmt: "%{y:.4s}s",
+			},
+			{
+				Name:    "mark dedicated",
+				Unitfmt: "%{y:.4s}s",
+			},
+			{
+				Name:    "mark idle",
+				Unitfmt: "%{y:.4s}s",
+			},
+			{
+				Name:    "pause",
+				Unitfmt: "%{y:.4s}s",
+			},
+		},
+
+		InfoText: `Cumulative metrics are converted to rates by Statsviz so as to be more easily comparable and readable.
+All this metrics are overestimates, and not directly comparable to system CPU time measurements. Compare only with other /cpu/classes metrics.
+
+<i>mark assist</i> is <b>/cpu/classes/gc/mark/assist</b>, estimated total CPU time goroutines spent performing GC tasks to assist the GC and prevent it from falling behind the application.
+<i>mark dedicated</i> is <b>/cpu/classes/gc/mark/dedicated</b>, Estimated total CPU time spent performing GC tasks on processors (as defined by GOMAXPROCS) dedicated to those tasks.
+<i>mark idle</i> is <b>/cpu/classes/gc/mark/idle</b>, estimated total CPU time spent performing GC tasks on spare CPU resources that the Go scheduler could not otherwise find a use for.
+<i>pause</i> is <b>/cpu/classes/gc/pause</b>, estimated total CPU time spent with the application paused by the GC.
+
+All metrics are rates in CPU-seconds per second.`,
+	},
+	make: func(indices ...int) metricsGetter {
+		return &CPUgc{
+			idxMarkAssist:    indices[0],
+			idxMarkDedicated: indices[1],
+			idxMarkIdle:      indices[2],
+			idxPause:         indices[3],
+		}
+	},
+})
+
 type CPUgc struct {
 	idxMarkAssist    int
 	idxMarkDedicated int
@@ -18,15 +77,6 @@ type CPUgc struct {
 	lastMarkDedicated float64
 	lastMarkIdle      float64
 	lastPause         float64
-}
-
-func makeCPUgc(indices ...int) metricsGetter {
-	return &CPUgc{
-		idxMarkAssist:    indices[0],
-		idxMarkDedicated: indices[1],
-		idxMarkIdle:      indices[2],
-		idxPause:         indices[3],
-	}
 }
 
 func (p *CPUgc) values(samples []metrics.Sample) any {
@@ -64,45 +114,4 @@ func (p *CPUgc) values(samples []metrics.Sample) any {
 		markIdle,
 		pause,
 	}
-}
-
-var cpuGCLayout = Scatter{
-	Name:   "TODO(set later)",
-	Title:  "CPU (Garbage Collector)",
-	Type:   "scatter",
-	Events: "lastgc",
-	Layout: ScatterLayout{
-		Yaxis: ScatterYAxis{
-			Title:      "cpu-seconds per seconds",
-			TickSuffix: "s",
-		},
-	},
-	Subplots: []Subplot{
-		{
-			Name:    "mark assist",
-			Unitfmt: "%{y:.4s}s",
-		},
-		{
-			Name:    "mark dedicated",
-			Unitfmt: "%{y:.4s}s",
-		},
-		{
-			Name:    "mark idle",
-			Unitfmt: "%{y:.4s}s",
-		},
-		{
-			Name:    "pause",
-			Unitfmt: "%{y:.4s}s",
-		},
-	},
-
-	InfoText: `Cumulative metrics are converted to rates by Statsviz so as to be more easily comparable and readable.
-All this metrics are overestimates, and not directly comparable to system CPU time measurements. Compare only with other /cpu/classes metrics.
-
-<i>mark assist</i> is <b>/cpu/classes/gc/mark/assist</b>, estimated total CPU time goroutines spent performing GC tasks to assist the GC and prevent it from falling behind the application.
-<i>mark dedicated</i> is <b>/cpu/classes/gc/mark/dedicated</b>, Estimated total CPU time spent performing GC tasks on processors (as defined by GOMAXPROCS) dedicated to those tasks.
-<i>mark idle</i> is <b>/cpu/classes/gc/mark/idle</b>, estimated total CPU time spent performing GC tasks on spare CPU resources that the Go scheduler could not otherwise find a use for.
-<i>pause</i> is <b>/cpu/classes/gc/pause</b>, estimated total CPU time spent with the application paused by the GC.
-
-All metrics are rates in CPU-seconds per second.`,
 }

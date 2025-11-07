@@ -5,17 +5,48 @@ import (
 	"time"
 )
 
+var _ = register(description{
+	name: "mutex-wait",
+	tags: []tag{tagMisc},
+	metrics: []string{
+		"/sync/mutex/wait/total:seconds",
+	},
+	layout: Scatter{
+		Name:   "TODO(set later)",
+		Title:  "Mutex wait time",
+		Type:   "bar",
+		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title:      "seconds / second",
+				TickSuffix: "s",
+			},
+		},
+		Subplots: []Subplot{
+			{
+				Name:    "mutex wait",
+				Unitfmt: "%{y:.4s}s",
+				Type:    "bar",
+			},
+		},
+
+		InfoText: `Cumulative metrics are converted to rates by Statsviz so as to be more easily comparable and readable.
+<i>mutex wait</i> is <b>/sync/mutex/wait/total</b>, approximate cumulative time goroutines have spent blocked on a sync.Mutex or sync.RWMutex.
+
+This metric is useful for identifying global changes in lock contention. Collect a mutex or block profile using the runtime/pprof package for more detailed contention data.`,
+	},
+	make: func(indices ...int) metricsGetter {
+		return &mutexWait{
+			idxMutexWait: indices[0],
+		}
+	},
+})
+
 type mutexWait struct {
 	idxMutexWait int
 
 	lastTime      time.Time
 	lastMutexWait float64
-}
-
-func makeMutexWait(indices ...int) metricsGetter {
-	return &mutexWait{
-		idxMutexWait: indices[0],
-	}
 }
 
 func (p *mutexWait) values(samples []metrics.Sample) any {
@@ -36,29 +67,4 @@ func (p *mutexWait) values(samples []metrics.Sample) any {
 	return []float64{
 		mutexWait,
 	}
-}
-
-var mutexWaitLayout = Scatter{
-	Name:   "TODO(set later)",
-	Title:  "Mutex wait time",
-	Type:   "bar",
-	Events: "lastgc",
-	Layout: ScatterLayout{
-		Yaxis: ScatterYAxis{
-			Title:      "seconds / second",
-			TickSuffix: "s",
-		},
-	},
-	Subplots: []Subplot{
-		{
-			Name:    "mutex wait",
-			Unitfmt: "%{y:.4s}s",
-			Type:    "bar",
-		},
-	},
-
-	InfoText: `Cumulative metrics are converted to rates by Statsviz so as to be more easily comparable and readable.
-<i>mutex wait</i> is <b>/sync/mutex/wait/total</b>, approximate cumulative time goroutines have spent blocked on a sync.Mutex or sync.RWMutex.
-
-This metric is useful for identifying global changes in lock contention. Collect a mutex or block profile using the runtime/pprof package for more detailed contention data.`,
 }

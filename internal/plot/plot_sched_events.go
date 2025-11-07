@@ -5,18 +5,50 @@ import (
 	"runtime/metrics"
 )
 
+var _ = register(description{
+	name: "sched-events",
+	tags: []tag{tagScheduler},
+	metrics: []string{
+		"/sched/latencies:seconds",
+		"/sched/gomaxprocs:threads",
+	},
+	layout: Scatter{
+		Name:   "TODO(set later)",
+		Title:  "Goroutine Scheduling Events",
+		Type:   "scatter",
+		Events: "lastgc",
+		Layout: ScatterLayout{
+			Yaxis: ScatterYAxis{
+				Title: "events",
+			},
+		},
+		Subplots: []Subplot{
+			{
+				Name:    "events per unit of time",
+				Unitfmt: "%{y}",
+			},
+			{
+				Name:    "events per unit of time, per P",
+				Unitfmt: "%{y}",
+			},
+		},
+		InfoText: `<i>Events per second</i> is the sum of all buckets in <b>/sched/latencies:seconds</b>, that is, it tracks the total number of goroutine scheduling events. That number is multiplied by the constant 8.
+<i>Events per second per P (processor)</i> is <i>Events per second</i> divided by current <b>GOMAXPROCS</b>, from <b>/sched/gomaxprocs:threads</b>.
+<b>NOTE</b>: the multiplying factor comes from internal Go runtime source code and might change from version to version.`,
+	},
+	make: func(indices ...int) metricsGetter {
+		return &schedEvents{
+			idxschedlat:   indices[0],
+			idxGomaxprocs: indices[1],
+			lasttot:       math.MaxUint64,
+		}
+	},
+})
+
 type schedEvents struct {
 	idxschedlat   int
 	idxGomaxprocs int
 	lasttot       uint64
-}
-
-func makeSchedEvents(indices ...int) metricsGetter {
-	return &schedEvents{
-		idxschedlat:   indices[0],
-		idxGomaxprocs: indices[1],
-		lasttot:       math.MaxUint64,
-	}
 }
 
 // gTrackingPeriod is currently always 8. Guard it behind build tags when that
@@ -48,29 +80,4 @@ func (p *schedEvents) values(samples []metrics.Sample) any {
 		ftot,
 		ftot / float64(gomaxprocs),
 	}
-}
-
-var schedEventsLayout = Scatter{
-	Name:   "TODO(set later)",
-	Title:  "Goroutine Scheduling Events",
-	Type:   "scatter",
-	Events: "lastgc",
-	Layout: ScatterLayout{
-		Yaxis: ScatterYAxis{
-			Title: "events",
-		},
-	},
-	Subplots: []Subplot{
-		{
-			Name:    "events per unit of time",
-			Unitfmt: "%{y}",
-		},
-		{
-			Name:    "events per unit of time, per P",
-			Unitfmt: "%{y}",
-		},
-	},
-	InfoText: `<i>Events per second</i> is the sum of all buckets in <b>/sched/latencies:seconds</b>, that is, it tracks the total number of goroutine scheduling events. That number is multiplied by the constant 8.
-<i>Events per second per P (processor)</i> is <i>Events per second</i> divided by current <b>GOMAXPROCS</b>, from <b>/sched/gomaxprocs:threads</b>.
-<b>NOTE</b>: the multiplying factor comes from internal Go runtime source code and might change from version to version.`,
 }

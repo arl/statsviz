@@ -17,7 +17,7 @@ func IsReservedPlotName(name string) bool {
 	if name == "timestamp" || name == "lastgc" {
 		return true
 	}
-	return slices.ContainsFunc(plotDescs, func(pd plotDesc) bool {
+	return slices.ContainsFunc(registry, func(pd description) bool {
 		return pd.name == name
 	})
 }
@@ -73,9 +73,9 @@ func NewList(userPlots []UserPlot) (*List, error) {
 }
 
 func (pl *List) enabledPlots() []runtimePlot {
-	plots := make([]runtimePlot, 0, len(plotDescs))
+	plots := make([]runtimePlot, 0, len(registry))
 
-	for _, plot := range plotDescs {
+	for _, plot := range registry {
 		indices, enabled := pl.indicesFor(plot.metrics...)
 		if enabled {
 			plots = append(plots, runtimePlot{
