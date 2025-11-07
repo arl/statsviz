@@ -39,9 +39,9 @@ var _ = register(description{
 			InfoText: `This heatmap shows the distribution of the time goroutines have spent in the scheduler in a runnable state before actually running, uses <b>/sched/latencies:seconds</b>.`,
 		}
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &runnableTime{
-			idxschedlat: indices[0],
+			idxschedlat: idx[0],
 		}
 	},
 })

@@ -63,13 +63,13 @@ var _ = register(description{
 
 All metrics are rates in CPU-seconds per second.`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &cpuOverall{
-			idxUser:     indices[0],
-			idxScavenge: indices[1],
-			idxIdle:     indices[2],
-			idxGCtotal:  indices[3],
-			idxTotal:    indices[4],
+			idxUser:     idx[0],
+			idxScavenge: idx[1],
+			idxIdle:     idx[2],
+			idxGCtotal:  idx[3],
+			idxTotal:    idx[4],
 		}
 	},
 })

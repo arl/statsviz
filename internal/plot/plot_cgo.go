@@ -29,9 +29,9 @@ var _ = register(description{
 		},
 		InfoText: "Shows the count of calls made from Go to C by the current process, per unit of time. Uses <b>/cgo/go-to-c-calls:calls</b>",
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &cgo{
-			idxgo2c:  indices[0],
+			idxgo2c:  idx[0],
 			lastgo2c: math.MaxUint64,
 		}
 	},

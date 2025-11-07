@@ -37,10 +37,10 @@ var _ = register(description{
 <i>Allocations per second</i> is derived by differencing the cumulative <b>/gc/heap/allocs:objects</b> metric.
 <i>Frees per second</i> is similarly derived from <b>/gc/heap/frees:objects</b>.`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &allocFreeRates{
-			idxallocs: indices[0],
-			idxfrees:  indices[1],
+			idxallocs: idx[0],
+			idxfrees:  idx[1],
 		}
 	},
 })

@@ -35,9 +35,9 @@ var _ = register(description{
 
 This metric is useful for identifying global changes in lock contention. Collect a mutex or block profile using the runtime/pprof package for more detailed contention data.`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &mutexWait{
-			idxMutexWait: indices[0],
+			idxMutexWait: idx[0],
 		}
 	},
 })

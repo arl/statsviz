@@ -1,8 +1,7 @@
+// Package plot defines and builds the plots available in Statsviz.
 package plot
 
-import (
-	"runtime/metrics"
-)
+import "runtime/metrics"
 
 type tag = string
 
@@ -47,7 +46,13 @@ func init() {
 	}
 	metrics.Read(samples)
 
-	registry = append(registry)
+	type heatmapLayoutFunc = func(samples []metrics.Sample) Heatmap
 
-	// TODO: all descriptions where the layout is a function of the samples need to be called here
+	for i := range registry {
+		desc := &registry[i]
+		if hm, ok := desc.layout.(heatmapLayoutFunc); ok {
+			desc.layout = hm(samples)
+			continue
+		}
+	}
 }

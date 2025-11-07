@@ -42,9 +42,9 @@ Some of this time is spent getting all threads to stop (this is measured directl
 Uses <b>/sched/pauses/total/gc:seconds</b>.`,
 		}
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &totalPausesGC{
-			idxgcpauses: indices[0],
+			idxgcpauses: idx[0],
 		}
 	},
 })

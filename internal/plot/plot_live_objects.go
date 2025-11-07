@@ -27,9 +27,9 @@ var _ = register(description{
 		},
 		InfoText: `<i>Live objects</i> is <b>/gc/heap/objects</b>. It's the number of objects, live or unswept, occupying heap memory.`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &liveObjects{
-			idxobjects: indices[0],
+			idxobjects: idx[0],
 		}
 	},
 })

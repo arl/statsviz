@@ -47,12 +47,12 @@ var _ = register(description{
 <i>Mcache free</i> is <b>/memory/classes/metadata/mcache/free</b>, the memory that is reserved for runtime mcache structures, but not in-use.
 `,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &mspanMcache{
-			idxmspanInuse:  indices[0],
-			idxmspanFree:   indices[1],
-			idxmcacheInuse: indices[2],
-			idxmcacheFree:  indices[3],
+			idxmspanInuse:  idx[0],
+			idxmspanFree:   idx[1],
+			idxmcacheInuse: idx[2],
+			idxmcacheFree:  idx[3],
 		}
 	},
 })

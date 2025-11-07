@@ -20,7 +20,7 @@ var _ = register(description{
 			Title:      "Stop-the-world Stopping Latencies (Other)",
 			Type:       "heatmap",
 			UpdateFreq: 5,
-			Colorscale: PinkShades,
+			Colorscale: GreenShades,
 			Buckets:    floatseq(len(buckets)),
 			CustomData: buckets,
 			Hover: HeapmapHover{
@@ -42,9 +42,9 @@ This is a subset of the total non-GC-related stop-the-world time. During this ti
 Uses <b>/sched/pauses/stopping/other:seconds</b>.`,
 		}
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &stoppingPausesOther{
-			idxstoppingother: indices[0],
+			idxstoppingother: idx[0],
 		}
 	},
 })

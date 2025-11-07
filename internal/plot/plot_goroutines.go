@@ -5,7 +5,7 @@ import (
 	"runtime/metrics"
 )
 
-var goroutinesPlot = register(description{
+var _ = register(description{
 	name: "goroutines",
 	tags: []tag{tagScheduler},
 	metrics: []string{
@@ -59,14 +59,14 @@ var goroutinesPlot = register(description{
 <i>Running</i> is <b>/sched/goroutines/running</b>, the approximate count of goroutines executing.
 <i>Waiting</i> is <b>/sched/goroutines/waiting</b>, the approximate count of goroutines waiting on a resource (I/O or sync primitives).`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &goroutines{
-			idxGoroutines: indices[0],
-			idxCreated:    indices[1],
-			idxNotInGo:    indices[2],
-			idxRunnable:   indices[3],
-			idxRunning:    indices[4],
-			idxWaiting:    indices[5],
+			idxGoroutines: idx[0],
+			idxCreated:    idx[1],
+			idxNotInGo:    idx[2],
+			idxRunnable:   idx[3],
+			idxRunning:    idx[4],
+			idxWaiting:    idx[5],
 			lastCreated:   math.MaxUint64,
 		}
 	},

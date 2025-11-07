@@ -28,10 +28,10 @@ var _ = register(description{
 		},
 		InfoText: `<i>Live bytes</i> is <b>/gc/heap/allocs - /gc/heap/frees</b>. It's the number of bytes currently allocated (and not yet GC'ec) to the heap by the application.`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &liveBytes{
-			idxallocs: indices[0],
-			idxfrees:  indices[1],
+			idxallocs: idx[0],
+			idxfrees:  idx[1],
 		}
 	},
 })

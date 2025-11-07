@@ -46,11 +46,11 @@ This plot shows the amount of memory that is scannable by the GC.
 <i>scanned stack</i> is <b>/gc/scan/stack</b>, the number of bytes of stack that were scanned last GC cycle.
 `,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &gcScan{
-			idxGlobals: indices[0],
-			idxHeap:    indices[1],
-			idxStack:   indices[2],
+			idxGlobals: idx[0],
+			idxHeap:    idx[1],
+			idxStack:   idx[2],
 		}
 	},
 })

@@ -25,9 +25,9 @@ var _ = register(description{
 		},
 		InfoText: "Shows the current count of live threads that are owned by the Go runtime. Uses <b>/sched/threads/total:threads</b>",
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &threads{
-			idxthreads: indices[0],
+			idxthreads: idx[0],
 		}
 	},
 })

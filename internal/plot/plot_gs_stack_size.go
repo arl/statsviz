@@ -25,9 +25,9 @@ var _ = register(description{
 		},
 		InfoText: "Shows the stack size of new goroutines, uses <b>/gc/stack/starting-size:bytes</b>",
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &gcStackSize{
-			idxstack: indices[0],
+			idxstack: idx[0],
 		}
 	},
 })

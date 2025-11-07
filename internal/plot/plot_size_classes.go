@@ -51,10 +51,10 @@ var _ = register(description{
 			},
 		}
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &sizeClasses{
-			idxallocs: indices[0],
-			idxfrees:  indices[1],
+			idxallocs: idx[0],
+			idxfrees:  idx[1],
 		}
 	},
 })

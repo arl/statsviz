@@ -47,12 +47,12 @@ var _ = register(description{
 <i>Profiling buckets</i> is <b>/memory/classes/profiling/buckets</b>, memory that is used by the stack trace hash map used for profiling.
 <i>Total</i> is <b>/memory/classes/total</b>, all memory mapped by the Go runtime into the current process as read-write.`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &memoryClasses{
-			idxOSStacks:    indices[0],
-			idxOther:       indices[1],
-			idxProfBuckets: indices[2],
-			idxTotal:       indices[3],
+			idxOSStacks:    idx[0],
+			idxOther:       idx[1],
+			idxProfBuckets: idx[2],
+			idxTotal:       idx[3],
 		}
 	},
 })

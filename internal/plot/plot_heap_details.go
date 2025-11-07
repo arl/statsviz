@@ -48,14 +48,14 @@ var _ = register(description{
 <i>Heap stacks</i> is <b>/memory/classes/heap/stacks</b>, the memory used for stack space.
 <i>Heap goal</i> is <b>gc/heap/goal</b>, the heap size target for the end of the GC cycle.`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &heapDetails{
-			idxobj:      indices[0],
-			idxunused:   indices[1],
-			idxfree:     indices[2],
-			idxreleased: indices[3],
-			idxstacks:   indices[4],
-			idxgoal:     indices[5],
+			idxobj:      idx[0],
+			idxunused:   idx[1],
+			idxfree:     idx[2],
+			idxreleased: idx[3],
+			idxstacks:   idx[4],
+			idxgoal:     idx[5],
 		}
 	},
 })

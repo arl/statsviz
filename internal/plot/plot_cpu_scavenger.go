@@ -42,10 +42,10 @@ var _ = register(description{
 
 Both metrics are rates in CPU-seconds per second.`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &cpuScavenger{
-			idxScavengeAssist:     indices[0],
-			idxScavengeBackground: indices[1],
+			idxScavengeAssist:     idx[0],
+			idxScavengeBackground: idx[1],
 		}
 	},
 })

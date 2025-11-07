@@ -54,12 +54,12 @@ All this metrics are overestimates, and not directly comparable to system CPU ti
 
 All metrics are rates in CPU-seconds per second.`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &CPUgc{
-			idxMarkAssist:    indices[0],
-			idxMarkDedicated: indices[1],
-			idxMarkIdle:      indices[2],
-			idxPause:         indices[3],
+			idxMarkAssist:    idx[0],
+			idxMarkDedicated: idx[1],
+			idxMarkIdle:      idx[2],
+			idxPause:         idx[3],
 		}
 	},
 })

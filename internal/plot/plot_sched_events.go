@@ -36,10 +36,10 @@ var _ = register(description{
 <i>Events per second per P (processor)</i> is <i>Events per second</i> divided by current <b>GOMAXPROCS</b>, from <b>/sched/gomaxprocs:threads</b>.
 <b>NOTE</b>: the multiplying factor comes from internal Go runtime source code and might change from version to version.`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &schedEvents{
-			idxschedlat:   indices[0],
-			idxGomaxprocs: indices[1],
+			idxschedlat:   idx[0],
+			idxGomaxprocs: idx[1],
 			lasttot:       math.MaxUint64,
 		}
 	},

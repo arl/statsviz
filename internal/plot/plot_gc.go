@@ -38,13 +38,13 @@ var _ = register(description{
 <i>Heap live</i> is <b>/gc/heap/live:bytes</b>, heap memory occupied by live objects.  
 <i>Heap goal</i> is <b>/gc/heap/goal:bytes</b>, the heap size target at the end of each GC cycle.`,
 	},
-	make: func(indices ...int) metricsGetter {
+	make: func(idx ...int) metricsGetter {
 		return &garbageCollection{
-			idxmemlimit:     indices[0],
-			idxheaplive:     indices[1],
-			idxheapgoal:     indices[2],
-			idxmemtotal:     indices[3],
-			idxheapreleased: indices[4],
+			idxmemlimit:     idx[0],
+			idxheaplive:     idx[1],
+			idxheapgoal:     idx[2],
+			idxmemtotal:     idx[3],
+			idxheapreleased: idx[4],
 		}
 	},
 })
