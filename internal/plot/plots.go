@@ -114,15 +114,6 @@ func init() {
 			make:   makeSizeClasses,
 		},
 		{
-			name: "gc-pauses",
-			tags: []string{"scheduler"},
-			metrics: []string{
-				"/sched/pauses/total/gc:seconds",
-			},
-			layout: gcPausesLayout(samples),
-			make:   makeGCPauses,
-		},
-		{
 			name: "runnable-time",
 			tags: []string{"scheduler"},
 			metrics: []string{
@@ -246,6 +237,42 @@ func init() {
 			},
 			layout: allocFreeRatesLayout,
 			make:   makeAllocFreeRates,
+		},
+		{
+			name: "total-pauses-gc",
+			tags: []string{"scheduler"},
+			metrics: []string{
+				"/sched/pauses/total/gc:seconds",
+			},
+			layout: gcTotalPausesLayout(samples),
+			make:   makeGCTotalPauses,
+		},
+		{
+			name: "total-pauses-other",
+			tags: []string{"scheduler"},
+			metrics: []string{
+				"/sched/pauses/total/other:seconds",
+			},
+			layout: otherTotalPausesLayout(samples),
+			make:   makeOtherTotalPauses,
+		},
+		{
+			name: "stopping-pauses-gc",
+			tags: []string{"scheduler"},
+			metrics: []string{
+				"/sched/pauses/stopping/gc:seconds",
+			},
+			layout: gcStoppingPausesLayout(samples),
+			make:   makeGCStoppingPauses,
+		},
+		{
+			name: "stopping-pauses-other",
+			tags: []string{"scheduler"},
+			metrics: []string{
+				"/sched/pauses/stopping/other:seconds",
+			},
+			layout: otherStoppingPausesLayout(samples),
+			make:   makeGCStoppingOther,
 		},
 	}
 }
@@ -459,7 +486,7 @@ type gcpauses struct {
 	idxgcpauses int
 }
 
-func makeGCPauses(indices ...int) metricsGetter {
+func makeGCTotalPauses(indices ...int) metricsGetter {
 	return &gcpauses{
 		idxgcpauses: indices[0],
 	}
@@ -943,14 +970,77 @@ func (p *allocFreeRates) values(samples []metrics.Sample) any {
 	}
 }
 
-/*
- * helpers
- */
+// stopping pauses (GC)
 
-func floatseq(n int) []float64 {
-	seq := make([]float64, n)
-	for i := range n {
-		seq[i] = float64(i)
+type stoppingPausesGC struct {
+	histfactor int
+	counts     [maxBuckets]uint64
+
+	idxstoppinggc int
+}
+
+func makeGCStoppingPauses(indices ...int) metricsGetter {
+	return &stoppingPausesGC{
+		idxstoppinggc: indices[0],
 	}
-	return seq
+}
+
+func (p *stoppingPausesGC) values(samples []metrics.Sample) any {
+	if p.histfactor == 0 {
+		stoppinggc := samples[p.idxstoppinggc].Value.Float64Histogram()
+		p.histfactor = downsampleFactor(len(stoppinggc.Buckets), maxBuckets)
+	}
+
+	stoppinggc := samples[p.idxstoppinggc].Value.Float64Histogram()
+	return downsampleCounts(stoppinggc, p.histfactor, p.counts[:])
+}
+
+// stopping pauses (Other)
+
+type stoppingPausesOther struct {
+	histfactor int
+	counts     [maxBuckets]uint64
+
+	idxstoppingother int
+}
+
+func makeGCStoppingOther(indices ...int) metricsGetter {
+	return &stoppingPausesOther{
+		idxstoppingother: indices[0],
+	}
+}
+
+func (p *stoppingPausesOther) values(samples []metrics.Sample) any {
+	if p.histfactor == 0 {
+		stoppingother := samples[p.idxstoppingother].Value.Float64Histogram()
+		p.histfactor = downsampleFactor(len(stoppingother.Buckets), maxBuckets)
+	}
+
+	stoppingother := samples[p.idxstoppingother].Value.Float64Histogram()
+	return downsampleCounts(stoppingother, p.histfactor, p.counts[:])
+}
+
+// total pauses (Other)
+
+type totalPausesOther struct {
+	histfactor int
+	counts     [maxBuckets]uint64
+
+	idxtotalother int
+}
+
+func makeOtherTotalPauses(indices ...int) metricsGetter {
+	return &totalPausesOther{
+		idxtotalother: indices[0],
+	}
+}
+
+func (p *totalPausesOther) values(samples []metrics.Sample) any {
+	if p.histfactor == 0 {
+		totalother := samples[p.idxtotalother].Value.Float64Histogram()
+		p.histfactor = downsampleFactor(len(totalother.Buckets), maxBuckets)
+	}
+
+	totalother := samples[p.idxtotalother].Value.Float64Histogram()
+	return downsampleCounts(totalother, p.histfactor, p.counts[:])
 }

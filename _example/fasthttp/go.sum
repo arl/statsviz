@@ -1,7 +1,5 @@
 github.com/andybalholm/brotli v1.2.0 h1:ukwgCxwYrmACq68yiUqwIWnGY0cTPox/M94sVwToPjQ=
 github.com/andybalholm/brotli v1.2.0/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
-github.com/arl/statsviz v0.7.0 h1:ozKk1Jnl6crKqdmLHHT/FRi3gUkcq7x2YIs+O+uLnDk=
-github.com/arl/statsviz v0.7.0/go.mod h1:uFJZYUcGDeFpo/Mb9nLkq/83YUYaib2IccejOm+y1t0=
 github.com/arl/statsviz v0.7.1 h1:W32VBGV/YBTMg3sBsr1Ix1bJzrykZHWNZS7quqtDqYc=
 github.com/arl/statsviz v0.7.1/go.mod h1:uFJZYUcGDeFpo/Mb9nLkq/83YUYaib2IccejOm+y1t0=
 github.com/fasthttp/router v1.5.4 h1:oxdThbBwQgsDIYZ3wR1IavsNl6ZS9WdjKukeMikOnC8=
