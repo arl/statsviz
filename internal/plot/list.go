@@ -22,11 +22,9 @@ func IsReservedPlotName(name string) bool {
 	})
 }
 
-// a metricsGetter extracts, from a sample of runtime metrics, a slice with all
+// getvalues extracts, from a sample of runtime metrics, a slice with all
 // the metrics necessary for a single plot.
-type metricsGetter interface {
-	values([]metrics.Sample) any // []uint64 | []float64
-}
+type getvalues func(time.Time, []metrics.Sample) any
 
 // List holds all the plots that statsviz knows about. Some plots might be
 // disabled, if they rely on metrics that are unknown to the current Go version.
@@ -46,9 +44,9 @@ type List struct {
 }
 
 type runtimePlot struct {
-	name   string
-	rt     metricsGetter
-	layout any // Scatter | Heatmap
+	name    string
+	getvals getvalues
+	layout  any // Scatter | Heatmap
 }
 
 func NewList(userPlots []UserPlot) (*List, error) {
@@ -76,12 +74,12 @@ func (pl *List) enabledPlots() []runtimePlot {
 	plots := make([]runtimePlot, 0, len(registry))
 
 	for _, plot := range registry {
-		indices, enabled := pl.indicesFor(plot.metrics...)
+		_, enabled := pl.indicesFor(plot.metrics...)
 		if enabled {
 			plots = append(plots, runtimePlot{
-				name:   plot.name,
-				rt:     plot.make(indices...),
-				layout: complete(plot.layout, plot.name, plot.tags),
+				name:    plot.name,
+				getvals: plot.getvalues(),
+				layout:  complete(plot.layout, plot.name, plot.tags),
 			})
 		}
 	}
@@ -144,9 +142,9 @@ func (pl *List) WriteValues(w io.Writer) error {
 		// Javascript timestamps are in millis.
 		"lastgc": []int64{gcStats.LastGC.UnixMilli()},
 	}
-
+	now := time.Now()
 	for _, p := range pl.rtPlots {
-		m[p.name] = p.rt.values(pl.samples)
+		m[p.name] = p.getvals(now, pl.samples)
 	}
 
 	for i := range pl.userPlots {
@@ -175,7 +173,7 @@ func (pl *List) WriteValues(w io.Writer) error {
 		Event: "metrics",
 		Data: data{
 			Series:    m,
-			Timestamp: time.Now().UnixMilli(),
+			Timestamp: now.UnixMilli(),
 		},
 	}); err != nil {
 		return fmt.Errorf("failed to write/convert metrics values to json: %v", err)

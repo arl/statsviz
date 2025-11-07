@@ -14,6 +14,23 @@ var _ = register(description{
 		"/cpu/classes/gc/mark/idle:cpu-seconds",
 		"/cpu/classes/gc/pause:cpu-seconds",
 	},
+	getvalues: func() getvalues {
+		var (
+			assist    = ratefloat64(idxcpuclassesgcmarkassist)
+			dedicated = ratefloat64(idxcpuclassesgcmarkdedicated)
+			idle      = ratefloat64(idxcpuclassesgcmarkidle)
+			pause     = ratefloat64(idxcpuclassesgcpause)
+		)
+
+		return func(now time.Time, samples []metrics.Sample) any {
+			return []float64{
+				assist(now, samples),
+				dedicated(now, samples),
+				idle(now, samples),
+				pause(now, samples),
+			}
+		}
+	},
 	layout: Scatter{
 		Name:   "TODO(set later)",
 		Title:  "CPU (Garbage Collector)",
@@ -26,22 +43,10 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "mark assist",
-				Unitfmt: "%{y:.4s}s",
-			},
-			{
-				Name:    "mark dedicated",
-				Unitfmt: "%{y:.4s}s",
-			},
-			{
-				Name:    "mark idle",
-				Unitfmt: "%{y:.4s}s",
-			},
-			{
-				Name:    "pause",
-				Unitfmt: "%{y:.4s}s",
-			},
+			{Name: "mark assist", Unitfmt: "%{y:.4s}s"},
+			{Name: "mark dedicated", Unitfmt: "%{y:.4s}s"},
+			{Name: "mark idle", Unitfmt: "%{y:.4s}s"},
+			{Name: "pause", Unitfmt: "%{y:.4s}s"},
 		},
 
 		InfoText: `Cumulative metrics are converted to rates by Statsviz so as to be more easily comparable and readable.
@@ -54,64 +59,4 @@ All this metrics are overestimates, and not directly comparable to system CPU ti
 
 All metrics are rates in CPU-seconds per second.`,
 	},
-	make: func(idx ...int) metricsGetter {
-		return &CPUgc{
-			idxMarkAssist:    idx[0],
-			idxMarkDedicated: idx[1],
-			idxMarkIdle:      idx[2],
-			idxPause:         idx[3],
-		}
-	},
 })
-
-type CPUgc struct {
-	idxMarkAssist    int
-	idxMarkDedicated int
-	idxMarkIdle      int
-	idxPause         int
-	idxTotal         int
-
-	lastTime time.Time
-
-	lastMarkAssist    float64
-	lastMarkDedicated float64
-	lastMarkIdle      float64
-	lastPause         float64
-}
-
-func (p *CPUgc) values(samples []metrics.Sample) any {
-	curMarkAssist := samples[p.idxMarkAssist].Value.Float64()
-	curMarkDedicated := samples[p.idxMarkDedicated].Value.Float64()
-	curMarkIdle := samples[p.idxMarkIdle].Value.Float64()
-	curPause := samples[p.idxPause].Value.Float64()
-
-	if p.lastTime.IsZero() {
-		p.lastMarkAssist = curMarkAssist
-		p.lastMarkDedicated = curMarkDedicated
-		p.lastMarkIdle = curMarkIdle
-		p.lastPause = curPause
-		p.lastTime = time.Now()
-
-		return []float64{0, 0, 0, 0, 0}
-	}
-
-	t := time.Since(p.lastTime).Seconds()
-
-	markAssist := (curMarkAssist - p.lastMarkAssist) / t
-	markDedicated := (curMarkDedicated - p.lastMarkDedicated) / t
-	markIdle := (curMarkIdle - p.lastMarkIdle) / t
-	pause := (curPause - p.lastPause) / t
-
-	p.lastMarkAssist = curMarkAssist
-	p.lastMarkDedicated = curMarkDedicated
-	p.lastMarkIdle = curMarkIdle
-	p.lastPause = curPause
-	p.lastTime = time.Now()
-
-	return []float64{
-		markAssist,
-		markDedicated,
-		markIdle,
-		pause,
-	}
-}

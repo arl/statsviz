@@ -15,6 +15,25 @@ var _ = register(description{
 		"/cpu/classes/gc/total:cpu-seconds",
 		"/cpu/classes/total:cpu-seconds",
 	},
+	getvalues: func() getvalues {
+		var (
+			user     = ratefloat64(idxcpuclassesuser)
+			scavenge = ratefloat64(idxcpuclassesscavengtetotal)
+			idle     = ratefloat64(idxcpuclassesidle)
+			gctotal  = ratefloat64(idxcpuclassesgctotal)
+			total    = ratefloat64(idxcpuclassestotal)
+		)
+
+		return func(now time.Time, samples []metrics.Sample) any {
+			return []float64{
+				user(now, samples),
+				scavenge(now, samples),
+				idle(now, samples),
+				gctotal(now, samples),
+				total(now, samples),
+			}
+		}
+	},
 	layout: Scatter{
 		Name:   "TODO(set later)",
 		Title:  "CPU (Overall)",
@@ -63,69 +82,4 @@ var _ = register(description{
 
 All metrics are rates in CPU-seconds per second.`,
 	},
-	make: func(idx ...int) metricsGetter {
-		return &cpuOverall{
-			idxUser:     idx[0],
-			idxScavenge: idx[1],
-			idxIdle:     idx[2],
-			idxGCtotal:  idx[3],
-			idxTotal:    idx[4],
-		}
-	},
 })
-
-type cpuOverall struct {
-	idxUser     int
-	idxScavenge int
-	idxIdle     int
-	idxGCtotal  int
-	idxTotal    int
-
-	lastTime     time.Time
-	lastUser     float64
-	lastScavenge float64
-	lastIdle     float64
-	lastGCtotal  float64
-	lastTotal    float64
-}
-
-func (p *cpuOverall) values(samples []metrics.Sample) any {
-	curUser := samples[p.idxUser].Value.Float64()
-	curScavenge := samples[p.idxScavenge].Value.Float64()
-	curIdle := samples[p.idxIdle].Value.Float64()
-	curGCtotal := samples[p.idxGCtotal].Value.Float64()
-	curTotal := samples[p.idxTotal].Value.Float64()
-
-	if p.lastTime.IsZero() {
-		p.lastUser = curUser
-		p.lastScavenge = curScavenge
-		p.lastIdle = curIdle
-		p.lastGCtotal = curGCtotal
-		p.lastTotal = curTotal
-
-		p.lastTime = time.Now()
-		return []float64{0, 0, 0, 0, 0}
-	}
-
-	t := time.Since(p.lastTime).Seconds()
-
-	user := (curUser - p.lastUser) / t
-	scavenge := (curScavenge - p.lastScavenge) / t
-	idle := (curIdle - p.lastIdle) / t
-	gcTotal := (curGCtotal - p.lastGCtotal) / t
-	total := (curTotal - p.lastTotal) / t
-
-	p.lastUser = curUser
-	p.lastScavenge = curScavenge
-	p.lastIdle = curIdle
-	p.lastGCtotal = curGCtotal
-	p.lastTotal = curTotal
-
-	return []float64{
-		user,
-		scavenge,
-		idle,
-		gcTotal,
-		total,
-	}
-}
