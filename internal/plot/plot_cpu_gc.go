@@ -15,19 +15,22 @@ var _ = register(description{
 		"/cpu/classes/gc/pause:cpu-seconds",
 	},
 	getvalues: func() getvalues {
-		var (
-			assist    = ratefloat64(idxcpuclassesgcmarkassist)
-			dedicated = ratefloat64(idxcpuclassesgcmarkdedicated)
-			idle      = ratefloat64(idxcpuclassesgcmarkidle)
-			pause     = ratefloat64(idxcpuclassesgcpause)
-		)
+		rateassist := rate[float64]()
+		ratededicated := rate[float64]()
+		rateidle := rate[float64]()
+		ratepause := rate[float64]()
 
 		return func(now time.Time, samples []metrics.Sample) any {
+			assist := samples[idx_cpu_classes_gc_mark_assist_cpu_seconds].Value.Float64()
+			dedicated := samples[idx_cpu_classes_gc_mark_dedicated_cpu_seconds].Value.Float64()
+			idle := samples[idx_cpu_classes_gc_mark_idle_cpu_seconds].Value.Float64()
+			pause := samples[idx_cpu_classes_gc_pause_cpu_seconds].Value.Float64()
+
 			return []float64{
-				assist(now, samples),
-				dedicated(now, samples),
-				idle(now, samples),
-				pause(now, samples),
+				rateassist(now, assist),
+				ratededicated(now, dedicated),
+				rateidle(now, idle),
+				ratepause(now, pause),
 			}
 		}
 	},

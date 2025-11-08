@@ -1,8 +1,10 @@
+//go:build go1.26
+
 package plot
 
 import (
-	"math"
 	"runtime/metrics"
+	"time"
 )
 
 var _ = register(description{
@@ -16,6 +18,21 @@ var _ = register(description{
 		"/sched/goroutines/running:goroutines",
 		"/sched/goroutines/waiting:goroutines",
 	},
+	getvalues: func() getvalues {
+		deltaCreated := delta[uint64]()
+
+		return func(_ time.Time, samples []metrics.Sample) any {
+			created := deltaCreated(samples[idx_sched_goroutines_created_goroutines].Value.Uint64())
+			goroutines := samples[idx_sched_goroutines_goroutines].Value.Uint64()
+			notInGo := samples[idx_sched_goroutines_not_in_go_goroutines].Value.Uint64()
+			runnable := samples[idx_sched_goroutines_runnable_goroutines].Value.Uint64()
+			running := samples[idx_sched_goroutines_running_goroutines].Value.Uint64()
+			waiting := samples[idx_sched_goroutines_waiting_goroutines].Value.Uint64()
+
+			return []uint64{created, goroutines, notInGo, runnable, running, waiting}
+		}
+	},
+
 	layout: Scatter{
 		Name:  "TODO(set later)",
 		Title: "Goroutines",
@@ -26,31 +43,12 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "goroutines",
-				Unitfmt: "%{y}",
-			},
-			{
-				Name:    "created",
-				Unitfmt: "%{y}",
-				Type:    "bar",
-			},
-			{
-				Name:    "not in Go",
-				Unitfmt: "%{y}",
-			},
-			{
-				Name:    "runnable",
-				Unitfmt: "%{y}",
-			},
-			{
-				Name:    "running",
-				Unitfmt: "%{y}",
-			},
-			{
-				Name:    "waiting",
-				Unitfmt: "%{y}",
-			},
+			{Name: "created", Unitfmt: "%{y}", Type: "bar"},
+			{Name: "goroutines", Unitfmt: "%{y}"},
+			{Name: "not in Go", Unitfmt: "%{y}"},
+			{Name: "runnable", Unitfmt: "%{y}"},
+			{Name: "running", Unitfmt: "%{y}"},
+			{Name: "waiting", Unitfmt: "%{y}"},
 		},
 		InfoText: `<i>Goroutines</i> is <b>/sched/goroutines</b>, the count of live goroutines.
 <i>Created</i> is the delta of <b>/sched/goroutines-created</b>, the cumulative number of created goroutines.
@@ -59,47 +57,4 @@ var _ = register(description{
 <i>Running</i> is <b>/sched/goroutines/running</b>, the approximate count of goroutines executing.
 <i>Waiting</i> is <b>/sched/goroutines/waiting</b>, the approximate count of goroutines waiting on a resource (I/O or sync primitives).`,
 	},
-	make: func(idx ...int) metricsGetter {
-		return &goroutines{
-			idxGoroutines: idx[0],
-			idxCreated:    idx[1],
-			idxNotInGo:    idx[2],
-			idxRunnable:   idx[3],
-			idxRunning:    idx[4],
-			idxWaiting:    idx[5],
-			lastCreated:   math.MaxUint64,
-		}
-	},
 })
-
-type goroutines struct {
-	idxGoroutines int
-	idxCreated    int
-	idxNotInGo    int
-	idxRunnable   int
-	idxRunning    int
-	idxWaiting    int
-
-	lastCreated uint64
-}
-
-func (p *goroutines) values(samples []metrics.Sample) any {
-	goroutines := samples[p.idxGoroutines].Value.Uint64()
-	created := samples[p.idxCreated].Value.Uint64()
-	notInGo := samples[p.idxNotInGo].Value.Uint64()
-	runnable := samples[p.idxRunnable].Value.Uint64()
-	running := samples[p.idxRunning].Value.Uint64()
-	waiting := samples[p.idxWaiting].Value.Uint64()
-
-	curCreated := created - p.lastCreated
-	p.lastCreated = created
-
-	return []uint64{
-		goroutines,
-		curCreated,
-		notInGo,
-		runnable,
-		running,
-		waiting,
-	}
-}

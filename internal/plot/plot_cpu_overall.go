@@ -16,21 +16,25 @@ var _ = register(description{
 		"/cpu/classes/total:cpu-seconds",
 	},
 	getvalues: func() getvalues {
-		var (
-			user     = ratefloat64(idxcpuclassesuser)
-			scavenge = ratefloat64(idxcpuclassesscavengtetotal)
-			idle     = ratefloat64(idxcpuclassesidle)
-			gctotal  = ratefloat64(idxcpuclassesgctotal)
-			total    = ratefloat64(idxcpuclassestotal)
-		)
+		rateuser := rate[float64]()
+		ratescavenge := rate[float64]()
+		rateidle := rate[float64]()
+		rategctotal := rate[float64]()
+		ratetotal := rate[float64]()
 
 		return func(now time.Time, samples []metrics.Sample) any {
+			user := samples[idx_cpu_classes_user_cpu_seconds].Value.Float64()
+			scavenge := samples[idx_cpu_classes_scavenge_total_cpu_seconds].Value.Float64()
+			idle := samples[idx_cpu_classes_idle_cpu_seconds].Value.Float64()
+			gctotal := samples[idx_cpu_classes_gc_total_cpu_seconds].Value.Float64()
+			total := samples[idx_cpu_classes_total_cpu_seconds].Value.Float64()
+
 			return []float64{
-				user(now, samples),
-				scavenge(now, samples),
-				idle(now, samples),
-				gctotal(now, samples),
-				total(now, samples),
+				rateuser(now, user),
+				ratescavenge(now, scavenge),
+				rateidle(now, idle),
+				rategctotal(now, gctotal),
+				ratetotal(now, total),
 			}
 		}
 	},
@@ -47,31 +51,11 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "user",
-				Unitfmt: "%{y:.4s}s",
-				Type:    "bar",
-			},
-			{
-				Name:    "scavenge",
-				Unitfmt: "%{y:.4s}s",
-				Type:    "bar",
-			},
-			{
-				Name:    "idle",
-				Unitfmt: "%{y:.4s}s",
-				Type:    "bar",
-			},
-			{
-				Name:    "gc total",
-				Unitfmt: "%{y:.4s}s",
-				Type:    "bar",
-			},
-			{
-				Name:    "total",
-				Unitfmt: "%{y:.4s}s",
-				Type:    "scatter",
-			},
+			{Unitfmt: "%{y:.4s}s", Type: "bar", Name: "user"},
+			{Unitfmt: "%{y:.4s}s", Type: "bar", Name: "scavenge"},
+			{Unitfmt: "%{y:.4s}s", Type: "bar", Name: "idle"},
+			{Unitfmt: "%{y:.4s}s", Type: "bar", Name: "gc total"},
+			{Unitfmt: "%{y:.4s}s", Type: "scatter", Name: "total"},
 		},
 		InfoText: `Shows the fraction of CPU spent in your code vs. runtime vs. wasted. Helps track overall utilization and potential headroom.
 <i>user is</i> the rate of <b>/cpu/classes/user:cpu-seconds</b>, the CPU time spent running user Go code.

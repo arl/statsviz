@@ -2,7 +2,6 @@
 package plot
 
 import (
-	"math"
 	"runtime/debug"
 	"runtime/metrics"
 	"time"
@@ -73,26 +72,27 @@ func init() {
 	}
 }
 
-func deltaUint64(midx int) func([]metrics.Sample) uint64 {
-	var last uint64 = math.MaxUint64
-	return func(samples []metrics.Sample) uint64 {
-		cur := samples[midx].Value.Uint64()
+// delta returns a function that computes the delta between successive calls.
+func delta[T uint64 | float64]() func(T) T {
+	first := true
+	var last T
+	return func(cur T) T {
 		delta := cur - last
-		if last == math.MaxUint64 {
+		if first {
 			delta = 0
+			first = false
 		}
 		last = cur
 		return delta
 	}
 }
 
-func ratefloat64(midx int) func(time.Time, []metrics.Sample) float64 {
-	var last float64
+// rate returns a function that computes the rate of change per second.
+func rate[T uint64 | float64]() func(time.Time, T) float64 {
+	var last T
 	var lastTime time.Time
 
-	return func(now time.Time, samples []metrics.Sample) float64 {
-		cur := samples[midx].Value.Float64()
-
+	return func(now time.Time, cur T) float64 {
 		if lastTime.IsZero() {
 			last = cur
 			lastTime = now
@@ -100,7 +100,7 @@ func ratefloat64(midx int) func(time.Time, []metrics.Sample) float64 {
 		}
 
 		t := now.Sub(lastTime).Seconds()
-		rate := (cur - last) / t
+		rate := float64(cur-last) / t
 
 		last = cur
 		lastTime = now

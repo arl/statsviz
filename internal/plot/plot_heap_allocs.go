@@ -12,6 +12,23 @@ var _ = register(description{
 		"/gc/heap/allocs:objects",
 		"/gc/heap/frees:objects",
 	},
+	getvalues: func() getvalues {
+		deltaallocs := delta[uint64]()
+		deltafrees := delta[uint64]()
+
+		rateallocs := rate[uint64]()
+		ratefrees := rate[uint64]()
+
+		return func(now time.Time, samples []metrics.Sample) any {
+			curallocs := samples[idx_gc_heap_allocs_objects].Value.Uint64()
+			curfrees := samples[idx_gc_heap_frees_objects].Value.Uint64()
+
+			return []float64{
+				rateallocs(now, deltaallocs(curallocs)),
+				ratefrees(now, deltafrees(curfrees)),
+			}
+		}
+	},
 	layout: Scatter{
 		Name:  "heap alloc/free rates",
 		Title: "Heap Allocation & Free Rates",
@@ -34,46 +51,7 @@ var _ = register(description{
 			},
 		},
 		InfoText: `
-<i>Allocations per second</i> is derived by differencing the cumulative <b>/gc/heap/allocs:objects</b> metric.
-<i>Frees per second</i> is similarly derived from <b>/gc/heap/frees:objects</b>.`,
-	},
-	make: func(idx ...int) metricsGetter {
-		return &allocFreeRates{
-			idxallocs: idx[0],
-			idxfrees:  idx[1],
-		}
+<i>Allocations per second</i> is the delta, per second, of the cumulative <b>/gc/heap/allocs:objects</b> metric.
+<i>Frees per second</i> is the delta, per second, of the cumulative <b>/gc/heap/frees:objects</b> metric.`,
 	},
 })
-
-type allocFreeRates struct {
-	idxallocs int
-	idxfrees  int
-
-	lasttime   time.Time
-	lastallocs uint64
-	lastfrees  uint64
-}
-
-func (p *allocFreeRates) values(samples []metrics.Sample) any {
-	if p.lasttime.IsZero() {
-		p.lasttime = time.Now()
-		p.lastallocs = samples[p.idxallocs].Value.Uint64()
-		p.lastfrees = samples[p.idxfrees].Value.Uint64()
-
-		return []float64{0, 0}
-	}
-
-	t := time.Since(p.lasttime).Seconds()
-
-	allocs := float64(samples[p.idxallocs].Value.Uint64()-p.lastallocs) / t
-	frees := float64(samples[p.idxfrees].Value.Uint64()-p.lastfrees) / t
-
-	p.lastallocs = samples[p.idxallocs].Value.Uint64()
-	p.lastfrees = samples[p.idxfrees].Value.Uint64()
-	p.lasttime = time.Now()
-
-	return []float64{
-		allocs,
-		frees,
-	}
-}

@@ -1,6 +1,9 @@
 package plot
 
-import "runtime/metrics"
+import (
+	"runtime/metrics"
+	"time"
+)
 
 var _ = register(description{
 	name: "gc-scan",
@@ -9,6 +12,15 @@ var _ = register(description{
 		"/gc/scan/globals:bytes",
 		"/gc/scan/heap:bytes",
 		"/gc/scan/stack:bytes",
+	},
+	getvalues: func() getvalues {
+		return func(_ time.Time, samples []metrics.Sample) any {
+			globals := samples[idx_gc_scan_globals_bytes].Value.Uint64()
+			heap := samples[idx_gc_scan_heap_bytes].Value.Uint64()
+			stack := samples[idx_gc_scan_stack_bytes].Value.Uint64()
+
+			return []uint64{globals, heap, stack}
+		}
 	},
 	layout: Scatter{
 		Name:   "TODO(set later)",
@@ -46,28 +58,4 @@ This plot shows the amount of memory that is scannable by the GC.
 <i>scanned stack</i> is <b>/gc/scan/stack</b>, the number of bytes of stack that were scanned last GC cycle.
 `,
 	},
-	make: func(idx ...int) metricsGetter {
-		return &gcScan{
-			idxGlobals: idx[0],
-			idxHeap:    idx[1],
-			idxStack:   idx[2],
-		}
-	},
 })
-
-type gcScan struct {
-	idxGlobals int
-	idxHeap    int
-	idxStack   int
-}
-
-func (p *gcScan) values(samples []metrics.Sample) any {
-	globals := samples[p.idxGlobals].Value.Uint64()
-	heap := samples[p.idxHeap].Value.Uint64()
-	stack := samples[p.idxStack].Value.Uint64()
-	return []uint64{
-		globals,
-		heap,
-		stack,
-	}
-}

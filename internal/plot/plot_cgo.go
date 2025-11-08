@@ -12,11 +12,13 @@ var _ = register(description{
 		"/cgo/go-to-c-calls:calls",
 	},
 	getvalues: func() getvalues {
-		// TODO show cgo calls per second
-		deltago2c := deltaUint64(idxcgogotocalls)
+		// TODO also show cgo calls per second ?
+		deltacalls := delta[uint64]()
 
 		return func(_ time.Time, samples []metrics.Sample) any {
-			return []uint64{deltago2c(samples)}
+			calls := samples[idx_cgo_go_to_c_calls_calls].Value.Uint64()
+
+			return []uint64{deltacalls(calls)}
 		}
 	},
 	layout: Scatter{

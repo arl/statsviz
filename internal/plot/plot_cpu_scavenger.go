@@ -13,15 +13,15 @@ var _ = register(description{
 		"/cpu/classes/scavenge/background:cpu-seconds",
 	},
 	getvalues: func() getvalues {
-		var (
-			assist     = ratefloat64(idxcpuclassesscavengeassist)
-			background = ratefloat64(idxcpuclassesscavengebackground)
-		)
+		rateassist := rate[float64]()
+		ratebackground := rate[float64]()
 
 		return func(now time.Time, samples []metrics.Sample) any {
+			assist := samples[idx_cpu_classes_scavenge_assist_cpu_seconds].Value.Float64()
+			background := samples[idx_cpu_classes_scavenge_background_cpu_seconds].Value.Float64()
 			return []float64{
-				assist(now, samples),
-				background(now, samples),
+				rateassist(now, assist),
+				ratebackground(now, background),
 			}
 		}
 	},

@@ -3,6 +3,7 @@ package plot
 import (
 	"math"
 	"runtime/metrics"
+	"time"
 )
 
 var _ = register(description{
@@ -14,6 +15,26 @@ var _ = register(description{
 		"/gc/heap/goal:bytes",
 		"/memory/classes/total:bytes",
 		"/memory/classes/heap/released:bytes",
+	},
+	getvalues: func() getvalues {
+		return func(_ time.Time, samples []metrics.Sample) any {
+			memLimit := samples[idx_gc_gomemlimit_bytes].Value.Uint64()
+			heapLive := samples[idx_gc_heap_live_bytes].Value.Uint64()
+			heapGoal := samples[idx_gc_heap_goal_bytes].Value.Uint64()
+			memTotal := samples[idx_memory_classes_total_bytes].Value.Uint64()
+			heapReleased := samples[idx_memory_classes_heap_released_bytes].Value.Uint64()
+
+			if memLimit == math.MaxInt64 {
+				memLimit = 0
+			}
+
+			return []uint64{
+				memLimit,
+				memTotal - heapReleased,
+				heapLive,
+				heapGoal,
+			}
+		}
 	},
 	layout: Scatter{
 		Name:   "garbage collection",
@@ -38,40 +59,4 @@ var _ = register(description{
 <i>Heap live</i> is <b>/gc/heap/live:bytes</b>, heap memory occupied by live objects.  
 <i>Heap goal</i> is <b>/gc/heap/goal:bytes</b>, the heap size target at the end of each GC cycle.`,
 	},
-	make: func(idx ...int) metricsGetter {
-		return &garbageCollection{
-			idxmemlimit:     idx[0],
-			idxheaplive:     idx[1],
-			idxheapgoal:     idx[2],
-			idxmemtotal:     idx[3],
-			idxheapreleased: idx[4],
-		}
-	},
 })
-
-type garbageCollection struct {
-	idxmemlimit     int
-	idxheaplive     int
-	idxheapgoal     int
-	idxmemtotal     int
-	idxheapreleased int
-}
-
-func (p *garbageCollection) values(samples []metrics.Sample) any {
-	memLimit := samples[p.idxmemlimit].Value.Uint64()
-	heapLive := samples[p.idxheaplive].Value.Uint64()
-	heapGoal := samples[p.idxheapgoal].Value.Uint64()
-	memTotal := samples[p.idxmemtotal].Value.Uint64()
-	heapReleased := samples[p.idxheapreleased].Value.Uint64()
-
-	if memLimit == math.MaxInt64 {
-		memLimit = 0
-	}
-
-	return []uint64{
-		memLimit,
-		memTotal - heapReleased,
-		heapLive,
-		heapGoal,
-	}
-}
