@@ -1,6 +1,9 @@
 package plot
 
-import "runtime/metrics"
+import (
+	"runtime/metrics"
+	"time"
+)
 
 var _ = register(description{
 	name: "stopping-pauses-gc",
@@ -8,12 +11,23 @@ var _ = register(description{
 	metrics: []string{
 		"/sched/pauses/stopping/gc:seconds",
 	},
-	layout: func(samples []metrics.Sample) Heatmap {
-		idxstoppinggc := metricIdx["/sched/pauses/stopping/gc:seconds"]
+	getvalues: func() getvalues {
+		histfactor := 0
+		counts := [maxBuckets]uint64{}
 
-		stoppinggc := samples[idxstoppinggc].Value.Float64Histogram()
-		histfactor := downsampleFactor(len(stoppinggc.Buckets), maxBuckets)
-		buckets := downsampleBuckets(stoppinggc, histfactor)
+		return func(_ time.Time, samples []metrics.Sample) any {
+			hist := samples[idx_sched_pauses_stopping_gc_seconds].Value.Float64Histogram()
+			if histfactor == 0 {
+				histfactor = downsampleFactor(len(hist.Buckets), maxBuckets)
+			}
+
+			return downsampleCounts(hist, histfactor, counts[:])
+		}
+	},
+	layout: func(samples []metrics.Sample) Heatmap {
+		hist := samples[idx_sched_pauses_stopping_gc_seconds].Value.Float64Histogram()
+		histfactor := downsampleFactor(len(hist.Buckets), maxBuckets)
+		buckets := downsampleBuckets(hist, histfactor)
 
 		return Heatmap{
 			Name:       "TODO(set later)",
@@ -42,26 +56,4 @@ During this time, some threads may be executing.
 Uses <b>/sched/pauses/stopping/gc:seconds</b>.`,
 		}
 	},
-	make: func(idx ...int) metricsGetter {
-		return &stoppingPausesGC{
-			idxstoppinggc: idx[0],
-		}
-	},
 })
-
-type stoppingPausesGC struct {
-	histfactor int
-	counts     [maxBuckets]uint64
-
-	idxstoppinggc int
-}
-
-func (p *stoppingPausesGC) values(samples []metrics.Sample) any {
-	if p.histfactor == 0 {
-		stoppinggc := samples[p.idxstoppinggc].Value.Float64Histogram()
-		p.histfactor = downsampleFactor(len(stoppinggc.Buckets), maxBuckets)
-	}
-
-	stoppinggc := samples[p.idxstoppinggc].Value.Float64Histogram()
-	return downsampleCounts(stoppinggc, p.histfactor, p.counts[:])
-}

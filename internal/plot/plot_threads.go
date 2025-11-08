@@ -1,12 +1,24 @@
+//go:build go1.26
+
 package plot
 
-import "runtime/metrics"
+import (
+	"runtime/metrics"
+	"time"
+)
 
 var _ = register(description{
 	name: "threads",
 	tags: []tag{tagScheduler},
 	metrics: []string{
 		"/sched/threads/total:threads",
+	},
+	getvalues: func() getvalues {
+		return func(_ time.Time, samples []metrics.Sample) any {
+			threads := samples[idx_sched_threads_total_threads].Value.Uint64()
+
+			return []uint64{threads}
+		}
 	},
 	layout: Scatter{
 		Name:  "TODO(set later)",
@@ -25,20 +37,4 @@ var _ = register(description{
 		},
 		InfoText: "Shows the current count of live threads that are owned by the Go runtime. Uses <b>/sched/threads/total:threads</b>",
 	},
-	make: func(idx ...int) metricsGetter {
-		return &threads{
-			idxthreads: idx[0],
-		}
-	},
 })
-
-type threads struct {
-	idxthreads int
-}
-
-func (p *threads) values(samples []metrics.Sample) any {
-	threads := samples[p.idxthreads].Value.Uint64()
-	return []uint64{
-		threads,
-	}
-}

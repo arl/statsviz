@@ -1,6 +1,9 @@
 package plot
 
-import "runtime/metrics"
+import (
+	"runtime/metrics"
+	"time"
+)
 
 var _ = register(description{
 	name: "stopping-pauses-other",
@@ -8,12 +11,23 @@ var _ = register(description{
 	metrics: []string{
 		"/sched/pauses/stopping/other:seconds",
 	},
-	layout: func(samples []metrics.Sample) Heatmap {
-		idxstoppingother := metricIdx["/sched/pauses/stopping/other:seconds"]
+	getvalues: func() getvalues {
+		histfactor := 0
+		counts := [maxBuckets]uint64{}
 
-		stoppingother := samples[idxstoppingother].Value.Float64Histogram()
-		histfactor := downsampleFactor(len(stoppingother.Buckets), maxBuckets)
-		buckets := downsampleBuckets(stoppingother, histfactor)
+		return func(_ time.Time, samples []metrics.Sample) any {
+			hist := samples[idx_sched_pauses_stopping_other_seconds].Value.Float64Histogram()
+			if histfactor == 0 {
+				histfactor = downsampleFactor(len(hist.Buckets), maxBuckets)
+			}
+
+			return downsampleCounts(hist, histfactor, counts[:])
+		}
+	},
+	layout: func(samples []metrics.Sample) Heatmap {
+		hist := samples[idx_sched_pauses_stopping_other_seconds].Value.Float64Histogram()
+		histfactor := downsampleFactor(len(hist.Buckets), maxBuckets)
+		buckets := downsampleBuckets(hist, histfactor)
 
 		return Heatmap{
 			Name:       "TODO(set later)",
@@ -42,26 +56,4 @@ This is a subset of the total non-GC-related stop-the-world time. During this ti
 Uses <b>/sched/pauses/stopping/other:seconds</b>.`,
 		}
 	},
-	make: func(idx ...int) metricsGetter {
-		return &stoppingPausesOther{
-			idxstoppingother: idx[0],
-		}
-	},
 })
-
-type stoppingPausesOther struct {
-	histfactor int
-	counts     [maxBuckets]uint64
-
-	idxstoppingother int
-}
-
-func (p *stoppingPausesOther) values(samples []metrics.Sample) any {
-	if p.histfactor == 0 {
-		stoppingother := samples[p.idxstoppingother].Value.Float64Histogram()
-		p.histfactor = downsampleFactor(len(stoppingother.Buckets), maxBuckets)
-	}
-
-	stoppingother := samples[p.idxstoppingother].Value.Float64Histogram()
-	return downsampleCounts(stoppingother, p.histfactor, p.counts[:])
-}

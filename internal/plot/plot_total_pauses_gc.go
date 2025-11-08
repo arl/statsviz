@@ -1,6 +1,9 @@
 package plot
 
-import "runtime/metrics"
+import (
+	"runtime/metrics"
+	"time"
+)
 
 var _ = register(description{
 	name: "total-pauses-gc",
@@ -8,12 +11,23 @@ var _ = register(description{
 	metrics: []string{
 		"/sched/pauses/total/gc:seconds",
 	},
-	layout: func(samples []metrics.Sample) Heatmap {
-		idxgcpauses := metricIdx["/sched/pauses/total/gc:seconds"]
+	getvalues: func() getvalues {
+		histfactor := 0
+		counts := [maxBuckets]uint64{}
 
-		gcpauses := samples[idxgcpauses].Value.Float64Histogram()
-		histfactor := downsampleFactor(len(gcpauses.Buckets), maxBuckets)
-		buckets := downsampleBuckets(gcpauses, histfactor)
+		return func(_ time.Time, samples []metrics.Sample) any {
+			hist := samples[idx_sched_pauses_total_gc_seconds].Value.Float64Histogram()
+			if histfactor == 0 {
+				histfactor = downsampleFactor(len(hist.Buckets), maxBuckets)
+			}
+
+			return downsampleCounts(hist, histfactor, counts[:])
+		}
+	},
+	layout: func(samples []metrics.Sample) Heatmap {
+		hist := samples[idx_sched_pauses_total_gc_seconds].Value.Float64Histogram()
+		histfactor := downsampleFactor(len(hist.Buckets), maxBuckets)
+		buckets := downsampleBuckets(hist, histfactor)
 
 		return Heatmap{
 			Name:       "TODO(set later)",
@@ -42,26 +56,4 @@ Some of this time is spent getting all threads to stop (this is measured directl
 Uses <b>/sched/pauses/total/gc:seconds</b>.`,
 		}
 	},
-	make: func(idx ...int) metricsGetter {
-		return &totalPausesGC{
-			idxgcpauses: idx[0],
-		}
-	},
 })
-
-type totalPausesGC struct {
-	histfactor int
-	counts     [maxBuckets]uint64
-
-	idxgcpauses int
-}
-
-func (p *totalPausesGC) values(samples []metrics.Sample) any {
-	if p.histfactor == 0 {
-		gcpauses := samples[p.idxgcpauses].Value.Float64Histogram()
-		p.histfactor = downsampleFactor(len(gcpauses.Buckets), maxBuckets)
-	}
-
-	gcpauses := samples[p.idxgcpauses].Value.Float64Histogram()
-	return downsampleCounts(gcpauses, p.histfactor, p.counts[:])
-}

@@ -1,6 +1,9 @@
 package plot
 
-import "runtime/metrics"
+import (
+	"runtime/metrics"
+	"time"
+)
 
 var _ = register(description{
 	name: "mspan-mcache",
@@ -10,6 +13,16 @@ var _ = register(description{
 		"/memory/classes/metadata/mspan/free:bytes",
 		"/memory/classes/metadata/mcache/inuse:bytes",
 		"/memory/classes/metadata/mcache/free:bytes",
+	},
+	getvalues: func() getvalues {
+		return func(_ time.Time, samples []metrics.Sample) any {
+			mspanInUse := samples[idx_memory_classes_metadata_mspan_inuse_bytes].Value.Uint64()
+			mspanSys := samples[idx_memory_classes_metadata_mspan_free_bytes].Value.Uint64()
+			mcacheInUse := samples[idx_memory_classes_metadata_mcache_inuse_bytes].Value.Uint64()
+			mcacheSys := samples[idx_memory_classes_metadata_mcache_free_bytes].Value.Uint64()
+
+			return []uint64{mspanInUse, mspanSys, mcacheInUse, mcacheSys}
+		}
 	},
 	layout: Scatter{
 		Name:   "TODO(set later)",
@@ -23,22 +36,10 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "mspan in-use",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "mspan free",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "mcache in-use",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "mcache free",
-				Unitfmt: "%{y:.4s}B",
-			},
+			{Unitfmt: "%{y:.4s}B", Name: "mspan in-use"},
+			{Unitfmt: "%{y:.4s}B", Name: "mspan free"},
+			{Unitfmt: "%{y:.4s}B", Name: "mcache in-use"},
+			{Unitfmt: "%{y:.4s}B", Name: "mcache free"},
 		},
 		InfoText: `
 <i>Mspan in-use</i> is <b>/memory/classes/metadata/mspan/inuse</b>, the memory that is occupied by runtime mspan structures that are currently being used.
@@ -47,34 +48,4 @@ var _ = register(description{
 <i>Mcache free</i> is <b>/memory/classes/metadata/mcache/free</b>, the memory that is reserved for runtime mcache structures, but not in-use.
 `,
 	},
-	make: func(idx ...int) metricsGetter {
-		return &mspanMcache{
-			idxmspanInuse:  idx[0],
-			idxmspanFree:   idx[1],
-			idxmcacheInuse: idx[2],
-			idxmcacheFree:  idx[3],
-		}
-	},
 })
-
-type mspanMcache struct {
-	enabled bool
-
-	idxmspanInuse  int
-	idxmspanFree   int
-	idxmcacheInuse int
-	idxmcacheFree  int
-}
-
-func (p *mspanMcache) values(samples []metrics.Sample) any {
-	mspanInUse := samples[p.idxmspanInuse].Value.Uint64()
-	mspanSys := samples[p.idxmspanFree].Value.Uint64()
-	mcacheInUse := samples[p.idxmcacheInuse].Value.Uint64()
-	mcacheSys := samples[p.idxmcacheFree].Value.Uint64()
-	return []uint64{
-		mspanInUse,
-		mspanSys,
-		mcacheInUse,
-		mcacheSys,
-	}
-}

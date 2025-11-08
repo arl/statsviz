@@ -1,6 +1,9 @@
 package plot
 
-import "runtime/metrics"
+import (
+	"runtime/metrics"
+	"time"
+)
 
 var _ = register(description{
 	name: "live-bytes",
@@ -8,6 +11,14 @@ var _ = register(description{
 	metrics: []string{
 		"/gc/heap/allocs:bytes",
 		"/gc/heap/frees:bytes",
+	},
+	getvalues: func() getvalues {
+		return func(_ time.Time, samples []metrics.Sample) any {
+			allocBytes := samples[idx_gc_heap_allocs_bytes].Value.Uint64()
+			freedBytes := samples[idx_gc_heap_frees_bytes].Value.Uint64()
+
+			return []uint64{allocBytes - freedBytes}
+		}
 	},
 	layout: Scatter{
 		Name:   "TODO(set later)",
@@ -28,23 +39,4 @@ var _ = register(description{
 		},
 		InfoText: `<i>Live bytes</i> is <b>/gc/heap/allocs - /gc/heap/frees</b>. It's the number of bytes currently allocated (and not yet GC'ec) to the heap by the application.`,
 	},
-	make: func(idx ...int) metricsGetter {
-		return &liveBytes{
-			idxallocs: idx[0],
-			idxfrees:  idx[1],
-		}
-	},
 })
-
-type liveBytes struct {
-	idxallocs int
-	idxfrees  int
-}
-
-func (p *liveBytes) values(samples []metrics.Sample) any {
-	allocBytes := samples[p.idxallocs].Value.Uint64()
-	freedBytes := samples[p.idxfrees].Value.Uint64()
-	return []uint64{
-		allocBytes - freedBytes,
-	}
-}

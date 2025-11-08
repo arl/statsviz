@@ -1,6 +1,9 @@
 package plot
 
-import "runtime/metrics"
+import (
+	"runtime/metrics"
+	"time"
+)
 
 var _ = register(description{
 	name: "heap (details)",
@@ -13,6 +16,28 @@ var _ = register(description{
 		"/memory/classes/heap/stacks:bytes",
 		"/gc/heap/goal:bytes",
 	},
+	getvalues: func() getvalues {
+		return func(_ time.Time, samples []metrics.Sample) any {
+			heapObjects := samples[idx_memory_classes_heap_objects_bytes].Value.Uint64()
+			heapUnused := samples[idx_memory_classes_heap_unused_bytes].Value.Uint64()
+			heapFree := samples[idx_memory_classes_heap_free_bytes].Value.Uint64()
+			heapReleased := samples[idx_memory_classes_heap_released_bytes].Value.Uint64()
+			heapStacks := samples[idx_memory_classes_heap_stacks_bytes].Value.Uint64()
+			nextGC := samples[idx_gc_heap_goal_bytes].Value.Uint64()
+
+			heapIdle := heapReleased + heapFree
+			heapInUse := heapObjects + heapUnused
+			heapSys := heapInUse + heapIdle
+
+			return []uint64{
+				heapSys,
+				heapObjects,
+				heapStacks,
+				nextGC,
+			}
+		}
+	},
+
 	layout: Scatter{
 		Name:   "TODO(set later)",
 		Title:  "Heap (details)",
@@ -25,22 +50,10 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "heap sys",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "heap objects",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "heap stacks",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "heap goal",
-				Unitfmt: "%{y:.4s}B",
-			},
+			{Unitfmt: "%{y:.4s}B", Name: "heap sys"},
+			{Unitfmt: "%{y:.4s}B", Name: "heap objects"},
+			{Unitfmt: "%{y:.4s}B", Name: "heap stacks"},
+			{Unitfmt: "%{y:.4s}B", Name: "heap goal"},
 		},
 		InfoText: `
 <i>Heap</i> sys is <b>/memory/classes/heap/{objects + unused + released + free}</b>. It's an estimate of all the heap memory obtained from the OS.
@@ -48,43 +61,4 @@ var _ = register(description{
 <i>Heap stacks</i> is <b>/memory/classes/heap/stacks</b>, the memory used for stack space.
 <i>Heap goal</i> is <b>gc/heap/goal</b>, the heap size target for the end of the GC cycle.`,
 	},
-	make: func(idx ...int) metricsGetter {
-		return &heapDetails{
-			idxobj:      idx[0],
-			idxunused:   idx[1],
-			idxfree:     idx[2],
-			idxreleased: idx[3],
-			idxstacks:   idx[4],
-			idxgoal:     idx[5],
-		}
-	},
 })
-
-type heapDetails struct {
-	idxobj      int
-	idxunused   int
-	idxfree     int
-	idxreleased int
-	idxstacks   int
-	idxgoal     int
-}
-
-func (p *heapDetails) values(samples []metrics.Sample) any {
-	heapObjects := samples[p.idxobj].Value.Uint64()
-	heapUnused := samples[p.idxunused].Value.Uint64()
-	heapFree := samples[p.idxfree].Value.Uint64()
-	heapReleased := samples[p.idxreleased].Value.Uint64()
-	heapStacks := samples[p.idxstacks].Value.Uint64()
-	nextGC := samples[p.idxgoal].Value.Uint64()
-
-	heapIdle := heapReleased + heapFree
-	heapInUse := heapObjects + heapUnused
-	heapSys := heapInUse + heapIdle
-
-	return []uint64{
-		heapSys,
-		heapObjects,
-		heapStacks,
-		nextGC,
-	}
-}

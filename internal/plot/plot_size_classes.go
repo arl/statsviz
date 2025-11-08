@@ -1,6 +1,9 @@
 package plot
 
-import "runtime/metrics"
+import (
+	"runtime/metrics"
+	"time"
+)
 
 var _ = register(description{
 	name: "size-classes",
@@ -9,16 +12,31 @@ var _ = register(description{
 		"/gc/heap/allocs-by-size:bytes",
 		"/gc/heap/frees-by-size:bytes",
 	},
-	layout: func(samples []metrics.Sample) Heatmap {
-		idxallocs := metricIdx["/gc/heap/allocs-by-size:bytes"]
-		idxfrees := metricIdx["/gc/heap/frees-by-size:bytes"]
+	getvalues: func() getvalues {
+		var sizeClasses []uint64
 
+		return func(_ time.Time, samples []metrics.Sample) any {
+			allocsBySize := samples[idx_gc_heap_allocs_by_size_bytes].Value.Float64Histogram()
+			freesBySize := samples[idx_gc_heap_frees_by_size_bytes].Value.Float64Histogram()
+
+			if sizeClasses == nil {
+				sizeClasses = make([]uint64, len(allocsBySize.Counts))
+			}
+
+			for i := range sizeClasses {
+				sizeClasses[i] = allocsBySize.Counts[i] - freesBySize.Counts[i]
+			}
+
+			return sizeClasses
+		}
+	},
+	layout: func(samples []metrics.Sample) Heatmap {
 		// Perform a sanity check on the number of buckets on the 'allocs' and
 		// 'frees' size classes histograms. Statsviz plots a single histogram based
 		// on those 2 so we want them to have the same number of buckets, which
 		// should be true.
-		allocsBySize := samples[idxallocs].Value.Float64Histogram()
-		freesBySize := samples[idxfrees].Value.Float64Histogram()
+		allocsBySize := samples[idx_gc_heap_allocs_by_size_bytes].Value.Float64Histogram()
+		freesBySize := samples[idx_gc_heap_frees_by_size_bytes].Value.Float64Histogram()
 		if len(allocsBySize.Buckets) != len(freesBySize.Buckets) {
 			panic("different number of buckets in allocs and frees size classes histograms")
 		}
@@ -51,31 +69,4 @@ var _ = register(description{
 			},
 		}
 	},
-	make: func(idx ...int) metricsGetter {
-		return &sizeClasses{
-			idxallocs: idx[0],
-			idxfrees:  idx[1],
-		}
-	},
 })
-
-type sizeClasses struct {
-	sizeClasses []uint64
-
-	idxallocs int
-	idxfrees  int
-}
-
-func (p *sizeClasses) values(samples []metrics.Sample) any {
-	allocsBySize := samples[p.idxallocs].Value.Float64Histogram()
-	freesBySize := samples[p.idxfrees].Value.Float64Histogram()
-
-	if p.sizeClasses == nil {
-		p.sizeClasses = make([]uint64, len(allocsBySize.Counts))
-	}
-
-	for i := range p.sizeClasses {
-		p.sizeClasses[i] = allocsBySize.Counts[i] - freesBySize.Counts[i]
-	}
-	return p.sizeClasses
-}

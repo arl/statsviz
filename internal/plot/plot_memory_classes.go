@@ -1,6 +1,9 @@
 package plot
 
-import "runtime/metrics"
+import (
+	"runtime/metrics"
+	"time"
+)
 
 var _ = register(description{
 	name: "memory-classes",
@@ -10,6 +13,21 @@ var _ = register(description{
 		"/memory/classes/other:bytes",
 		"/memory/classes/profiling/buckets:bytes",
 		"/memory/classes/total:bytes",
+	},
+	getvalues: func() getvalues {
+		return func(_ time.Time, samples []metrics.Sample) any {
+			osStacks := samples[idx_memory_classes_os_stacks_bytes].Value.Uint64()
+			other := samples[idx_memory_classes_other_bytes].Value.Uint64()
+			profBuckets := samples[idx_memory_classes_profiling_buckets_bytes].Value.Uint64()
+			total := samples[idx_memory_classes_total_bytes].Value.Uint64()
+
+			return []uint64{
+				osStacks,
+				other,
+				profBuckets,
+				total,
+			}
+		}
 	},
 	layout: Scatter{
 		Name:   "TODO(set later)",
@@ -23,22 +41,10 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "os stacks",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "other",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "profiling buckets",
-				Unitfmt: "%{y:.4s}B",
-			},
-			{
-				Name:    "total",
-				Unitfmt: "%{y:.4s}B",
-			},
+			{Unitfmt: "%{y:.4s}B", Name: "os stacks"},
+			{Unitfmt: "%{y:.4s}B", Name: "other"},
+			{Unitfmt: "%{y:.4s}B", Name: "profiling buckets"},
+			{Unitfmt: "%{y:.4s}B", Name: "total"},
 		},
 
 		InfoText: `
@@ -47,33 +53,4 @@ var _ = register(description{
 <i>Profiling buckets</i> is <b>/memory/classes/profiling/buckets</b>, memory that is used by the stack trace hash map used for profiling.
 <i>Total</i> is <b>/memory/classes/total</b>, all memory mapped by the Go runtime into the current process as read-write.`,
 	},
-	make: func(idx ...int) metricsGetter {
-		return &memoryClasses{
-			idxOSStacks:    idx[0],
-			idxOther:       idx[1],
-			idxProfBuckets: idx[2],
-			idxTotal:       idx[3],
-		}
-	},
 })
-
-type memoryClasses struct {
-	idxOSStacks    int
-	idxOther       int
-	idxProfBuckets int
-	idxTotal       int
-}
-
-func (p *memoryClasses) values(samples []metrics.Sample) any {
-	osStacks := samples[p.idxOSStacks].Value.Uint64()
-	other := samples[p.idxOther].Value.Uint64()
-	profBuckets := samples[p.idxProfBuckets].Value.Uint64()
-	total := samples[p.idxTotal].Value.Uint64()
-
-	return []uint64{
-		osStacks,
-		other,
-		profBuckets,
-		total,
-	}
-}

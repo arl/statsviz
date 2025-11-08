@@ -11,6 +11,15 @@ var _ = register(description{
 	metrics: []string{
 		"/sync/mutex/wait/total:seconds",
 	},
+	getvalues: func() getvalues {
+		ratemutexwait := rate[float64]()
+
+		return func(now time.Time, samples []metrics.Sample) any {
+			mutexwait := ratemutexwait(now, samples[idx_sync_mutex_wait_total_seconds].Value.Float64())
+
+			return []float64{mutexwait}
+		}
+	},
 	layout: Scatter{
 		Name:   "TODO(set later)",
 		Title:  "Mutex wait time",
@@ -35,36 +44,4 @@ var _ = register(description{
 
 This metric is useful for identifying global changes in lock contention. Collect a mutex or block profile using the runtime/pprof package for more detailed contention data.`,
 	},
-	make: func(idx ...int) metricsGetter {
-		return &mutexWait{
-			idxMutexWait: idx[0],
-		}
-	},
 })
-
-type mutexWait struct {
-	idxMutexWait int
-
-	lastTime      time.Time
-	lastMutexWait float64
-}
-
-func (p *mutexWait) values(samples []metrics.Sample) any {
-	if p.lastTime.IsZero() {
-		p.lastTime = time.Now()
-		p.lastMutexWait = samples[p.idxMutexWait].Value.Float64()
-
-		return []float64{0}
-	}
-
-	t := time.Since(p.lastTime).Seconds()
-
-	mutexWait := (samples[p.idxMutexWait].Value.Float64() - p.lastMutexWait) / t
-
-	p.lastMutexWait = samples[p.idxMutexWait].Value.Float64()
-	p.lastTime = time.Now()
-
-	return []float64{
-		mutexWait,
-	}
-}
