@@ -4,6 +4,7 @@ package plot
 import (
 	"runtime/debug"
 	"runtime/metrics"
+	"sync"
 	"time"
 )
 
@@ -32,7 +33,22 @@ var (
 	metricIdx map[string]int
 )
 
+var initIndices = sync.OnceValue(func() []metrics.Sample {
+	all := metrics.All()
+
+	metricIdx = make(map[string]int, len(all))
+
+	samples := make([]metrics.Sample, len(all))
+	for i := range samples {
+		samples[i].Name = all[i].Name
+		metricIdx[samples[i].Name] = i
+	}
+	metrics.Read(samples)
+	return samples
+})
+
 func mustidx(metric string) int {
+	_ = initIndices()
 	idx, ok := metricIdx[metric]
 	if !ok {
 		bnfo, ok := debug.ReadBuildInfo()
@@ -50,20 +66,9 @@ func register(desc description) struct{} {
 }
 
 func init() {
-	// We need a first set of sample in order to dimension and process the
-	// heatmaps buckets.
-	all := metrics.All()
-	samples := make([]metrics.Sample, len(all))
-	metricIdx = make(map[string]int)
-
-	for i := range samples {
-		samples[i].Name = all[i].Name
-		metricIdx[samples[i].Name] = i
-	}
-	metrics.Read(samples)
-
 	type heatmapLayoutFunc = func(samples []metrics.Sample) Heatmap
 
+	samples := initIndices()
 	for i := range registry {
 		desc := &registry[i]
 		if hm, ok := desc.layout.(heatmapLayoutFunc); ok {

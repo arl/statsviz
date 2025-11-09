@@ -7,7 +7,7 @@ import (
 
 var _ = register(description{
 	name: "total-pauses-gc",
-	tags: []tag{tagScheduler},
+	tags: []tag{tagScheduler, tagGC},
 	metrics: []string{
 		"/sched/pauses/total/gc:seconds",
 	},

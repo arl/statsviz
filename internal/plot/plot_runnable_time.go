@@ -16,20 +16,18 @@ var _ = register(description{
 		counts := [maxBuckets]uint64{}
 
 		return func(_ time.Time, samples []metrics.Sample) any {
+			hist := samples[idx_sched_latencies_seconds].Value.Float64Histogram()
 			if histfactor == 0 {
-				schedlat := samples[idx_sched_latencies_seconds].Value.Float64Histogram()
-				histfactor = downsampleFactor(len(schedlat.Buckets), maxBuckets)
+				histfactor = downsampleFactor(len(hist.Buckets), maxBuckets)
 			}
 
-			schedlat := samples[idx_sched_latencies_seconds].Value.Float64Histogram()
-
-			return downsampleCounts(schedlat, histfactor, counts[:])
+			return downsampleCounts(hist, histfactor, counts[:])
 		}
 	},
 	layout: func(samples []metrics.Sample) Heatmap {
-		schedlat := samples[idx_sched_latencies_seconds].Value.Float64Histogram()
-		histfactor := downsampleFactor(len(schedlat.Buckets), maxBuckets)
-		buckets := downsampleBuckets(schedlat, histfactor)
+		hist := samples[idx_sched_latencies_seconds].Value.Float64Histogram()
+		histfactor := downsampleFactor(len(hist.Buckets), maxBuckets)
+		buckets := downsampleBuckets(hist, histfactor)
 
 		return Heatmap{
 			Name:       "TODO(set later)",
