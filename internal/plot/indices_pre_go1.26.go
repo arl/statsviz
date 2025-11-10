@@ -6,103 +6,62 @@ package plot
 //lint:file-ignore U1000 Ignore unused indices. they're generated
 
 var (
-	idx_cgo_go_to_c_calls_calls                                         int
-	idx_cpu_classes_gc_mark_assist_cpu_seconds                          int
-	idx_cpu_classes_gc_mark_dedicated_cpu_seconds                       int
-	idx_cpu_classes_gc_mark_idle_cpu_seconds                            int
-	idx_cpu_classes_gc_pause_cpu_seconds                                int
-	idx_cpu_classes_gc_total_cpu_seconds                                int
-	idx_cpu_classes_idle_cpu_seconds                                    int
-	idx_cpu_classes_scavenge_assist_cpu_seconds                         int
-	idx_cpu_classes_scavenge_background_cpu_seconds                     int
-	idx_cpu_classes_scavenge_total_cpu_seconds                          int
-	idx_cpu_classes_total_cpu_seconds                                   int
-	idx_cpu_classes_user_cpu_seconds                                    int
-	idx_gc_cycles_automatic_gc_cycles                                   int
-	idx_gc_cycles_forced_gc_cycles                                      int
-	idx_gc_cycles_total_gc_cycles                                       int
-	idx_gc_gogc_percent                                                 int
-	idx_gc_gomemlimit_bytes                                             int
-	idx_gc_heap_allocs_by_size_bytes                                    int
-	idx_gc_heap_allocs_bytes                                            int
-	idx_gc_heap_allocs_objects                                          int
-	idx_gc_heap_frees_by_size_bytes                                     int
-	idx_gc_heap_frees_bytes                                             int
-	idx_gc_heap_frees_objects                                           int
-	idx_gc_heap_goal_bytes                                              int
-	idx_gc_heap_live_bytes                                              int
-	idx_gc_heap_objects_objects                                         int
-	idx_gc_heap_tiny_allocs_objects                                     int
-	idx_gc_limiter_last_enabled_gc_cycle                                int
-	idx_gc_pauses_seconds                                               int
-	idx_gc_scan_globals_bytes                                           int
-	idx_gc_scan_heap_bytes                                              int
-	idx_gc_scan_stack_bytes                                             int
-	idx_gc_scan_total_bytes                                             int
-	idx_gc_stack_starting_size_bytes                                    int
-	idx_godebug_non_default_behavior_allowmultiplevcs_events            int
-	idx_godebug_non_default_behavior_asynctimerchan_events              int
-	idx_godebug_non_default_behavior_containermaxprocs_events           int
-	idx_godebug_non_default_behavior_embedfollowsymlinks_events         int
-	idx_godebug_non_default_behavior_execerrdot_events                  int
-	idx_godebug_non_default_behavior_gocachehash_events                 int
-	idx_godebug_non_default_behavior_gocachetest_events                 int
-	idx_godebug_non_default_behavior_gocacheverify_events               int
-	idx_godebug_non_default_behavior_gotestjsonbuildtext_events         int
-	idx_godebug_non_default_behavior_gotypesalias_events                int
-	idx_godebug_non_default_behavior_http2client_events                 int
-	idx_godebug_non_default_behavior_http2server_events                 int
-	idx_godebug_non_default_behavior_httplaxcontentlength_events        int
-	idx_godebug_non_default_behavior_httpmuxgo121_events                int
-	idx_godebug_non_default_behavior_httpservecontentkeepheaders_events int
-	idx_godebug_non_default_behavior_installgoroot_events               int
-	idx_godebug_non_default_behavior_multipartmaxheaders_events         int
-	idx_godebug_non_default_behavior_multipartmaxparts_events           int
-	idx_godebug_non_default_behavior_multipathtcp_events                int
-	idx_godebug_non_default_behavior_netedns0_events                    int
-	idx_godebug_non_default_behavior_panicnil_events                    int
-	idx_godebug_non_default_behavior_randautoseed_events                int
-	idx_godebug_non_default_behavior_randseednop_events                 int
-	idx_godebug_non_default_behavior_rsa1024min_events                  int
-	idx_godebug_non_default_behavior_tarinsecurepath_events             int
-	idx_godebug_non_default_behavior_tls10server_events                 int
-	idx_godebug_non_default_behavior_tls3des_events                     int
-	idx_godebug_non_default_behavior_tlsmaxrsasize_events               int
-	idx_godebug_non_default_behavior_tlsrsakex_events                   int
-	idx_godebug_non_default_behavior_tlssha1_events                     int
-	idx_godebug_non_default_behavior_tlsunsafeekm_events                int
-	idx_godebug_non_default_behavior_updatemaxprocs_events              int
-	idx_godebug_non_default_behavior_winreadlinkvolume_events           int
-	idx_godebug_non_default_behavior_winsymlink_events                  int
-	idx_godebug_non_default_behavior_x509keypairleaf_events             int
-	idx_godebug_non_default_behavior_x509negativeserial_events          int
-	idx_godebug_non_default_behavior_x509rsacrt_events                  int
-	idx_godebug_non_default_behavior_x509sha256skid_events              int
-	idx_godebug_non_default_behavior_x509usefallbackroots_events        int
-	idx_godebug_non_default_behavior_x509usepolicies_events             int
-	idx_godebug_non_default_behavior_zipinsecurepath_events             int
-	idx_memory_classes_heap_free_bytes                                  int
-	idx_memory_classes_heap_objects_bytes                               int
-	idx_memory_classes_heap_released_bytes                              int
-	idx_memory_classes_heap_stacks_bytes                                int
-	idx_memory_classes_heap_unused_bytes                                int
-	idx_memory_classes_metadata_mcache_free_bytes                       int
-	idx_memory_classes_metadata_mcache_inuse_bytes                      int
-	idx_memory_classes_metadata_mspan_free_bytes                        int
-	idx_memory_classes_metadata_mspan_inuse_bytes                       int
-	idx_memory_classes_metadata_other_bytes                             int
-	idx_memory_classes_os_stacks_bytes                                  int
-	idx_memory_classes_other_bytes                                      int
-	idx_memory_classes_profiling_buckets_bytes                          int
-	idx_memory_classes_total_bytes                                      int
-	idx_sched_gomaxprocs_threads                                        int
-	idx_sched_goroutines_goroutines                                     int
-	idx_sched_latencies_seconds                                         int
-	idx_sched_pauses_stopping_gc_seconds                                int
-	idx_sched_pauses_stopping_other_seconds                             int
-	idx_sched_pauses_total_gc_seconds                                   int
-	idx_sched_pauses_total_other_seconds                                int
-	idx_sync_mutex_wait_total_seconds                                   int
+	idx_cgo_go_to_c_calls_calls                     int
+	idx_cpu_classes_gc_mark_assist_cpu_seconds      int
+	idx_cpu_classes_gc_mark_dedicated_cpu_seconds   int
+	idx_cpu_classes_gc_mark_idle_cpu_seconds        int
+	idx_cpu_classes_gc_pause_cpu_seconds            int
+	idx_cpu_classes_gc_total_cpu_seconds            int
+	idx_cpu_classes_idle_cpu_seconds                int
+	idx_cpu_classes_scavenge_assist_cpu_seconds     int
+	idx_cpu_classes_scavenge_background_cpu_seconds int
+	idx_cpu_classes_scavenge_total_cpu_seconds      int
+	idx_cpu_classes_total_cpu_seconds               int
+	idx_cpu_classes_user_cpu_seconds                int
+	idx_gc_cycles_automatic_gc_cycles               int
+	idx_gc_cycles_forced_gc_cycles                  int
+	idx_gc_cycles_total_gc_cycles                   int
+	idx_gc_gogc_percent                             int
+	idx_gc_gomemlimit_bytes                         int
+	idx_gc_heap_allocs_by_size_bytes                int
+	idx_gc_heap_allocs_bytes                        int
+	idx_gc_heap_allocs_objects                      int
+	idx_gc_heap_frees_by_size_bytes                 int
+	idx_gc_heap_frees_bytes                         int
+	idx_gc_heap_frees_objects                       int
+	idx_gc_heap_goal_bytes                          int
+	idx_gc_heap_live_bytes                          int
+	idx_gc_heap_objects_objects                     int
+	idx_gc_heap_tiny_allocs_objects                 int
+	idx_gc_limiter_last_enabled_gc_cycle            int
+	idx_gc_pauses_seconds                           int
+	idx_gc_scan_globals_bytes                       int
+	idx_gc_scan_heap_bytes                          int
+	idx_gc_scan_stack_bytes                         int
+	idx_gc_scan_total_bytes                         int
+	idx_gc_stack_starting_size_bytes                int
+	idx_memory_classes_heap_free_bytes              int
+	idx_memory_classes_heap_objects_bytes           int
+	idx_memory_classes_heap_released_bytes          int
+	idx_memory_classes_heap_stacks_bytes            int
+	idx_memory_classes_heap_unused_bytes            int
+	idx_memory_classes_metadata_mcache_free_bytes   int
+	idx_memory_classes_metadata_mcache_inuse_bytes  int
+	idx_memory_classes_metadata_mspan_free_bytes    int
+	idx_memory_classes_metadata_mspan_inuse_bytes   int
+	idx_memory_classes_metadata_other_bytes         int
+	idx_memory_classes_os_stacks_bytes              int
+	idx_memory_classes_other_bytes                  int
+	idx_memory_classes_profiling_buckets_bytes      int
+	idx_memory_classes_total_bytes                  int
+	idx_sched_gomaxprocs_threads                    int
+	idx_sched_goroutines_goroutines                 int
+	idx_sched_latencies_seconds                     int
+	idx_sched_pauses_stopping_gc_seconds            int
+	idx_sched_pauses_stopping_other_seconds         int
+	idx_sched_pauses_total_gc_seconds               int
+	idx_sched_pauses_total_other_seconds            int
+	idx_sync_mutex_wait_total_seconds               int
 )
 
 func init() {
@@ -140,47 +99,6 @@ func init() {
 	idx_gc_scan_stack_bytes = mustidx("/gc/scan/stack:bytes")
 	idx_gc_scan_total_bytes = mustidx("/gc/scan/total:bytes")
 	idx_gc_stack_starting_size_bytes = mustidx("/gc/stack/starting-size:bytes")
-	idx_godebug_non_default_behavior_allowmultiplevcs_events = mustidx("/godebug/non-default-behavior/allowmultiplevcs:events")
-	idx_godebug_non_default_behavior_asynctimerchan_events = mustidx("/godebug/non-default-behavior/asynctimerchan:events")
-	idx_godebug_non_default_behavior_containermaxprocs_events = mustidx("/godebug/non-default-behavior/containermaxprocs:events")
-	idx_godebug_non_default_behavior_embedfollowsymlinks_events = mustidx("/godebug/non-default-behavior/embedfollowsymlinks:events")
-	idx_godebug_non_default_behavior_execerrdot_events = mustidx("/godebug/non-default-behavior/execerrdot:events")
-	idx_godebug_non_default_behavior_gocachehash_events = mustidx("/godebug/non-default-behavior/gocachehash:events")
-	idx_godebug_non_default_behavior_gocachetest_events = mustidx("/godebug/non-default-behavior/gocachetest:events")
-	idx_godebug_non_default_behavior_gocacheverify_events = mustidx("/godebug/non-default-behavior/gocacheverify:events")
-	idx_godebug_non_default_behavior_gotestjsonbuildtext_events = mustidx("/godebug/non-default-behavior/gotestjsonbuildtext:events")
-	idx_godebug_non_default_behavior_gotypesalias_events = mustidx("/godebug/non-default-behavior/gotypesalias:events")
-	idx_godebug_non_default_behavior_http2client_events = mustidx("/godebug/non-default-behavior/http2client:events")
-	idx_godebug_non_default_behavior_http2server_events = mustidx("/godebug/non-default-behavior/http2server:events")
-	idx_godebug_non_default_behavior_httplaxcontentlength_events = mustidx("/godebug/non-default-behavior/httplaxcontentlength:events")
-	idx_godebug_non_default_behavior_httpmuxgo121_events = mustidx("/godebug/non-default-behavior/httpmuxgo121:events")
-	idx_godebug_non_default_behavior_httpservecontentkeepheaders_events = mustidx("/godebug/non-default-behavior/httpservecontentkeepheaders:events")
-	idx_godebug_non_default_behavior_installgoroot_events = mustidx("/godebug/non-default-behavior/installgoroot:events")
-	idx_godebug_non_default_behavior_multipartmaxheaders_events = mustidx("/godebug/non-default-behavior/multipartmaxheaders:events")
-	idx_godebug_non_default_behavior_multipartmaxparts_events = mustidx("/godebug/non-default-behavior/multipartmaxparts:events")
-	idx_godebug_non_default_behavior_multipathtcp_events = mustidx("/godebug/non-default-behavior/multipathtcp:events")
-	idx_godebug_non_default_behavior_netedns0_events = mustidx("/godebug/non-default-behavior/netedns0:events")
-	idx_godebug_non_default_behavior_panicnil_events = mustidx("/godebug/non-default-behavior/panicnil:events")
-	idx_godebug_non_default_behavior_randautoseed_events = mustidx("/godebug/non-default-behavior/randautoseed:events")
-	idx_godebug_non_default_behavior_randseednop_events = mustidx("/godebug/non-default-behavior/randseednop:events")
-	idx_godebug_non_default_behavior_rsa1024min_events = mustidx("/godebug/non-default-behavior/rsa1024min:events")
-	idx_godebug_non_default_behavior_tarinsecurepath_events = mustidx("/godebug/non-default-behavior/tarinsecurepath:events")
-	idx_godebug_non_default_behavior_tls10server_events = mustidx("/godebug/non-default-behavior/tls10server:events")
-	idx_godebug_non_default_behavior_tls3des_events = mustidx("/godebug/non-default-behavior/tls3des:events")
-	idx_godebug_non_default_behavior_tlsmaxrsasize_events = mustidx("/godebug/non-default-behavior/tlsmaxrsasize:events")
-	idx_godebug_non_default_behavior_tlsrsakex_events = mustidx("/godebug/non-default-behavior/tlsrsakex:events")
-	idx_godebug_non_default_behavior_tlssha1_events = mustidx("/godebug/non-default-behavior/tlssha1:events")
-	idx_godebug_non_default_behavior_tlsunsafeekm_events = mustidx("/godebug/non-default-behavior/tlsunsafeekm:events")
-	idx_godebug_non_default_behavior_updatemaxprocs_events = mustidx("/godebug/non-default-behavior/updatemaxprocs:events")
-	idx_godebug_non_default_behavior_winreadlinkvolume_events = mustidx("/godebug/non-default-behavior/winreadlinkvolume:events")
-	idx_godebug_non_default_behavior_winsymlink_events = mustidx("/godebug/non-default-behavior/winsymlink:events")
-	idx_godebug_non_default_behavior_x509keypairleaf_events = mustidx("/godebug/non-default-behavior/x509keypairleaf:events")
-	idx_godebug_non_default_behavior_x509negativeserial_events = mustidx("/godebug/non-default-behavior/x509negativeserial:events")
-	idx_godebug_non_default_behavior_x509rsacrt_events = mustidx("/godebug/non-default-behavior/x509rsacrt:events")
-	idx_godebug_non_default_behavior_x509sha256skid_events = mustidx("/godebug/non-default-behavior/x509sha256skid:events")
-	idx_godebug_non_default_behavior_x509usefallbackroots_events = mustidx("/godebug/non-default-behavior/x509usefallbackroots:events")
-	idx_godebug_non_default_behavior_x509usepolicies_events = mustidx("/godebug/non-default-behavior/x509usepolicies:events")
-	idx_godebug_non_default_behavior_zipinsecurepath_events = mustidx("/godebug/non-default-behavior/zipinsecurepath:events")
 	idx_memory_classes_heap_free_bytes = mustidx("/memory/classes/heap/free:bytes")
 	idx_memory_classes_heap_objects_bytes = mustidx("/memory/classes/heap/objects:bytes")
 	idx_memory_classes_heap_released_bytes = mustidx("/memory/classes/heap/released:bytes")

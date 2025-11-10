@@ -8,17 +8,16 @@ package plot
 //lint:file-ignore U1000 Ignore unused indices. they're generated
 
 var (
-	idx_gc_cleanups_executed_cleanups                        int
-	idx_gc_cleanups_queued_cleanups                          int
-	idx_gc_finalizers_executed_finalizers                    int
-	idx_gc_finalizers_queued_finalizers                      int
-	idx_godebug_non_default_behavior_httpcookiemaxnum_events int
-	idx_sched_goroutines_created_goroutines                  int
-	idx_sched_goroutines_not_in_go_goroutines                int
-	idx_sched_goroutines_runnable_goroutines                 int
-	idx_sched_goroutines_running_goroutines                  int
-	idx_sched_goroutines_waiting_goroutines                  int
-	idx_sched_threads_total_threads                          int
+	idx_gc_cleanups_executed_cleanups         int
+	idx_gc_cleanups_queued_cleanups           int
+	idx_gc_finalizers_executed_finalizers     int
+	idx_gc_finalizers_queued_finalizers       int
+	idx_sched_goroutines_created_goroutines   int
+	idx_sched_goroutines_not_in_go_goroutines int
+	idx_sched_goroutines_runnable_goroutines  int
+	idx_sched_goroutines_running_goroutines   int
+	idx_sched_goroutines_waiting_goroutines   int
+	idx_sched_threads_total_threads           int
 )
 
 func init() {
@@ -26,7 +25,6 @@ func init() {
 	idx_gc_cleanups_queued_cleanups = mustidx("/gc/cleanups/queued:cleanups")
 	idx_gc_finalizers_executed_finalizers = mustidx("/gc/finalizers/executed:finalizers")
 	idx_gc_finalizers_queued_finalizers = mustidx("/gc/finalizers/queued:finalizers")
-	idx_godebug_non_default_behavior_httpcookiemaxnum_events = mustidx("/godebug/non-default-behavior/httpcookiemaxnum:events")
 	idx_sched_goroutines_created_goroutines = mustidx("/sched/goroutines-created:goroutines")
 	idx_sched_goroutines_not_in_go_goroutines = mustidx("/sched/goroutines/not-in-go:goroutines")
 	idx_sched_goroutines_runnable_goroutines = mustidx("/sched/goroutines/runnable:goroutines")
