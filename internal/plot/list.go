@@ -74,33 +74,33 @@ func (pl *List) enabledPlots() []runtimePlot {
 	plots := make([]runtimePlot, 0, len(registry))
 
 	for _, plot := range registry {
-		_, enabled := pl.indicesFor(plot.metrics...)
-		if enabled {
+		if _, enabled := pl.indicesFor(plot.metrics...); !enabled {
+			continue
+		}
+
+		switch layout := plot.layout.(type) {
+		case Scatter:
+			layout.Name = plot.name
+			layout.Tags = plot.tags
 			plots = append(plots, runtimePlot{
 				name:    plot.name,
 				getvals: plot.getvalues(),
-				layout:  complete(plot.layout, plot.name, plot.tags),
+				layout:  layout,
 			})
+		case Heatmap:
+			layout.Name = plot.name
+			layout.Tags = plot.tags
+			plots = append(plots, runtimePlot{
+				name:    plot.name,
+				getvals: plot.getvalues(),
+				layout:  layout,
+			})
+		default:
+			panic(fmt.Sprintf("unknown plot layout type %T", layout))
 		}
 	}
 
 	return plots
-}
-
-// complete the layout with names and tags.
-func complete(layout any, name string, tags []tag) any {
-	switch layout := layout.(type) {
-	case Scatter:
-		layout.Name = name
-		layout.Tags = tags
-		return layout
-	case Heatmap:
-		layout.Name = name
-		layout.Tags = tags
-		return layout
-	default:
-		panic(fmt.Sprintf("unknown plot layout type %T", layout))
-	}
 }
 
 func (pl *List) Config() *Config {
