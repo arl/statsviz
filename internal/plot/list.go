@@ -65,11 +65,11 @@ func NewList(userPlots []UserPlot) (*List, error) {
 		return nil, fmt.Errorf("duplicate plot name %s", name)
 	}
 
-	descs := metrics.All()
+	all := metrics.All()
 	pl := &List{
 		idxs:        make(map[string]int),
-		descs:       descs,
-		samples:     make([]metrics.Sample, len(descs)),
+		descs:       all,
+		samples:     make([]metrics.Sample, len(all)),
 		userPlots:   userPlots,
 		usedMetrics: make(map[string]struct{}),
 	}
