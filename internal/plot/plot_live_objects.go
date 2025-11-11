@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "live-objects",
-	tags: []tag{tagGC},
 	metrics: []string{
 		"/gc/heap/objects:objects",
 	},
@@ -19,7 +17,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:   "TODO(set later)",
+		Name:   "live-objects",
+		Tags:   []tag{tagGC},
 		Title:  "Live Objects in Heap",
 		Type:   "bar",
 		Events: "lastgc",

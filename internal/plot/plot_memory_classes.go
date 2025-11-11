@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "memory-classes",
-	tags: []tag{tagGC},
 	metrics: []string{
 		"/memory/classes/os-stacks:bytes",
 		"/memory/classes/other:bytes",
@@ -30,7 +28,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:   "TODO(set later)",
+		Name:   "memory-classes",
+		Tags:   []tag{tagGC},
 		Title:  "Memory classes",
 		Type:   "scatter",
 		Events: "lastgc",

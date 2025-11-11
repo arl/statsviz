@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "size-classes",
-	tags: []tag{tagGC},
 	metrics: []string{
 		"/gc/heap/allocs-by-size:bytes",
 		"/gc/heap/frees-by-size:bytes",
@@ -46,7 +44,8 @@ var _ = register(description{
 		buckets := downsampleBuckets(allocsBySize, 1)
 
 		return Heatmap{
-			Name:       "TODO(set later)",
+			Name:       "size-classes",
+			Tags:       []tag{tagGC},
 			Title:      "Size Classes",
 			Type:       "heatmap",
 			UpdateFreq: 5,

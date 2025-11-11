@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "cpu-gc",
-	tags: []tag{tagCPU, tagGC},
 	metrics: []string{
 		"/cpu/classes/gc/mark/assist:cpu-seconds",
 		"/cpu/classes/gc/mark/dedicated:cpu-seconds",
@@ -35,7 +33,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:   "TODO(set later)",
+		Name:   "cpu-gc",
+		Tags:   []tag{tagCPU, tagGC},
 		Title:  "CPU (Garbage Collector)",
 		Type:   "scatter",
 		Events: "lastgc",

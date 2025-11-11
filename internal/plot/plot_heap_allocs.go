@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "alloc-free-rate",
-	tags: []tag{tagGC},
 	metrics: []string{
 		"/gc/heap/allocs:objects",
 		"/gc/heap/frees:objects",
@@ -30,7 +28,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:  "heap alloc/free rates",
+		Name:  "alloc-free-rate",
+		Tags:  []tag{tagGC},
 		Title: "Heap Allocation & Free Rates",
 		Type:  "scatter",
 		Layout: ScatterLayout{

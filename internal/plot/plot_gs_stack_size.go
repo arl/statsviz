@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "gc-stack-size",
-	tags: []tag{tagGC},
 	metrics: []string{
 		"/gc/stack/starting-size:bytes",
 	},
@@ -18,7 +16,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:  "TODO(set later)",
+		Name:  "gc-stack-size",
+		Tags:  []tag{tagGC},
 		Title: "Goroutines stack starting size",
 		Type:  "scatter",
 		Layout: ScatterLayout{

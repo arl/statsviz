@@ -8,8 +8,6 @@ import (
 )
 
 var _ = register(description{
-	name: "threads",
-	tags: []tag{tagScheduler},
 	metrics: []string{
 		"/sched/threads/total:threads",
 	},
@@ -21,7 +19,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:  "TODO(set later)",
+		Name:  "threads",
+		Tags:  []tag{tagScheduler},
 		Title: "Threads",
 		Type:  "scatter",
 		Layout: ScatterLayout{

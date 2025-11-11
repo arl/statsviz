@@ -7,8 +7,6 @@ import (
 )
 
 var _ = register(description{
-	name: "garbage collection",
-	tags: []tag{tagGC},
 	metrics: []string{
 		"/gc/gomemlimit:bytes",
 		"/gc/heap/live:bytes",
@@ -38,6 +36,7 @@ var _ = register(description{
 	},
 	layout: Scatter{
 		Name:   "garbage collection",
+		Tags:   []tag{tagGC},
 		Title:  "GC Memory Summary",
 		Type:   "scatter",
 		Events: "lastgc",

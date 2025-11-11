@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "mspan-mcache",
-	tags: []tag{tagGC},
 	metrics: []string{
 		"/memory/classes/metadata/mspan/inuse:bytes",
 		"/memory/classes/metadata/mspan/free:bytes",
@@ -25,7 +23,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:   "TODO(set later)",
+		Name:   "mspan-mcache",
+		Tags:   []tag{tagGC},
 		Title:  "MSpan/MCache",
 		Type:   "scatter",
 		Events: "lastgc",

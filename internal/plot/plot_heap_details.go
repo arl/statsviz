@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "heap (details)",
-	tags: []tag{tagGC},
 	metrics: []string{
 		"/memory/classes/heap/objects:bytes",
 		"/memory/classes/heap/unused:bytes",
@@ -39,7 +37,8 @@ var _ = register(description{
 	},
 
 	layout: Scatter{
-		Name:   "TODO(set later)",
+		Name:   "heap (details)",
+		Tags:   []tag{tagGC},
 		Title:  "Heap (details)",
 		Type:   "scatter",
 		Events: "lastgc",

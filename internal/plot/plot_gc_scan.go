@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "gc-scan",
-	tags: []tag{tagGC},
 	metrics: []string{
 		"/gc/scan/globals:bytes",
 		"/gc/scan/heap:bytes",
@@ -23,7 +21,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:   "TODO(set later)",
+		Name:   "gc-scan",
+		Tags:   []tag{tagGC},
 		Title:  "GC Scan",
 		Type:   "bar",
 		Events: "lastgc",

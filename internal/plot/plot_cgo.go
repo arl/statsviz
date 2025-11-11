@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "cgo",
-	tags: []tag{tagMisc},
 	metrics: []string{
 		"/cgo/go-to-c-calls:calls",
 	},
@@ -22,7 +20,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:  "TODO(set later)",
+		Name:  "cgo",
+		Tags:  []string{tagMisc},
 		Title: "CGO Calls",
 		Type:  "bar",
 		Layout: ScatterLayout{

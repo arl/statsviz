@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "total-pauses-gc",
-	tags: []tag{tagScheduler, tagGC},
 	metrics: []string{
 		"/sched/pauses/total/gc:seconds",
 	},
@@ -30,7 +28,8 @@ var _ = register(description{
 		buckets := downsampleBuckets(hist, histfactor)
 
 		return Heatmap{
-			Name:       "TODO(set later)",
+			Name:       "total-pauses-gc",
+			Tags:       []tag{tagScheduler, tagGC},
 			Title:      "Stop-the-world Pause Latencies (Total)",
 			Type:       "heatmap",
 			UpdateFreq: 5,

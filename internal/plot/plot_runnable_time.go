@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "runnable-time",
-	tags: []tag{tagScheduler},
 	metrics: []string{
 		"/sched/latencies:seconds",
 	},
@@ -30,7 +28,8 @@ var _ = register(description{
 		buckets := downsampleBuckets(hist, histfactor)
 
 		return Heatmap{
-			Name:       "TODO(set later)",
+			Name:       "runnable-time",
+			Tags:       []tag{tagScheduler},
 			Title:      "Time Goroutines Spend in 'Runnable' state",
 			Type:       "heatmap",
 			UpdateFreq: 5,

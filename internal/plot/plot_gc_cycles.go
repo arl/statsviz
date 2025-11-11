@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "gc-cycles",
-	tags: []tag{tagGC},
 	metrics: []string{
 		"/gc/cycles/automatic:gc-cycles",
 		"/gc/cycles/forced:gc-cycles",
@@ -27,7 +25,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:  "TODO(set later)",
+		Name:  "gc-cycles",
+		Tags:  []tag{tagGC},
 		Title: "Completed GC Cycles",
 		Type:  "bar",
 		Layout: ScatterLayout{

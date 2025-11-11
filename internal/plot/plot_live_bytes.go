@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "live-bytes",
-	tags: []tag{tagGC},
 	metrics: []string{
 		"/gc/heap/allocs:bytes",
 		"/gc/heap/frees:bytes",
@@ -21,7 +19,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:   "TODO(set later)",
+		Name:   "live-bytes",
+		Tags:   []tag{tagGC},
 		Title:  "Live Bytes in Heap",
 		Type:   "bar",
 		Events: "lastgc",

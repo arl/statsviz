@@ -8,8 +8,6 @@ import (
 )
 
 var _ = register(description{
-	name: "goroutines",
-	tags: []tag{tagScheduler},
 	metrics: []string{
 		"/sched/goroutines:goroutines",
 		"/sched/goroutines-created:goroutines",
@@ -34,7 +32,8 @@ var _ = register(description{
 	},
 
 	layout: Scatter{
-		Name:  "TODO(set later)",
+		Name:  "goroutines",
+		Tags:  []tag{tagScheduler},
 		Title: "Goroutines",
 		Type:  "scatter",
 		Layout: ScatterLayout{

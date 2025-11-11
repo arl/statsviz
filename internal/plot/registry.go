@@ -18,8 +18,6 @@ const (
 )
 
 type description struct {
-	name    string
-	tags    []tag
 	metrics []string
 	layout  any
 

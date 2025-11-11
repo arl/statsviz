@@ -18,8 +18,19 @@ func IsReservedPlotName(name string) bool {
 		return true
 	}
 	return slices.ContainsFunc(registry, func(pd description) bool {
-		return pd.name == name
+		return nameFromLayout(pd.layout) == name
 	})
+}
+
+func nameFromLayout(layout any) string {
+	switch layout := layout.(type) {
+	case Scatter:
+		return layout.Name
+	case Heatmap:
+		return layout.Name
+	default:
+		panic(fmt.Sprintf("unknown plot layout type %T", layout))
+	}
 }
 
 // getvalues extracts, from a sample of runtime metrics, a slice with all
@@ -78,26 +89,11 @@ func (pl *List) enabledPlots() []runtimePlot {
 			continue
 		}
 
-		switch layout := plot.layout.(type) {
-		case Scatter:
-			layout.Name = plot.name
-			layout.Tags = plot.tags
-			plots = append(plots, runtimePlot{
-				name:    plot.name,
-				getvals: plot.getvalues(),
-				layout:  layout,
-			})
-		case Heatmap:
-			layout.Name = plot.name
-			layout.Tags = plot.tags
-			plots = append(plots, runtimePlot{
-				name:    plot.name,
-				getvals: plot.getvalues(),
-				layout:  layout,
-			})
-		default:
-			panic(fmt.Sprintf("unknown plot layout type %T", layout))
-		}
+		plots = append(plots, runtimePlot{
+			name:    nameFromLayout(plot.layout),
+			getvals: plot.getvalues(),
+			layout:  plot.layout,
+		})
 	}
 
 	return plots

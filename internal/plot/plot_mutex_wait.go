@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "mutex-wait",
-	tags: []tag{tagMisc},
 	metrics: []string{
 		"/sync/mutex/wait/total:seconds",
 	},
@@ -21,7 +19,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:   "TODO(set later)",
+		Name:   "mutex-wait",
+		Tags:   []tag{tagMisc},
 		Title:  "Mutex wait time",
 		Type:   "bar",
 		Events: "lastgc",

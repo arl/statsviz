@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "cpu-overall",
-	tags: []tag{tagCPU},
 	metrics: []string{
 		"/cpu/classes/user:cpu-seconds",
 		"/cpu/classes/scavenge/total:cpu-seconds",
@@ -39,7 +37,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:   "TODO(set later)",
+		Name:   "cpu-overall",
+		Tags:   []tag{tagCPU},
 		Title:  "CPU (Overall)",
 		Type:   "bar",
 		Events: "lastgc",

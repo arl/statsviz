@@ -6,8 +6,6 @@ import (
 )
 
 var _ = register(description{
-	name: "cpu-scavenger",
-	tags: []tag{tagCPU, tagGC},
 	metrics: []string{
 		"/cpu/classes/scavenge/assist:cpu-seconds",
 		"/cpu/classes/scavenge/background:cpu-seconds",
@@ -26,7 +24,8 @@ var _ = register(description{
 		}
 	},
 	layout: Scatter{
-		Name:   "TODO(set later)",
+		Name:   "cpu-scavenger",
+		Tags:   []tag{tagCPU, tagGC},
 		Title:  "CPU (Scavenger)",
 		Type:   "bar",
 		Events: "lastgc",
