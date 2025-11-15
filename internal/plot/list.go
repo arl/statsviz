@@ -67,15 +67,7 @@ func NewList(userPlots []UserPlot) (*List, error) {
 func (pl *List) enabledPlots() []runtimePlot {
 	plots := make([]runtimePlot, 0, len(pl.reg.descriptions))
 
-	samples := pl.reg.read()
-
 	for _, plot := range pl.reg.descriptions {
-		type heatmapLayoutFunc = func(samples []metrics.Sample) Heatmap
-
-		if hm, ok := plot.layout.(heatmapLayoutFunc); ok {
-			plot.layout = hm(samples)
-		}
-
 		plots = append(plots, runtimePlot{
 			name:    nameFromLayout(plot.layout),
 			getvals: plot.getvalues(),

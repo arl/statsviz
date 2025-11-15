@@ -14,7 +14,7 @@ import (
 func TestUnusedRuntimeMetrics(t *testing.T) {
 	// This test just prints the metrics we're not using in any plot. It can't
 	// fail, it's informational.
-	unused := maps.Clone(reg().allnames)
+	unused := maps.Clone(reg().allMetrics)
 
 	reg := reg()
 	for _, d := range reg.descriptions {

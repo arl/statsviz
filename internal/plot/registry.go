@@ -25,8 +25,8 @@ type description struct {
 }
 
 type registry struct {
-	allnames     map[string]bool
-	metrics      []string // every used metrics is added
+	allMetrics   map[string]bool // names of all known runtime/metrics metrics
+	metrics      []string
 	descriptions []description
 
 	samples []metrics.Sample // lazily built, only with the metrics we need
@@ -34,18 +34,17 @@ type registry struct {
 
 var reg = sync.OnceValue(func() *registry {
 	reg := &registry{
-		allnames: make(map[string]bool),
+		allMetrics: make(map[string]bool),
 	}
-
 	for _, m := range metrics.All() {
-		reg.allnames[m.Name] = true
+		reg.allMetrics[m.Name] = true
 	}
 
 	return reg
 })
 
 func (r *registry) mustidx(metric string) int {
-	if !r.allnames[metric] {
+	if !r.allMetrics[metric] {
 		panic(metric + ": unknown metric in " + goversion())
 	}
 
@@ -58,12 +57,16 @@ func (r *registry) mustidx(metric string) int {
 	return idx
 }
 
+func (r *registry) buildSamples() {
+	r.samples = make([]metrics.Sample, len(r.metrics))
+	for i := range r.samples {
+		r.samples[i].Name = r.metrics[i]
+	}
+}
+
 func (r *registry) read() []metrics.Sample {
 	if r.samples == nil {
-		r.samples = make([]metrics.Sample, len(r.metrics))
-		for i := range r.samples {
-			r.samples[i].Name = r.metrics[i]
-		}
+		r.buildSamples()
 	}
 	metrics.Read(r.samples)
 
@@ -71,6 +74,15 @@ func (r *registry) read() []metrics.Sample {
 }
 
 func (r *registry) register(desc description) {
+	// Histograms need special handling.
+	type heatmapLayoutFunc = func(samples []metrics.Sample) Heatmap
+	if buildLayout, ok := desc.layout.(heatmapLayoutFunc); ok {
+		// Rebuild samples to include the required metrics.
+		r.buildSamples()
+		samples := r.read()
+		desc.layout = buildLayout(samples)
+	}
+
 	r.descriptions = append(r.descriptions, desc)
 }
 
