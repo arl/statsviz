@@ -100,9 +100,9 @@ func (pl *List) Config() *Config {
 	return pl.cfg
 }
 
-// WriteValues writes into w a JSON object containing the data points for all
-// plots at the current instant.
-func (pl *List) WriteValues(w io.Writer) error {
+// WriteTo writes into w a JSON object containing the data points for all plots
+// at the current instant. Return the number of written plots.
+func (pl *List) WriteTo(w io.Writer) (int64, error) {
 	samples := pl.reg.read()
 
 	// lastgc time series is used as source to represent garbage collection
@@ -148,7 +148,9 @@ func (pl *List) WriteValues(w io.Writer) error {
 			Timestamp: now.UnixMilli(),
 		},
 	}); err != nil {
-		return fmt.Errorf("failed to write/convert metrics values to json: %v", err)
+		return 0, fmt.Errorf("failed to write/convert metrics values to json: %v", err)
 	}
-	return nil
+
+	nplots := int64(len(pl.rtPlots) + len(pl.userPlots))
+	return nplots, nil
 }
