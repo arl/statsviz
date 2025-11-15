@@ -17,7 +17,8 @@ func IsReservedPlotName(name string) bool {
 	if name == "timestamp" || name == "lastgc" {
 		return true
 	}
-	return slices.ContainsFunc(registry, func(pd description) bool {
+	registry := reg()
+	return slices.ContainsFunc(registry.descriptions, func(pd description) bool {
 		return nameFromLayout(pd.layout) == name
 	})
 }
@@ -46,12 +47,7 @@ type List struct {
 	once sync.Once // ensure Config is built once
 	cfg  *Config
 
-	idxs        map[string]int // map metrics name to idx in samples and descs
-	descs       []metrics.Description
-	usedMetrics map[string]struct{}
-
-	mu      sync.Mutex // protects samples in case of concurrent calls to WriteValues
-	samples []metrics.Sample
+	reg *registry
 }
 
 type runtimePlot struct {
@@ -65,28 +61,19 @@ func NewList(userPlots []UserPlot) (*List, error) {
 		return nil, fmt.Errorf("duplicate plot name %s", name)
 	}
 
-	all := metrics.All()
-	pl := &List{
-		idxs:        make(map[string]int),
-		descs:       all,
-		samples:     make([]metrics.Sample, len(all)),
-		userPlots:   userPlots,
-		usedMetrics: make(map[string]struct{}),
-	}
-	for i := range pl.samples {
-		pl.samples[i].Name = pl.descs[i].Name
-	}
-	metrics.Read(pl.samples)
-
-	return pl, nil
+	return &List{reg: reg(), userPlots: userPlots}, nil
 }
 
 func (pl *List) enabledPlots() []runtimePlot {
-	plots := make([]runtimePlot, 0, len(registry))
+	plots := make([]runtimePlot, 0, len(pl.reg.descriptions))
 
-	for _, plot := range registry {
-		if _, enabled := pl.indicesFor(plot.metrics...); !enabled {
-			continue
+	samples := pl.reg.read()
+
+	for _, plot := range pl.reg.descriptions {
+		type heatmapLayoutFunc = func(samples []metrics.Sample) Heatmap
+
+		if hm, ok := plot.layout.(heatmapLayoutFunc); ok {
+			plot.layout = hm(samples)
 		}
 
 		plots = append(plots, runtimePlot{
@@ -124,10 +111,7 @@ func (pl *List) Config() *Config {
 // WriteValues writes into w a JSON object containing the data points for all
 // plots at the current instant.
 func (pl *List) WriteValues(w io.Writer) error {
-	pl.mu.Lock()
-	defer pl.mu.Unlock()
-
-	metrics.Read(pl.samples)
+	samples := pl.reg.read()
 
 	// lastgc time series is used as source to represent garbage collection
 	// timestamps as vertical bars on certain plots.
@@ -135,12 +119,12 @@ func (pl *List) WriteValues(w io.Writer) error {
 	debug.ReadGCStats(&gcStats)
 
 	m := map[string]any{
-		// Javascript timestamps are in millis.
+		// Javascript timestamps are in milliseconds.
 		"lastgc": []int64{gcStats.LastGC.UnixMilli()},
 	}
 	now := time.Now()
 	for _, p := range pl.rtPlots {
-		m[p.name] = p.getvals(now, pl.samples)
+		m[p.name] = p.getvals(now, samples)
 	}
 
 	for i := range pl.userPlots {
@@ -175,23 +159,4 @@ func (pl *List) WriteValues(w io.Writer) error {
 		return fmt.Errorf("failed to write/convert metrics values to json: %v", err)
 	}
 	return nil
-}
-
-// indicesFor retrieves indices for the specified metrics, and a boolean
-// indicating whether they were all found.
-func (pl *List) indicesFor(metricNames ...string) ([]int, bool) {
-	indices := make([]int, len(metricNames))
-	allFound := true
-
-	for i, name := range metricNames {
-		pl.usedMetrics[name] = struct{}{} // record the metrics we use
-
-		idx, ok := metricIdx[name]
-		if !ok {
-			allFound = false
-		}
-		indices[i] = idx
-	}
-
-	return indices, allFound
 }

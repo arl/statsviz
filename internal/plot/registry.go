@@ -4,6 +4,7 @@ package plot
 import (
 	"runtime/debug"
 	"runtime/metrics"
+	"slices"
 	"sync"
 	"time"
 )
@@ -25,54 +26,65 @@ type description struct {
 	getvalues func() getvalues
 }
 
-var (
-	registry []description
+type registry struct {
+	allnames     map[string]bool
+	metrics      []string // every used metrics is added
+	descriptions []description
 
-	metricIdx map[string]int
-)
+	samples []metrics.Sample // lazily built, only with the metrics we need
+}
 
-var initIndices = sync.OnceValue(func() []metrics.Sample {
-	all := metrics.All()
-
-	metricIdx = make(map[string]int, len(all))
-
-	samples := make([]metrics.Sample, len(all))
-	for i := range samples {
-		samples[i].Name = all[i].Name
-		metricIdx[samples[i].Name] = i
+var reg = sync.OnceValue(func() *registry {
+	reg := &registry{
+		allnames: make(map[string]bool),
 	}
-	metrics.Read(samples)
-	return samples
+
+	for _, m := range metrics.All() {
+		reg.allnames[m.Name] = true
+	}
+
+	return reg
 })
 
-func mustidx(metric string) int {
-	_ = initIndices()
-	idx, ok := metricIdx[metric]
-	if !ok {
-		bnfo, ok := debug.ReadBuildInfo()
-		if ok {
-			panic(metric + ": unknown metric in " + bnfo.GoVersion)
-		}
-		panic(metric + ": unknown metric in current go version")
+func (r *registry) mustidx(metric string) int {
+	if !r.allnames[metric] {
+		panic(metric + ": unknown metric in " + goversion())
 	}
+
+	idx := slices.Index(r.metrics, metric)
+	if idx == -1 {
+		r.metrics = append(r.metrics, metric)
+		idx = len(r.metrics) - 1
+	}
+
 	return idx
 }
 
-func register(desc description) struct{} {
-	registry = append(registry, desc)
-	return struct{}{}
-}
-
-func init() {
-	type heatmapLayoutFunc = func(samples []metrics.Sample) Heatmap
-
-	samples := initIndices()
-	for i := range registry {
-		desc := &registry[i]
-		if hm, ok := desc.layout.(heatmapLayoutFunc); ok {
-			desc.layout = hm(samples)
+func (r *registry) read() []metrics.Sample {
+	if r.samples == nil {
+		r.samples = make([]metrics.Sample, len(r.metrics))
+		for i := range r.samples {
+			r.samples[i].Name = r.metrics[i]
 		}
 	}
+	metrics.Read(r.samples)
+
+	return r.samples
+}
+
+func (r *registry) register(desc description) {
+	r.descriptions = append(r.descriptions, desc)
+}
+
+func mustidx(metric string) int {
+	// TODO: adapter for refactoring: remove
+	return reg().mustidx(metric)
+}
+
+func register(desc description) struct{} {
+	// TODO: adapter for refactoring: remove
+	reg().register(desc)
+	return struct{}{}
 }
 
 // delta returns a function that computes the delta between successive calls.
@@ -110,4 +122,13 @@ func rate[T uint64 | float64]() func(time.Time, T) float64 {
 
 		return rate
 	}
+}
+
+func goversion() string {
+	bnfo, ok := debug.ReadBuildInfo()
+	if ok {
+		return bnfo.GoVersion
+	}
+
+	return "<unknown version>"
 }
