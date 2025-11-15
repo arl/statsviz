@@ -8,27 +8,14 @@ package plot
 //lint:file-ignore U1000 Ignore unused indices. they're generated
 
 var (
-	idx_gc_cleanups_executed_cleanups         int
-	idx_gc_cleanups_queued_cleanups           int
-	idx_gc_finalizers_executed_finalizers     int
-	idx_gc_finalizers_queued_finalizers       int
-	idx_sched_goroutines_created_goroutines   int
-	idx_sched_goroutines_not_in_go_goroutines int
-	idx_sched_goroutines_runnable_goroutines  int
-	idx_sched_goroutines_running_goroutines   int
-	idx_sched_goroutines_waiting_goroutines   int
-	idx_sched_threads_total_threads           int
-)
-
-func init() {
-	idx_gc_cleanups_executed_cleanups = mustidx("/gc/cleanups/executed:cleanups")
-	idx_gc_cleanups_queued_cleanups = mustidx("/gc/cleanups/queued:cleanups")
-	idx_gc_finalizers_executed_finalizers = mustidx("/gc/finalizers/executed:finalizers")
-	idx_gc_finalizers_queued_finalizers = mustidx("/gc/finalizers/queued:finalizers")
-	idx_sched_goroutines_created_goroutines = mustidx("/sched/goroutines-created:goroutines")
+	idx_gc_cleanups_executed_cleanups         = mustidx("/gc/cleanups/executed:cleanups")
+	idx_gc_cleanups_queued_cleanups           = mustidx("/gc/cleanups/queued:cleanups")
+	idx_gc_finalizers_executed_finalizers     = mustidx("/gc/finalizers/executed:finalizers")
+	idx_gc_finalizers_queued_finalizers       = mustidx("/gc/finalizers/queued:finalizers")
+	idx_sched_goroutines_created_goroutines   = mustidx("/sched/goroutines-created:goroutines")
 	idx_sched_goroutines_not_in_go_goroutines = mustidx("/sched/goroutines/not-in-go:goroutines")
-	idx_sched_goroutines_runnable_goroutines = mustidx("/sched/goroutines/runnable:goroutines")
-	idx_sched_goroutines_running_goroutines = mustidx("/sched/goroutines/running:goroutines")
-	idx_sched_goroutines_waiting_goroutines = mustidx("/sched/goroutines/waiting:goroutines")
-	idx_sched_threads_total_threads = mustidx("/sched/threads/total:threads")
-}
+	idx_sched_goroutines_runnable_goroutines  = mustidx("/sched/goroutines/runnable:goroutines")
+	idx_sched_goroutines_running_goroutines   = mustidx("/sched/goroutines/running:goroutines")
+	idx_sched_goroutines_waiting_goroutines   = mustidx("/sched/goroutines/waiting:goroutines")
+	idx_sched_threads_total_threads           = mustidx("/sched/threads/total:threads")
+)
