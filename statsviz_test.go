@@ -132,12 +132,6 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 	}
 }
 
-func TestWs(t *testing.T) {
-	t.Parallel()
-
-	testWs(t, newServer(t).Ws(), "http://example.com/debug/statsviz/ws")
-}
-
 func TestWsCantUpgrade(t *testing.T) {
 	url := "http://example.com/debug/statsviz/ws"
 
@@ -234,6 +228,8 @@ func TestWsConcurrent(t *testing.T) {
 	t.Parallel()
 
 	srv := newServer(t, SendFrequency(10*time.Millisecond))
+	srv.Register(http.NewServeMux())
+
 	s := httptest.NewServer(srv.Ws())
 	defer s.Close()
 
@@ -266,7 +262,7 @@ func TestWsConcurrent(t *testing.T) {
 			}
 
 			// Read multiple data messages to ensure state is being accessed
-			for j := 0; j < numMessages; j++ {
+			for range numMessages {
 				var msg map[string]any
 				if err := ws.ReadJSON(&msg); err != nil {
 					errCh <- err

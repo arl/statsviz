@@ -120,7 +120,6 @@ func (s *Server) init(opts ...Option) error {
 	*s = Server{
 		interval: defaultSendInterval,
 		root:     defaultRoot,
-		// cancel:
 	}
 
 	for _, opt := range opts {
@@ -135,6 +134,10 @@ func (s *Server) init(opts ...Option) error {
 	}
 	s.plots = pl
 
+	ctx, cancel := context.WithCancel(context.Background())
+	s.cancel = cancel
+	s.clients = newClients(ctx, s.plots.Config())
+
 	return nil
 }
 
@@ -146,31 +149,24 @@ func (s *Server) Register(mux *http.ServeMux) {
 		s.init()
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	s.cancel = cancel
-
-	s.clients = newClients(ctx, s.plots.Config())
-
 	mux.Handle(s.root+"/", s.Index())
 	mux.HandleFunc(s.root+"/ws", s.Ws())
 
 	// Collect metrics.
 	go func() {
 		tick := time.NewTicker(s.interval)
-		go func() {
-			defer tick.Stop()
+		defer tick.Stop()
 
-			for range tick.C {
-				buf := bytes.Buffer{}
-				if _, err := s.plots.WriteTo(&buf); err != nil {
-					dbglog("failed to collect metrics: %v", err)
-					cancel()
-					continue
-				}
-
-				s.clients.broadcast(buf.Bytes())
+		for range tick.C {
+			buf := bytes.Buffer{}
+			if _, err := s.plots.WriteTo(&buf); err != nil {
+				s.cancel()
+				dbglog("failed to collect metrics: %v", err)
+				return
 			}
-		}()
+
+			s.clients.broadcast(buf.Bytes())
+		}
 	}()
 }
 
