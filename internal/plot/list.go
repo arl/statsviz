@@ -12,7 +12,7 @@ import (
 )
 
 // IsReservedPlotName reports whether that name is reserved for Statsviz plots
-// and thus can't be chosen by user (for user plots).
+// and thus can't be used for a user plot.
 func IsReservedPlotName(name string) bool {
 	if name == "timestamp" || name == "lastgc" {
 		return true
