@@ -4,8 +4,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/arl/statsviz/internal/plot"
 	"github.com/gorilla/websocket"
+
+	"github.com/arl/statsviz/internal/plot"
 )
 
 type clients struct {
