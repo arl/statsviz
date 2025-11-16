@@ -199,7 +199,7 @@ func SendFrequency(intv time.Duration) Option {
 // The default is "/debug/statsviz".
 func Root(path string) Option {
 	return func(s *Server) error {
-		s.root = path
+		s.root = strings.TrimSuffix(path, "/")
 		return nil
 	}
 }
@@ -217,7 +217,7 @@ func TimeseriesPlot(tsp TimeSeriesPlot) Option {
 // interface HTML page. By default, the handler is served at the path specified
 // by the root. Use [WithRoot] to change the path.
 func (s *Server) Index() http.HandlerFunc {
-	prefix := strings.TrimSuffix(s.root, "/") + "/"
+	prefix := s.root + "/"
 	dist := http.FileServerFS(static.Assets())
 	return http.StripPrefix(prefix, dist).ServeHTTP
 }
