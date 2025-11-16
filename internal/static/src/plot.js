@@ -6,6 +6,7 @@ import {
   themeColors,
 } from "./plotConfig.js";
 import { formatFunction } from "./utils.js";
+import { downsampleLTTB, shouldDownsample } from "./downsample.js";
 import Plotly from "plotly.js-cartesian-dist";
 import tippy, { followCursor } from "tippy.js";
 import "tippy.js/dist/tippy.css";
@@ -155,14 +156,26 @@ class Plot {
   #extractData(data) {
     const serie = data.series.get(this.#cfg.name);
     if (this.#cfg.type == "heatmap") {
+      // Heatmaps don't downsample well, use original data
       this.#dataTemplate[0].x = data.times;
       this.#dataTemplate[0].z = serie;
       this.#dataTemplate[0].hoverinfo = "none";
       this.#dataTemplate[0].colorbar = { len: "350", lenmode: "pixels" };
     } else {
+      // Apply downsampling for regular plots if data exceeds threshold
+      const maxPoints = 500; // Configurable threshold
+      const useDownsampling = shouldDownsample(dataLength, maxPoints);
+
       for (let i = 0; i < this.#dataTemplate.length; i++) {
-        this.#dataTemplate[i].x = data.times;
-        this.#dataTemplate[i].y = serie[i];
+        if (useDownsampling) {
+          const downsampled = downsampleLTTB(data.times, serie[i], maxPoints);
+          this.#dataTemplate[i].x = downsampled.x;
+          this.#dataTemplate[i].y = downsampled.y;
+        } else {
+          this.#dataTemplate[i].x = data.times;
+          this.#dataTemplate[i].y = serie[i];
+        }
+
         this.#dataTemplate[i].stackgroup = this.#cfg.subplots[i].stackgroup;
         this.#dataTemplate[i].hoveron = this.#cfg.subplots[i].hoveron;
         this.#dataTemplate[i].type =
