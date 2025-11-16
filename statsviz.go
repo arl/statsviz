@@ -93,8 +93,8 @@ func Register(mux *http.ServeMux, opts ...Option) error {
 // NOTE: Having more than one Server in the same program is not supported (and
 // is not useful anyway).
 type Server struct {
+	cancel  context.CancelFunc // terminate goroutines
 	clients *clients           // connected websocket clients
-	cancel  context.CancelFunc // stop metrics collection and clients.
 
 	interval  time.Duration // interval between consecutive metrics emission
 	root      string        // HTTP path root
@@ -138,6 +138,27 @@ func (s *Server) init(opts ...Option) error {
 	s.cancel = cancel
 	s.clients = newClients(ctx, s.plots.Config())
 
+	// Collect metrics.
+	go func() {
+		tick := time.NewTicker(s.interval)
+		defer tick.Stop()
+		defer cancel()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-tick.C:
+				buf := bytes.Buffer{}
+				if _, err := s.plots.WriteTo(&buf); err != nil {
+					dbglog("failed to collect metrics: %v", err)
+					return
+				}
+				s.clients.broadcast(buf.Bytes())
+			}
+		}
+	}()
+
 	return nil
 }
 
@@ -151,23 +172,6 @@ func (s *Server) Register(mux *http.ServeMux) {
 
 	mux.Handle(s.root+"/", s.Index())
 	mux.HandleFunc(s.root+"/ws", s.Ws())
-
-	// Collect metrics.
-	go func() {
-		tick := time.NewTicker(s.interval)
-		defer tick.Stop()
-
-		for range tick.C {
-			buf := bytes.Buffer{}
-			if _, err := s.plots.WriteTo(&buf); err != nil {
-				s.cancel()
-				dbglog("failed to collect metrics: %v", err)
-				return
-			}
-
-			s.clients.broadcast(buf.Bytes())
-		}
-	}()
 }
 
 // Close releases all resources used by the Server.
