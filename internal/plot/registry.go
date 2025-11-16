@@ -84,6 +84,10 @@ func (r *registry) register(desc description) {
 	}
 
 	r.descriptions = append(r.descriptions, desc)
+
+	for _, metric := range desc.metrics {
+		r.mustidx(metric)
+	}
 }
 
 func mustidx(metric string) int {
