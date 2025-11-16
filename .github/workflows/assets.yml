@@ -1,5 +1,5 @@
 name: Assets
-on: [push, pull_request]
+on: [pull_request]
 jobs:
   check-assets:
     runs-on: ubuntu-latest

@@ -103,14 +103,15 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 	}
 
 	// Check the content of 2 consecutive payloads.
-	for i := 0; i < 2; i++ {
-		// Verifies that we've received 1 time series (goroutines) and one
-		// heatmap (sizeClasses).
+	for range 2 {
+		// Verifies that we've received:
+		// - 1 time series (cgo)
+		// - 1 heatmap (sizeClasses).
 		var msg struct {
 			Event string `json:"event"`
 			Data  struct {
 				Series struct {
-					Goroutines  []uint64 `json:"goroutines"`
+					CGo         []uint64 `json:"cgo"`
 					SizeClasses []uint64 `json:"size-classes"`
 				} `json:"series"`
 			} `json:"data"`
@@ -121,20 +122,14 @@ func testWs(t *testing.T, f http.Handler, URL string) {
 		}
 
 		// The time series must have one and only one element
-		if len(msg.Data.Series.Goroutines) != 1 {
-			t.Errorf("len(goroutines) = %d, want 1", len(msg.Data.Series.Goroutines))
+		if len(msg.Data.Series.CGo) != 1 {
+			t.Errorf("len(cgo) = %d, want 1", len(msg.Data.Series.CGo))
 		}
 		// Heatmaps should have many elements, check that there's more than one.
 		if len(msg.Data.Series.SizeClasses) <= 1 {
 			t.Errorf("len(sizeClasses) = %d, want > 1", len(msg.Data.Series.SizeClasses))
 		}
 	}
-}
-
-func TestWs(t *testing.T) {
-	t.Parallel()
-
-	testWs(t, newServer(t).Ws(), "http://example.com/debug/statsviz/ws")
 }
 
 func TestWsCantUpgrade(t *testing.T) {
@@ -156,10 +151,20 @@ func testRegister(t *testing.T, f http.Handler, baseURL string) {
 }
 
 func TestRegister(t *testing.T) {
+	t.Run("defaultmux", func(t *testing.T) {
+		t.Parallel()
+
+		mux := http.DefaultServeMux
+
+		Register(mux)
+		testRegister(t, mux, "http://example.com/debug/statsviz/")
+	})
+
 	t.Run("default", func(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
+
 		newServer(t).Register(mux)
 		testRegister(t, mux, "http://example.com/debug/statsviz/")
 	})
@@ -178,10 +183,19 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		newServer(t,
-			Root(""),
-		).Register(mux)
 
+		srv := newServer(t, Root(""))
+		srv.Register(mux)
+		testRegister(t, mux, "http://example.com/")
+	})
+
+	t.Run("slash", func(t *testing.T) {
+		t.Parallel()
+
+		mux := http.NewServeMux()
+
+		srv := newServer(t, Root("/"))
+		srv.Register(mux)
 		testRegister(t, mux, "http://example.com/")
 	})
 
@@ -189,10 +203,9 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		newServer(t,
-			Root("/path/to/statsviz"),
-		).Register(mux)
 
+		srv := newServer(t, Root("/path/to/statsviz"))
+		srv.Register(mux)
 		testRegister(t, mux, "http://example.com/path/to/statsviz/")
 	})
 
@@ -200,28 +213,24 @@ func TestRegister(t *testing.T) {
 		t.Parallel()
 
 		mux := http.NewServeMux()
-		newServer(t,
+
+		srv := newServer(t,
 			Root("/path/to/statsviz"),
 			SendFrequency(100*time.Millisecond),
-		).Register(mux)
-
+		)
+		srv.Register(mux)
 		testRegister(t, mux, "http://example.com/path/to/statsviz/")
 	})
 
 	t.Run("non-positive frequency", func(t *testing.T) {
 		t.Parallel()
 
-		if _, err := NewServer(
+		_, err := NewServer(
 			Root("/path/to/statsviz"),
 			SendFrequency(-1),
-		); err == nil {
+		)
+		if err == nil {
 			t.Errorf("NewServer() should have errored")
 		}
 	})
-}
-
-func TestRegisterDefault(t *testing.T) {
-	mux := http.DefaultServeMux
-	Register(mux)
-	testRegister(t, mux, "http://example.com/debug/statsviz/")
 }
