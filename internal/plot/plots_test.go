@@ -2,7 +2,6 @@ package plot
 
 import (
 	"fmt"
-	"maps"
 	"os"
 	"runtime/metrics"
 	"slices"
@@ -14,31 +13,32 @@ import (
 func TestUnusedRuntimeMetrics(t *testing.T) {
 	// This test just prints the metrics we're not using in any plot. It can't
 	// fail, it's informational.
-	unused := maps.Clone(reg().allMetrics)
-
-	reg := reg()
-	for _, d := range reg.descriptions {
+	used := make(map[string]bool)
+	for _, d := range reg().descriptions {
 		for _, m := range d.metrics {
-			delete(unused, m)
+			used[m] = true
 		}
 	}
 
-	// remove godebug metrics
-	for m := range unused {
-		if strings.HasPrefix(m, "/godebug/") {
-			delete(unused, m)
-		}
-	}
+	// Discard godebug metrics and used metrics.
+	all := metrics.All()
+	all = slices.DeleteFunc(all, func(desc metrics.Description) bool {
+		return strings.HasPrefix(desc.Name, "/godebug/")
+	})
+	all = slices.DeleteFunc(all, func(desc metrics.Description) bool {
+		return used[desc.Name]
+	})
 
-	if len(unused) == 0 {
+	if len(all) == 0 {
+		t.Log("all metrics are used!")
 		return
 	}
+
 	t.Log("some runtime metrics are not used by any plot:\n")
-	all := metrics.All()
+
 	w := tabwriter.NewWriter(os.Stderr, 0, 8, 2, ' ', 0)
-	for m := range unused {
-		desc := all[slices.IndexFunc(all, func(desc metrics.Description) bool { return desc.Name == m })]
-		fmt.Fprintf(w, "\t%s\t%s\t%s\n", desc.Name, kindstr(desc.Kind), clampstr(desc.Description))
+	for _, m := range all {
+		fmt.Fprintf(w, "\t%s\t%s\t%s\n", m.Name, kindstr(m.Kind), clampstr(m.Description))
 	}
 	w.Flush()
 }
