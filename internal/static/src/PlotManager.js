@@ -68,6 +68,7 @@ export default class PlotManager {
       const { offsetWidth: w, offsetHeight: h } = gd;
       if (w === 0 || h === 0) return;
 
+      p.updateCachedWidth();
       Plotly.Plots.resize(gd);
     });
   }
