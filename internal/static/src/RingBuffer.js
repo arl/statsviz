@@ -20,11 +20,14 @@ export default class RingBuffer {
 
   slice(lastN) {
     const n = Math.min(lastN, this.#size);
-    const result = [];
-    for (let i = this.#size - n; i < this.#size; i++) {
-      result.push(this.#buf[(this.#start + i) % this.#buf.length]);
+    const result = new Float64Array(n);
+
+    const startIdx = this.#size - n;
+    for (let i = 0; i < n; i++) {
+      result[i] = this.#buf[(this.#start + startIdx + i) % this.#buf.length];
     }
-    return result;
+
+    return Array.from(result);
   }
 
   get first() {
