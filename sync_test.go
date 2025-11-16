@@ -16,9 +16,6 @@ import (
 )
 
 func TestWsConcurrent(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode")
-	}
 	t.Parallel()
 
 	synctest.Test(t, func(t *testing.T) {
