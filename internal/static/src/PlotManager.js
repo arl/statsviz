@@ -93,8 +93,7 @@ export default class PlotManager {
       const gd = document.getElementById(p.name());
       // We're being super defensive here to ensure that the div is
       // actually there (or Plotly.resize would fail).
-      if (!gd) return;
-      if (!p.isVisible()) return;
+      if (!gd || !p.isVisible()) return;
       const { offsetWidth: w, offsetHeight: h } = gd;
       if (w === 0 || h === 0) return;
 
