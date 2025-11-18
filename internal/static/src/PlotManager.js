@@ -12,9 +12,14 @@ function debounce(fn, delay) {
 }
 
 export default class PlotManager {
+  #shapesCache;
+  #lastGcEnabled;
+
   constructor(config) {
     this.container = document.getElementById("plots");
     this.plots = config.series.map((pd) => new Plot(pd));
+    this.#shapesCache = new Map();
+    this.#lastGcEnabled = null;
     this.#attach();
 
     window.addEventListener(
@@ -41,13 +46,38 @@ export default class PlotManager {
   }
 
   update(data, gcEnabled, timeRange, force = false) {
-    // Create GC vertical lines.
+    // Create GC vertical lines - only if needed.
     const shapes = new Map();
     if (gcEnabled) {
+      // Only recreate shapes if GC state changed or events changed
+      const gcStateChanged = this.#lastGcEnabled !== gcEnabled;
+
       for (const [name, serie] of data.events) {
-        shapes.set(name, createVerticalLines(serie));
+        // Check if we need to regenerate shapes for this event
+        const cached = this.#shapesCache.get(name);
+        const eventsChanged =
+          !cached ||
+          cached.length !== serie.length ||
+          (serie.length > 0 &&
+            cached[cached.length - 1]?.x0?.getTime() !==
+              serie[serie.length - 1]?.getTime());
+
+        if (gcStateChanged || eventsChanged || !this.#shapesCache.has(name)) {
+          const newShapes = createVerticalLines(serie);
+          this.#shapesCache.set(name, newShapes);
+          shapes.set(name, newShapes);
+        } else {
+          shapes.set(name, this.#shapesCache.get(name));
+        }
+      }
+    } else {
+      // GC disabled, clear all shapes
+      if (this.#lastGcEnabled !== false) {
+        this.#shapesCache.clear();
       }
     }
+
+    this.#lastGcEnabled = gcEnabled;
 
     // X-axis range.
     const now = data.times[data.times.length - 1];
@@ -63,11 +93,11 @@ export default class PlotManager {
       const gd = document.getElementById(p.name());
       // We're being super defensive here to ensure that the div is
       // actually there (or Plotly.resize would fail).
-      if (!gd) return;
-      if (!p.isVisible()) return;
+      if (!gd || !p.isVisible()) return;
       const { offsetWidth: w, offsetHeight: h } = gd;
       if (w === 0 || h === 0) return;
 
+      p.updateCachedWidth();
       Plotly.Plots.resize(gd);
     });
   }

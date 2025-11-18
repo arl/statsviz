@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "preview": "vite preview",
-    "build": "vite build"
+    "build": "vite build",
+    "release": "bash -lc \"rm -rf ./dist && vite build && zip -r dist.zip dist/*\""
   },
   "devDependencies": {
     "vite": "^6.4.1"
@@ -14,7 +15,7 @@
   "dependencies": {
     "bootstrap": "^5.3.5",
     "bootstrap-icons": "^1.12.1",
-    "plotly.js-cartesian-dist": "^3.0.1",
+    "plotly.js-cartesian-dist": "^3.3.0",
     "tippy.js": "^6.3.7"
   }
 }

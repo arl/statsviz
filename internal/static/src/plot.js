@@ -22,6 +22,7 @@ class Plot {
   #maximized;
   #cfg;
   #dataTemplate;
+  #cachedWidth;
 
   constructor(cfg) {
     cfg.layout.paper_bgcolor = themeColors[theme.getThemeMode()].paper_bgcolor;
@@ -33,6 +34,7 @@ class Plot {
     this.#updateCount = 0;
     this.#dataTemplate = [];
     this.#lastData = [{ x: new Date() }];
+    this.#cachedWidth = null;
 
     if (this.#cfg.type == "heatmap") {
       this.#dataTemplate.push({
@@ -80,8 +82,8 @@ class Plot {
     this.#htmlElt = div;
 
     // Measure the final CSS width.
-    const initialWidth = div.clientWidth;
-    this.#plotlyLayout.width = initialWidth;
+    this.#cachedWidth = div.clientWidth;
+    this.#plotlyLayout.width = this.#cachedWidth;
     this.#plotlyLayout.height = defaultPlotHeight;
 
     // Pass a single data with no data to create an empty plot (this removes
@@ -154,6 +156,7 @@ class Plot {
 
   #extractData(data) {
     const serie = data.series.get(this.#cfg.name);
+
     if (this.#cfg.type == "heatmap") {
       this.#dataTemplate[0].x = data.times;
       this.#dataTemplate[0].z = serie;
@@ -163,6 +166,7 @@ class Plot {
       for (let i = 0; i < this.#dataTemplate.length; i++) {
         this.#dataTemplate[i].x = data.times;
         this.#dataTemplate[i].y = serie[i];
+
         this.#dataTemplate[i].stackgroup = this.#cfg.subplots[i].stackgroup;
         this.#dataTemplate[i].hoveron = this.#cfg.subplots[i].hoveron;
         this.#dataTemplate[i].type =
@@ -198,11 +202,8 @@ class Plot {
         this.#plotlyConfig.responsive = false;
       }
 
-      // **Re‐measure** container width each time
-      const newWidth = this.#maximized
-        ? plotsDiv.clientWidth
-        : this.#htmlElt.clientWidth;
-      this.#plotlyLayout.width = newWidth;
+      // Use cached width - only recalculated on resize
+      this.#plotlyLayout.width = this.#cachedWidth;
 
       this.#react();
     }
@@ -215,19 +216,31 @@ class Plot {
     this.#plotlyLayout = newLayoutObject(this.#cfg, this.#maximized);
     this.#plotlyConfig = newConfigObject(this.#cfg, this.#maximized);
 
-    this.#plotlyLayout.width = plotsDiv.clientWidth;
+    this.#cachedWidth = plotsDiv.clientWidth;
+    this.#plotlyLayout.width = this.#cachedWidth;
     this.#plotlyLayout.height = plotsDiv.parentElement.clientHeight - 50;
 
     this.#react();
   }
 
   minimize() {
-    (this.#maximized = false), this.#maximized;
+    this.#maximized = false;
 
     this.#plotlyLayout = newLayoutObject(this.#cfg, this.#maximized);
     this.#plotlyConfig = newConfigObject(this.#cfg, this.#maximized);
 
+    this.#cachedWidth = this.#htmlElt.clientWidth;
+    this.#plotlyLayout.width = this.#cachedWidth;
+
     this.#react();
+  }
+
+  updateCachedWidth() {
+    if (this.#maximized) {
+      this.#cachedWidth = plotsDiv.clientWidth;
+    } else {
+      this.#cachedWidth = this.#htmlElt.clientWidth;
+    }
   }
 
   #react() {
