@@ -23,6 +23,8 @@ class Plot {
   #cfg;
   #dataTemplate;
   #cachedWidth;
+  #inViewport = false;
+  #observer;
 
   constructor(cfg) {
     cfg.layout.paper_bgcolor = themeColors[theme.getThemeMode()].paper_bgcolor;
@@ -80,6 +82,16 @@ class Plot {
 
   createElement(div) {
     this.#htmlElt = div;
+
+    this.#observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        this.#inViewport = entry.isIntersecting;
+        if (this.#inViewport) {
+          this.#react();
+        }
+      });
+    });
+    this.#observer.observe(this.#htmlElt);
 
     // Measure the final CSS width.
     this.#cachedWidth = div.clientWidth;
@@ -205,7 +217,9 @@ class Plot {
       // Use cached width - only recalculated on resize
       this.#plotlyLayout.width = this.#cachedWidth;
 
-      this.#react();
+      if (this.#inViewport) {
+        this.#react();
+      }
     }
   }
 
