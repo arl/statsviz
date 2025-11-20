@@ -68,10 +68,22 @@ func (pl *List) enabledPlots() []runtimePlot {
 	plots := make([]runtimePlot, 0, len(pl.reg.descriptions))
 
 	for _, plot := range pl.reg.descriptions {
+		var layout any
+		switch l := plot.layout.(type) {
+		case Scatter:
+			l.Metrics = plot.metrics
+			layout = l
+		case Heatmap:
+			l.Metrics = plot.metrics
+			layout = l
+		default:
+			layout = plot.layout
+		}
+
 		plots = append(plots, runtimePlot{
-			name:    nameFromLayout(plot.layout),
+			name:    nameFromLayout(layout),
 			getvals: plot.getvalues(),
-			layout:  plot.layout,
+			layout:  layout,
 		})
 	}
 
