@@ -1,15 +1,13 @@
 import { plotMgr, drawPlots } from "./app.js";
+import { updateVisibility } from "./nav.js";
 import tippy from "tippy.js";
 
 export const onClickPlotMaximize = (cfg) => (_gd, _ev) => {
   const clicked = plotMgr.plots.find((p) => p.name() === cfg.name);
-  const isOnlyVisible = plotMgr.plots.every(
-    (p) => p === clicked || !p.isVisible()
-  );
 
-  if (isOnlyVisible) {
-    // Show plots.
-    plotMgr.plots.forEach((p) => p.setVisible(true));
+  if (clicked.isMaximized()) {
+    // Restore plots visibility based on current filters.
+    updateVisibility();
     clicked.minimize();
   } else {
     // Hide all plots except the clicked one.

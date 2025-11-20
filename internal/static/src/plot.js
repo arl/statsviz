@@ -230,6 +230,10 @@ class Plot {
     }
   }
 
+  isMaximized() {
+    return this.#maximized;
+  }
+
   maximize() {
     this.#maximized = true;
     const plotsDiv = document.getElementById("plots", this.#maximized);

@@ -5,6 +5,25 @@ export let running = true;
 export let gcEnabled = true;
 export let timerange = 60;
 
+export function updateVisibility() {
+  const tagInputs = Array.from(
+    document.querySelectorAll("#navCategories input[data-tag]")
+  );
+  const searchInput = document.getElementById("plot-search");
+
+  const activeTags = tagInputs
+    .filter((i) => i.checked)
+    .map((i) => i.dataset.tag);
+
+  const query = searchInput ? searchInput.value.trim() : "";
+
+  plotMgr.plots.forEach((p) => {
+    const matchesTag = activeTags.some((tag) => p.hasTag(tag));
+    const matchesQuery = p.matches(query);
+    p.setVisible(matchesTag && matchesQuery);
+  });
+}
+
 export function initNav(onUpdate) {
   // Show GC toggle.
   const gcbtn = document.getElementById("btn-gc-events");
@@ -44,21 +63,6 @@ export function initNav(onUpdate) {
 
   // Ensure initial state: all tags selected
   tagInputs.forEach((input) => (input.checked = true));
-
-  // Update plot visibility based on selected tags and search query
-  const updateVisibility = () => {
-    const activeTags = tagInputs
-      .filter((i) => i.checked)
-      .map((i) => i.dataset.tag);
-
-    const query = searchInput.value.trim();
-
-    plotMgr.plots.forEach((p) => {
-      const matchesTag = activeTags.some((tag) => p.hasTag(tag));
-      const matchesQuery = p.matches(query);
-      p.setVisible(matchesTag && matchesQuery);
-    });
-  };
 
   // Listen for tag changes
   tagInputs.forEach((input) => {
