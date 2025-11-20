@@ -40,18 +40,23 @@ export function initNav(onUpdate) {
   const tagInputs = Array.from(
     document.querySelectorAll("#navCategories input[data-tag]")
   );
+  const searchInput = document.getElementById("plot-search");
 
   // Ensure initial state: all tags selected
   tagInputs.forEach((input) => (input.checked = true));
 
-  // Update plot visibility based on selected tags
-  const updateByTags = () => {
+  // Update plot visibility based on selected tags and search query
+  const updateVisibility = () => {
     const activeTags = tagInputs
       .filter((i) => i.checked)
       .map((i) => i.dataset.tag);
 
+    const query = searchInput.value.trim();
+
     plotMgr.plots.forEach((p) => {
-      p.setVisible(activeTags.some((tag) => p.hasTag(tag)));
+      const matchesTag = activeTags.some((tag) => p.hasTag(tag));
+      const matchesQuery = p.matches(query);
+      p.setVisible(matchesTag && matchesQuery);
     });
   };
 
@@ -72,20 +77,26 @@ export function initNav(onUpdate) {
             tagInputs.forEach((i) => (i.checked = i === input));
           }
 
-          updateByTags();
+          updateVisibility();
           onUpdate(true);
         }, 0);
       }
     });
 
     input.addEventListener("change", () => {
-      updateByTags();
+      updateVisibility();
       onUpdate(true);
     });
   });
 
+  // Listen for search input changes
+  searchInput.addEventListener("input", () => {
+    updateVisibility();
+    onUpdate(true);
+  });
+
   // Apply initial tag filter
-  updateByTags();
+  updateVisibility();
 
   // Time range selection
   const rangeInputs = document.querySelectorAll('input[name="range"]');

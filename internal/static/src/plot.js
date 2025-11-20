@@ -72,6 +72,13 @@ class Plot {
     return this.#cfg.tags.includes(tag);
   }
 
+  matches(query) {
+    if (!query) return true;
+    if (!this.#cfg.metrics) return false;
+    const q = query.toLowerCase();
+    return this.#cfg.metrics.some((m) => m.toLowerCase().includes(q));
+  }
+
   setVisible(visible) {
     this.#htmlElt.hidden = !visible;
   }
