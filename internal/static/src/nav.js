@@ -57,6 +57,27 @@ export function initNav(onUpdate) {
 
   // Listen for tag changes
   tagInputs.forEach((input) => {
+    input.addEventListener("click", (e) => {
+      if (e.altKey) {
+        e.preventDefault();
+
+        // Use setTimeout to ensure changes are applied after browser's default handling
+        setTimeout(() => {
+          const isSolo = tagInputs.every((i) => i.checked === (i === input));
+          if (isSolo) {
+            // If already solo, show all
+            tagInputs.forEach((i) => (i.checked = true));
+          } else {
+            // Otherwise, solo this tag
+            tagInputs.forEach((i) => (i.checked = i === input));
+          }
+
+          updateByTags();
+          onUpdate(true);
+        }, 0);
+      }
+    });
+
     input.addEventListener("change", () => {
       updateByTags();
       onUpdate(true);
