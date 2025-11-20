@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "preview": "vite preview",
-    "build": "vite build",
-    "release": "bash -lc \"rm -rf ./dist && vite build && zip -r dist.zip dist/*\""
+    "build": "vite build"
   },
   "devDependencies": {
     "vite": "^6.4.1"
