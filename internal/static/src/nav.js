@@ -95,6 +95,12 @@ export function initNav(onUpdate) {
 
   // Listen for search input changes
   searchInput.addEventListener("input", () => {
+    // If a plot is maximized, minimize it before applying search input filtering.
+    plotMgr.plots.forEach((p) => {
+      if (p.isMaximized()) {
+        p.minimize();
+      }
+    });
     updateVisibility();
     onUpdate(true);
   });
