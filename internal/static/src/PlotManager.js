@@ -14,6 +14,7 @@ function debounce(fn, delay) {
 export default class PlotManager {
   #shapesCache;
   #lastGcEnabled;
+  #staggerHandle = null;
 
   constructor(config) {
     this.container = document.getElementById("plots");
@@ -83,9 +84,31 @@ export default class PlotManager {
     const now = data.times[data.times.length - 1];
     const xrange = [now - timeRange * 1000, now];
 
-    this.plots.forEach((p) => {
-      if (p.isVisible()) p.update(xrange, data, shapes, force);
-    });
+    // Cancel any pending update to avoid overlapping updates
+    if (this.#staggerHandle !== null) {
+      cancelAnimationFrame(this.#staggerHandle);
+      this.#staggerHandle = null;
+    }
+
+    const visiblePlots = this.plots.filter((p) => p.isVisible());
+    let index = 0;
+
+    const processBatch = () => {
+      const start = performance.now();
+      // Process plots for up to 12ms per frame to leave time for UI
+      while (index < visiblePlots.length && performance.now() - start < 12) {
+        visiblePlots[index].update(xrange, data, shapes, force);
+        index++;
+      }
+
+      if (index < visiblePlots.length) {
+        this.#staggerHandle = requestAnimationFrame(processBatch);
+      } else {
+        this.#staggerHandle = null;
+      }
+    };
+
+    processBatch();
   }
 
   #resizeAll() {
@@ -97,8 +120,7 @@ export default class PlotManager {
       const { offsetWidth: w, offsetHeight: h } = gd;
       if (w === 0 || h === 0) return;
 
-      p.updateCachedWidth();
-      Plotly.Plots.resize(gd);
+      p.resize();
     });
   }
 }

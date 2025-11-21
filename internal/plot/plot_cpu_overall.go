@@ -57,11 +57,11 @@ var _ = register(description{
 			{Unitfmt: "%{y:.4s}s", Type: "scatter", Name: "total"},
 		},
 		InfoText: `Shows the fraction of CPU spent in your code vs. runtime vs. wasted. Helps track overall utilization and potential headroom.
-<i>user is</i> the rate of <b>/cpu/classes/user:cpu-seconds</b>, the CPU time spent running user Go code.
-<i>scavenge is</i> the rate of <b>/cpu/classes/scavenge:cpu-seconds</b>, the CPU time spent performing tasks that return unused memory to the OS.
-<i>idle is</i> the rate of <b>/cpu/classes/idle:cpu-seconds</b>, the CPU time spent performing GC tasks on spare CPU resources that the Go scheduler could not otherwise find a use for.
-<i>gc total is</i> the rate of <b>/cpu/classes/gc/total:cpu-seconds</b>, the CPU time spent performing GC tasks (sum of all metrics in <b>/cpu/classes/gc</b>)
-<i>total is</i> the rate of <b>/cpu/classes/total:cpu-seconds</b>, the available CPU time for user Go code or the Go runtime, as defined by GOMAXPROCS. In other words, GOMAXPROCS integrated over the wall-clock duration this process has been executing for.
+<i>user is</i> the rate of change, per second, of <b>/cpu/classes/user:cpu-seconds</b>, the CPU time spent running user Go code.
+<i>scavenge is</i> the rate of change, per second, of <b>/cpu/classes/scavenge:cpu-seconds</b>, the CPU time spent performing tasks that return unused memory to the OS.
+<i>idle is</i> the rate of change, per second, of <b>/cpu/classes/idle:cpu-seconds</b>, the CPU time spent performing GC tasks on spare CPU resources that the Go scheduler could not otherwise find a use for.
+<i>gc total is</i> the rate of change, per second, of <b>/cpu/classes/gc/total:cpu-seconds</b>, the CPU time spent performing GC tasks (sum of all metrics in <b>/cpu/classes/gc</b>)
+<i>total is</i> the rate of change, per second, of <b>/cpu/classes/total:cpu-seconds</b>, the available CPU time for user Go code or the Go runtime, as defined by GOMAXPROCS. In other words, GOMAXPROCS integrated over the wall-clock duration this process has been executing for.
 
 All metrics are rates in CPU-seconds per second.`,
 	},

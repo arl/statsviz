@@ -23,6 +23,8 @@ class Plot {
   #cfg;
   #dataTemplate;
   #cachedWidth;
+  #inViewport = false;
+  #observer;
 
   constructor(cfg) {
     cfg.layout.paper_bgcolor = themeColors[theme.getThemeMode()].paper_bgcolor;
@@ -70,6 +72,13 @@ class Plot {
     return this.#cfg.tags.includes(tag);
   }
 
+  matches(query) {
+    if (!query) return true;
+    if (!this.#cfg.metrics) return false;
+    const q = query.toLowerCase();
+    return this.#cfg.metrics.some((m) => m.toLowerCase().includes(q));
+  }
+
   setVisible(visible) {
     this.#htmlElt.hidden = !visible;
   }
@@ -80,6 +89,16 @@ class Plot {
 
   createElement(div) {
     this.#htmlElt = div;
+
+    this.#observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        this.#inViewport = entry.isIntersecting;
+        if (this.#inViewport) {
+          this.#react();
+        }
+      });
+    });
+    this.#observer.observe(this.#htmlElt);
 
     // Measure the final CSS width.
     this.#cachedWidth = div.clientWidth;
@@ -205,8 +224,14 @@ class Plot {
       // Use cached width - only recalculated on resize
       this.#plotlyLayout.width = this.#cachedWidth;
 
-      this.#react();
+      if (this.#inViewport) {
+        this.#react();
+      }
     }
+  }
+
+  isMaximized() {
+    return this.#maximized;
   }
 
   maximize() {
@@ -233,6 +258,18 @@ class Plot {
     this.#plotlyLayout.width = this.#cachedWidth;
 
     this.#react();
+  }
+
+  resize() {
+    this.updateCachedWidth();
+    const layoutUpdate = { width: this.#cachedWidth };
+    if (this.#maximized) {
+      const plotsDiv = document.getElementById("plots");
+      layoutUpdate.height = plotsDiv.parentElement.clientHeight - 50;
+    } else {
+      layoutUpdate.height = defaultPlotHeight;
+    }
+    Plotly.relayout(this.#htmlElt, layoutUpdate);
   }
 
   updateCachedWidth() {

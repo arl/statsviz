@@ -27,7 +27,7 @@ export default class RingBuffer {
       result[i] = this.#buf[(this.#start + startIdx + i) % this.#buf.length];
     }
 
-    return Array.from(result);
+    return result;
   }
 
   get first() {

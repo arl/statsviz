@@ -69,6 +69,10 @@ body {
   display: grid;
   grid-template-columns: 1fr;
   overflow-x: hidden;
+  gap: 1px;
+  background-color: rgb(43, 44, 46);
+  border-top: 1px solid rgb(43, 44, 46);
+  border-left: 1px solid rgb(43, 44, 46);
 }
 @media (min-width: 1024px) {
   .plots-container {
@@ -87,9 +91,6 @@ body {
   height: 100%;
   min-width: 0;
   min-height: 0;
-  border-color: rgb(43, 44, 46);
-  border-style: solid;
-  border-width: 1px 0px 0px 1px;
 }
 
 /* Category pills styling */
