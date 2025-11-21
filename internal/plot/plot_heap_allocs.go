@@ -11,9 +11,6 @@ var _ = register(description{
 		"/gc/heap/frees:objects",
 	},
 	getvalues: func() getvalues {
-		deltaallocs := delta[uint64]()
-		deltafrees := delta[uint64]()
-
 		rateallocs := rate[uint64]()
 		ratefrees := rate[uint64]()
 
@@ -22,8 +19,8 @@ var _ = register(description{
 			curfrees := samples[idx_gc_heap_frees_objects].Value.Uint64()
 
 			return []float64{
-				rateallocs(now, deltaallocs(curallocs)),
-				ratefrees(now, deltafrees(curfrees)),
+				rateallocs(now, curallocs),
+				ratefrees(now, curfrees),
 			}
 		}
 	},
@@ -50,7 +47,7 @@ var _ = register(description{
 			},
 		},
 		InfoText: `
-<i>Allocations per second</i> is the delta, per second, of the cumulative <b>/gc/heap/allocs:objects</b> metric.
-<i>Frees per second</i> is the delta, per second, of the cumulative <b>/gc/heap/frees:objects</b> metric.`,
+<i>Allocations per second</i> is the rate of change, per second, of the cumulative <b>/gc/heap/allocs:objects</b> metric.
+<i>Frees per second</i> is the rate of change, per second, of the cumulative <b>/gc/heap/frees:objects</b> metric.`,
 	},
 })
