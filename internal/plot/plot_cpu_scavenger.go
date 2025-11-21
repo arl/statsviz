@@ -49,8 +49,8 @@ var _ = register(description{
 			},
 		},
 		InfoText: `Breakdown of how the GC scavenger returns memory to the OS (eagerly vs background).
-<i>assist is</i> the rate of <b>/cpu/classes/scavenge/assist</b>, the CPU time spent returning unused memory eagerly in response to memory pressure.
-<i>background is</i> the rate of <b>/cpu/classes/scavenge/background</b>, the CPU time spent performing background tasks to return unused memory to the OS.
+<i>assist is</i> the rate of change, per second, of <b>/cpu/classes/scavenge/assist</b>, the CPU time spent returning unused memory eagerly in response to memory pressure.
+<i>background is</i> the rate of change, per second, of <b>/cpu/classes/scavenge/background</b>, the CPU time spent performing background tasks to return unused memory to the OS.
 
 Both metrics are rates in CPU-seconds per second.`,
 	},

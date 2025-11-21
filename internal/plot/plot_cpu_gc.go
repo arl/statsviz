@@ -54,10 +54,10 @@ var _ = register(description{
 		InfoText: `Cumulative metrics are converted to rates by Statsviz so as to be more easily comparable and readable.
 All this metrics are overestimates, and not directly comparable to system CPU time measurements. Compare only with other /cpu/classes metrics.
 
-<i>mark assist</i> is <b>/cpu/classes/gc/mark/assist</b>, estimated total CPU time goroutines spent performing GC tasks to assist the GC and prevent it from falling behind the application.
-<i>mark dedicated</i> is <b>/cpu/classes/gc/mark/dedicated</b>, Estimated total CPU time spent performing GC tasks on processors (as defined by GOMAXPROCS) dedicated to those tasks.
-<i>mark idle</i> is <b>/cpu/classes/gc/mark/idle</b>, estimated total CPU time spent performing GC tasks on spare CPU resources that the Go scheduler could not otherwise find a use for.
-<i>pause</i> is <b>/cpu/classes/gc/pause</b>, estimated total CPU time spent with the application paused by the GC.
+<i>mark assist</i> is the rate of change, per second, of <b>/cpu/classes/gc/mark/assist</b>, estimated total CPU time goroutines spent performing GC tasks to assist the GC and prevent it from falling behind the application.
+<i>mark dedicated</i> is the rate of change, per second, of <b>/cpu/classes/gc/mark/dedicated</b>, Estimated total CPU time spent performing GC tasks on processors (as defined by GOMAXPROCS) dedicated to those tasks.
+<i>mark idle</i> is the rate of change, per second, of <b>/cpu/classes/gc/mark/idle</b>, estimated total CPU time spent performing GC tasks on spare CPU resources that the Go scheduler could not otherwise find a use for.
+<i>pause</i> is the rate of change, per second, of <b>/cpu/classes/gc/pause</b>, estimated total CPU time spent with the application paused by the GC.
 
 All metrics are rates in CPU-seconds per second.`,
 	},
