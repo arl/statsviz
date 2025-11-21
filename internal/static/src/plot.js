@@ -260,6 +260,18 @@ class Plot {
     this.#react();
   }
 
+  resize() {
+    this.updateCachedWidth();
+    const layoutUpdate = { width: this.#cachedWidth };
+    if (this.#maximized) {
+      const plotsDiv = document.getElementById("plots");
+      layoutUpdate.height = plotsDiv.parentElement.clientHeight - 50;
+    } else {
+      layoutUpdate.height = defaultPlotHeight;
+    }
+    Plotly.relayout(this.#htmlElt, layoutUpdate);
+  }
+
   updateCachedWidth() {
     if (this.#maximized) {
       this.#cachedWidth = plotsDiv.clientWidth;
