@@ -1,4 +1,4 @@
-Unreleased
+v0.8.0 / 2025-11-21
 ==============
   * UI/UX improvments:
     - performance/fluidity improvements
