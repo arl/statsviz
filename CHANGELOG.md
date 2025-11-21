@@ -1,6 +1,10 @@
 Unreleased
 ==============
-  * Make all examples use statsviz@latest (#112)
+  * UI/UX improvments:
+    - performance/fluidity improvements
+    - Alt+Click to show only the clicked category
+    - add plot search/filter bar
+    - fix visual glitches when resizing browser
 
 v0.7.3 / 2025-11-18
 ==============
