@@ -1,12 +1,10 @@
 module github.com/arl/statsviz
 
-go 1.23.0
-
-toolchain go1.24.5
+go 1.25
 
 require (
 	github.com/gorilla/websocket v1.5.3
-	github.com/rogpeppe/go-internal v1.14.1
+	github.com/rogpeppe/go-internal v1.15.0
 )
 
 require (
