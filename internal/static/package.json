@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.5",
-    "bootstrap-icons": "^1.12.1",
+    "bootstrap-icons": "^1.13.1",
     "plotly.js-cartesian-dist": "^3.3.0",
     "tippy.js": "^6.3.7"
   }
