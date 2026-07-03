@@ -1,11 +1,10 @@
 version: 2
 updates:
   - package-ecosystem: "gomod"
-    directory: "/"
+    directories:
+      - "/"
     schedule:
       interval: "daily"
-    exclude-paths:
-      - "/_example"
   - package-ecosystem: "npm"
     directory: "/internal/static"
     schedule:
