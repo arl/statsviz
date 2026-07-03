@@ -9,7 +9,7 @@
     "build": "vite build"
   },
   "devDependencies": {
-    "vite": "^6.4.2"
+    "vite": "^8.1.3"
   },
   "dependencies": {
     "bootstrap": "^5.3.5",
