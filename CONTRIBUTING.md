@@ -5,7 +5,6 @@ First of all, thank you for considering to contribute to Statsviz!
 
 Pull-requests are welcome!
 
-
 ## Go library
 
 Statsviz Go public API surface is relatively limited, by design, and it's highly
@@ -35,8 +34,25 @@ To bootstrap the UI for development:
 To build the production UI:
  - cd to `internal/static`
  - run `npm run build`
- - run `./scripts.zip.sh`
+ - run `./scripts/zip.sh`
  - only commit `dist.zip`. `dist` directory is ignored.
+
+### Building the UI without installing Node.js (Docker)
+
+If you don't want to install Node.js/npm on your machine, you can use Docker
+instead. Two helper scripts wrap `docker run` with the official `node:22-alpine`
+image; they do not require a Dockerfile and do not affect the regular scripts
+above.
+
+ - `./scripts/docker-dev.sh` — starts the Vite dev server, exposed on
+   http://localhost:5173 (override the port with `PORT=3000 ./scripts/docker-dev.sh`).
+ - `./scripts/docker-build.sh` — runs `npm install`, `npm run build` and
+   regenerates `dist.zip`, all inside the container.
+
+Both scripts mount `internal/static` into the container, run as your host UID/GID
+so that files (`node_modules/`, `dist/`, `dist.zip`, `package-lock.json`) end up
+owned by you, and share a named Docker volume (`statsviz-npm-cache`) to keep npm's
+cache across runs.
 
 
 Assets are located in the `internal/static` directory and are embedded with
