@@ -5,6 +5,9 @@ npm-debug.log*
 node_modules
 dist/
 
+# Docker build cache stamp used by Makefile
+.docker-image-stamp
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
