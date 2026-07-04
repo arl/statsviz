@@ -10,7 +10,7 @@ jobs:
         with:
           node-version-file: internal/static/.nvmrc
       - uses: actions/setup-go@v6
-      - run: npm install
+      - run: npm ci
         working-directory: internal/static
       - run: npm run build
         working-directory: internal/static
