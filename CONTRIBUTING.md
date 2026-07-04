@@ -39,20 +39,63 @@ To build the production UI:
 
 ### Building the UI without installing Node.js (Docker)
 
-If you don't want to install Node.js/npm on your machine, you can use Docker
-instead. Two helper scripts wrap `docker run` with the official `node:22-alpine`
-image; they do not require a Dockerfile and do not affect the regular scripts
-above.
+If you don't want to install Node.js/npm on your machine, you can drive the
+whole frontend workflow through Docker using the `Makefile` in
+`internal/static/`. It builds a tiny image on top of `node:22-alpine` (see
+`internal/static/Dockerfile`) and runs everything as your host UID/GID, so
+files created in `node_modules/`, `dist/`, `dist.zip` and `package-lock.json`
+are owned by you and not root.
 
- - `./scripts/docker-dev.sh` — starts the Vite dev server, exposed on
-   http://localhost:5173 (override the port with `PORT=3000 ./scripts/docker-dev.sh`).
- - `./scripts/docker-build.sh` — runs `npm install`, `npm run build` and
-   regenerates `dist.zip`, all inside the container.
+Common targets (run from `internal/static/`):
 
-Both scripts mount `internal/static` into the container, run as your host UID/GID
-so that files (`node_modules/`, `dist/`, `dist.zip`, `package-lock.json`) end up
-owned by you, and share a named Docker volume (`statsviz-npm-cache`) to keep npm's
-cache across runs.
+ - `make dev` — start the Vite dev server on http://localhost:5173. Override
+   the port with `PORT=3000 make dev`.
+ - `make build` — `npm install` + `npm run build`.
+ - `make zip` — build and regenerate `dist.zip`.
+ - `make release` — clean build: removes `dist/` and `dist.zip`, then rebuilds
+   from scratch and zips (mirrors `scripts/release.sh`).
+ - `make install` — `npm install` only.
+ - `make shell` — open an interactive shell in the container.
+ - `make clean` / `make distclean` — remove build artifacts / also drop the
+   Docker image and npm-cache volume.
+ - `make help` — list all targets.
+
+To run **any other npm/npx/shell command** inside the container, use the
+generic passthrough target:
+
+```sh
+make run CMD="npm outdated"
+make run CMD="npm ls plotly.js-cartesian-dist"
+make run CMD="npx --yes npm-check-updates"
+```
+
+The Docker image is cached (rebuilt only when `Dockerfile` or
+`docker-entrypoint.sh` change), and npm's cache is preserved across runs in a
+named Docker volume (`statsviz-npm-cache`), so repeat commands are fast.
+
+
+### Bumping npm dependencies
+
+To bump all dependencies to the latest **minor/patch** versions allowed by the
+`^` ranges in `package.json`, then rebuild:
+
+```sh
+cd internal/static
+make run CMD="npm update"
+make run CMD="npm outdated"   # sanity check what's still behind (major bumps)
+make release                  # rebuild dist/ and dist.zip
+./scripts/checkzip.sh         # verify dist.zip is up to date
+```
+
+To also bump **major** versions, use `npm-check-updates`:
+
+```sh
+make run CMD="npx --yes npm-check-updates -u"
+make run CMD="npm install"
+make release
+```
+
+Then commit `package.json`, `package-lock.json` and the regenerated `dist.zip`.
 
 
 Assets are located in the `internal/static` directory and are embedded with
