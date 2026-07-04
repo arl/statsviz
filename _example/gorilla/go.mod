@@ -1,11 +1,11 @@
 module example/gorilla
 
-go 1.23
+go 1.23.0
 
 toolchain go1.24.5
 
 require (
-	github.com/arl/statsviz v0.7.1
+	github.com/arl/statsviz v0.8.0
 	github.com/gorilla/mux v1.8.1
 )
 

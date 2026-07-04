@@ -1,10 +1,8 @@
 module example/default
 
-go 1.23.0
+go 1.25
 
-toolchain go1.24.5
-
-require github.com/arl/statsviz v0.7.1
+require github.com/arl/statsviz v0.8.0
 
 require github.com/gorilla/websocket v1.5.3 // indirect
 

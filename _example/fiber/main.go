@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gofiber/adaptor/v2"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/soheilhy/cmux"
 
 	"github.com/arl/statsviz"
@@ -29,15 +28,14 @@ func main() {
 
 	// Fiber instance
 	app := fiber.New()
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World 👋!")
-	})
 
 	// Create statsviz server.
 	srv, err := statsviz.NewServer()
+	if err != nil {
+		panic(err)
+	}
 
-	// Register Statsviz server on the fasthttp router.
-	app.Use("/debug/statsviz", adaptor.HTTPHandler(srv.Index()))
+	app.Use("/debug/statsviz/", srv.Index())
 	ws.HandleFunc("/debug/statsviz/ws", srv.Ws())
 
 	fmt.Println("Point your browser to http://localhost:8093/debug/statsviz/")
