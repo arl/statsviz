@@ -4,7 +4,7 @@ go 1.25
 
 require (
 	github.com/gorilla/websocket v1.5.3
-	github.com/rogpeppe/go-internal v1.15.0
+	github.com/rogpeppe/go-internal v1.16.0
 )
 
 require (
