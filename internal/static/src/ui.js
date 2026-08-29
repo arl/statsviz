@@ -1,6 +1,6 @@
 import { plotMgr, drawPlots } from "./app.js";
 import { updateVisibility } from "./nav.js";
-import tippy from "tippy.js";
+import { Popover } from "bootstrap";
 
 export const onClickPlotMaximize = (cfg) => (_gd, _ev) => {
   const clicked = plotMgr.plots.find((p) => p.name() === cfg.name);
@@ -21,20 +21,17 @@ export const onClickPlotMaximize = (cfg) => (_gd, _ev) => {
 };
 
 export const onClickPlotInfo = (gd, ev) => {
-  let button = ev.currentTarget;
-  let val = button.getAttribute("data-val") === "true";
+  const button = ev.currentTarget;
+  button.setAttribute("tabindex", "0");
+  button.setAttribute("role", "button");
 
-  const options = {
-    allowHTML: true,
-    trigger: "click",
-  };
-
-  const instance = tippy(ev.currentTarget, options);
-  instance.setContent("<div>" + gd.infoText + "</div>");
-  if (val) {
-    instance.hide();
-  } else {
-    instance.show();
-  }
-  button.setAttribute("data-val", !val);
+  const popover = Popover.getOrCreateInstance(button, {
+    html: true,
+    trigger: "focus",
+    placement: "bottom",
+    container: "body",
+    customClass: "plot-info-popover",
+    content: gd.infoText,
+  });
+  popover.show();
 };

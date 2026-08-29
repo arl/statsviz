@@ -25,6 +25,8 @@ const darkmodeButton = document.getElementById("btn-darkmode"),
 export const updateThemeMode = () => {
   const themeMode = getThemeMode();
 
+  document.documentElement.setAttribute("data-bs-theme", themeMode);
+
   if (themeMode === "dark") {
     document.body.classList.add("dark-mode");
     navbar.setAttribute("data-bs-theme", "dark");

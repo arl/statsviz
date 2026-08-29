@@ -14,7 +14,6 @@
   "dependencies": {
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
-    "plotly.js-cartesian-dist": "^4.0.0",
-    "tippy.js": "^6.3.7"
+    "plotly.js-cartesian-dist": "^4.0.0"
   }
 }

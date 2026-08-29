@@ -132,30 +132,10 @@ body {
   transform: translateY(-1px);
 }
 
-.tooltip-table {
-  display: table;
-  width: 160px;
-  border-collapse: collapse;
+.plot-info-popover {
+  --bs-popover-max-width: 360px;
 }
 
-.tooltip-style {
-  font-family: "Open Sans", verdana, arial, sans-serif;
-  font-size: 12px;
-  fill: rgb(68, 68, 68);
-  fill-opacity: 1;
-  white-space: pre;
-}
-
-.tooltip-row {
-  display: table-row;
-}
-
-.tooltip-value,
-.tooltip-label {
-  display: table-cell;
-  padding: 0.3em;
-}
-
-.tooltip-label {
-  font-weight: bold;
+.plot-info-popover p:last-child {
+  margin-bottom: 0;
 }
