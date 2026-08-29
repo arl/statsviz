@@ -4,4 +4,7 @@ go 1.25
 
 require github.com/arl/statsviz v0.8.1
 
-require github.com/gorilla/websocket v1.5.3 // indirect
+require (
+	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/rogpeppe/go-internal v1.16.0 // indirect
+)
