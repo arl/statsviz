@@ -3,7 +3,6 @@ import PlotManager from "./PlotManager.js";
 import { initNav, running, gcEnabled, timerange } from "./nav.js";
 import { buildWebsocketURI } from "./utils.js";
 import WebSocketClient from "./socket.js";
-import "bootstrap/dist/js/bootstrap.min.js";
 
 export let statsMgr;
 export let plotMgr;

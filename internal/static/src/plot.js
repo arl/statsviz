@@ -7,7 +7,6 @@ import {
 } from "./plotConfig.js";
 import { formatFunction } from "./utils.js";
 import Plotly from "plotly.js-cartesian-dist";
-import "bootstrap-icons/font/bootstrap-icons.min.css";
 
 // Bucket edges are stored in cfg.custom_data.
 const heatmapBucketLabel = (bucket, edges, formatYUnit) => {

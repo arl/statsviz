@@ -19,6 +19,14 @@ body {
   flex-wrap: nowrap;
 }
 
+/* Inlined Bootstrap Icons (SVG). 1em so they track surrounding font-size. */
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
+
 /* Icon links styling */
 #top-navbar a {
   font-size: 1.25rem;
