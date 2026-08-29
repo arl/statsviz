@@ -2,14 +2,10 @@ import * as ui from "./ui.js";
 import Plotly from "plotly.js-cartesian-dist";
 import { formatFunction } from "./utils.js";
 
-const debugMode = false;
-
 export const defaultPlotHeight = 480;
 
 export const newConfigObject = (cfg, isMaximized) => {
   return {
-    showEditInChartStudio: debugMode,
-    plotlyServerURL: debugMode ? "https://chart-studio.plotly.com" : ":",
     responsive: isMaximized,
     displaylogo: false,
     displayModeBar: true,
@@ -24,6 +20,7 @@ export const newConfigObject = (cfg, isMaximized) => {
       "autoScale2d",
       "resetScale2d",
       "toggleSpikelines",
+      "sendChartToCloud",
     ],
     modeBarButtonsToAdd: [
       {
@@ -71,7 +68,7 @@ export const newLayoutObject = (cfg, isMaximized) => {
     font: {
       color: cfg.layout.font_color,
     },
-    hovermode: "x",
+    hovermode: cfg.type === "heatmap" ? "closest" : "x",
     barmode: cfg.layout.barmode,
     xaxis: {
       tickformat: "%H:%M'%S″",

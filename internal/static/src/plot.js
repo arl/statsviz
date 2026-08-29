@@ -7,9 +7,17 @@ import {
 } from "./plotConfig.js";
 import { formatFunction } from "./utils.js";
 import Plotly from "plotly.js-cartesian-dist";
-import tippy, { followCursor } from "tippy.js";
-import "tippy.js/dist/tippy.css";
-import "bootstrap-icons/font/bootstrap-icons.min.css";
+
+// Bucket edges are stored in cfg.custom_data.
+const heatmapBucketLabel = (bucket, edges, formatYUnit) => {
+  if (bucket === 0) {
+    return `(-Inf, ${formatYUnit(edges[bucket])})`;
+  }
+  if (bucket === edges.length - 1) {
+    return `[${formatYUnit(edges[bucket])}, +Inf)`;
+  }
+  return `[${formatYUnit(edges[bucket - 1])}, ${formatYUnit(edges[bucket])})`;
+};
 
 const plotsDiv = document.getElementById("plots");
 
@@ -25,6 +33,9 @@ class Plot {
   #cachedWidth;
   #inViewport = false;
   #observer;
+  #bucketLabels;
+  #heatmapHoverText;
+  #heatmapHoverCols;
 
   constructor(cfg) {
     cfg.layout.paper_bgcolor = themeColors[theme.getThemeMode()].paper_bgcolor;
@@ -39,6 +50,13 @@ class Plot {
     this.#cachedWidth = null;
 
     if (this.#cfg.type == "heatmap") {
+      const hover = this.#cfg.hover;
+      const formatYUnit = formatFunction(hover.yunit);
+      const edges = this.#cfg.custom_data;
+      this.#bucketLabels = edges.map((_, y) =>
+        heatmapBucketLabel(y, edges, formatYUnit),
+      );
+      this.#heatmapHoverCols = -1;
       this.#dataTemplate.push({
         type: "heatmap",
         x: null,
@@ -46,7 +64,10 @@ class Plot {
         z: null,
         showlegend: false,
         colorscale: this.#cfg.colorscale,
-        custom_data: this.#cfg.custom_data,
+        hoverongaps: false,
+        hovertemplate:
+          `<b>${hover.yname}</b>: %{text}<br>` +
+          `<b>${hover.zname}</b>: %{z}<extra></extra>`,
       });
     } else {
       this.#dataTemplate = this.#cfg.subplots.map((subplot) => {
@@ -112,12 +133,8 @@ class Plot {
       this.#htmlElt,
       this.#lastData,
       this.#plotlyLayout,
-      this.#plotlyConfig
+      this.#plotlyConfig,
     );
-
-    if (this.#cfg.type == "heatmap") {
-      this._installHeatmapTooltip();
-    }
 
     this.#htmlElt.infoText = this.#cfg.infoText
       .split("\n")
@@ -125,52 +142,15 @@ class Plot {
       .join("");
   }
 
-  _installHeatmapTooltip() {
-    const options = {
-      followCursor: true,
-      trigger: "manual",
-      allowHTML: true,
-      plugins: [followCursor],
-    };
-    const instance = tippy(document.body, options);
-    const hover = this.#cfg.hover;
-    const formatYUnit = formatFunction(hover.yunit);
-
-    const onHover = (data) => {
-      const pt2txt = (d) => {
-        let bucket;
-        if (d.y == 0) {
-          const yhigh = formatYUnit(d.data.custom_data[d.y]);
-          bucket = `(-Inf, ${yhigh})`;
-        } else if (d.y == d.data.custom_data.length - 1) {
-          const ylow = formatYUnit(d.data.custom_data[d.y]);
-          bucket = `[${ylow}, +Inf)`;
-        } else {
-          const ylow = formatYUnit(d.data.custom_data[d.y - 1]);
-          const yhigh = formatYUnit(d.data.custom_data[d.y]);
-          bucket = `[${ylow}, ${yhigh})`;
-        }
-
-        return `
-<div class="tooltip-table tooltip-style">
-    <div class="tooltip-row">
-        <div class="tooltip-label">${hover.yname}</div>
-        <div class="tooltip-value">${bucket}</div>
-    </div>
-    <div class="tooltip-row">
-        <div class="tooltip-label">${hover.zname}</div>
-        <div class="tooltip-value">${d.z}</div>
-    </div>
-</div> `;
-      };
-      instance.setContent(data.points.map(pt2txt)[0]);
-      instance.show();
-    };
-    const onUnhover = (_data) => {
-      instance.hide();
-    };
-
-    this.#htmlElt.on("plotly_hover", onHover).on("plotly_unhover", onUnhover);
+  #hovertextGrid(nCols) {
+    if (this.#heatmapHoverText && this.#heatmapHoverCols === nCols) {
+      return this.#heatmapHoverText;
+    }
+    this.#heatmapHoverCols = nCols;
+    this.#heatmapHoverText = this.#bucketLabels.map((label) =>
+      Array(nCols).fill(label),
+    );
+    return this.#heatmapHoverText;
   }
 
   #extractData(data) {
@@ -179,7 +159,7 @@ class Plot {
     if (this.#cfg.type == "heatmap") {
       this.#dataTemplate[0].x = data.times;
       this.#dataTemplate[0].z = serie;
-      this.#dataTemplate[0].hoverinfo = "none";
+      this.#dataTemplate[0].text = this.#hovertextGrid(data.times.length);
       this.#dataTemplate[0].colorbar = { len: "350", lenmode: "pixels" };
     } else {
       for (let i = 0; i < this.#dataTemplate.length; i++) {
@@ -285,7 +265,7 @@ class Plot {
       this.#htmlElt,
       this.#lastData,
       this.#plotlyLayout,
-      this.#plotlyConfig
+      this.#plotlyConfig,
     );
   }
 
