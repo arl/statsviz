@@ -1,6 +1,6 @@
 # Image used by the Makefile to build/run the frontend without requiring
 # Node.js on the host. See the "Docker" section of ../../CONTRIBUTING.md.
-ARG NODE_IMAGE=node:22-alpine
+ARG NODE_IMAGE=node:26-alpine
 FROM ${NODE_IMAGE}
 
 # `zip` is needed by `make zip` to produce dist.zip.
