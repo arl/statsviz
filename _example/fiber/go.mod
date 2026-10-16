@@ -3,7 +3,7 @@ module example/fiber
 go 1.25.0
 
 require (
-	github.com/arl/statsviz v0.8.0
+	github.com/arl/statsviz v0.8.2
 	github.com/gofiber/fiber/v3 v3.4.0
 	github.com/soheilhy/cmux v0.1.5
 )

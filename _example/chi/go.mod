@@ -1,11 +1,9 @@
 module example/chi
 
-go 1.23.0
-
-toolchain go1.24.5
+go 1.25
 
 require (
-	github.com/arl/statsviz v0.8.0
+	github.com/arl/statsviz v0.8.2
 	github.com/go-chi/chi/v5 v5.3.0
 )
 

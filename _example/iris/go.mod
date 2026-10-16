@@ -1,11 +1,9 @@
 module example/iris
 
-go 1.23.0
-
-toolchain go1.24.5
+go 1.25
 
 require (
-	github.com/arl/statsviz v0.8.0
+	github.com/arl/statsviz v0.8.2
 	github.com/kataras/iris/v12 v12.2.11
 )
 

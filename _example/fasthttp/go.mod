@@ -3,7 +3,7 @@ module example/fasthttp
 go 1.25.0
 
 require (
-	github.com/arl/statsviz v0.8.0
+	github.com/arl/statsviz v0.8.2
 	github.com/fasthttp/router v1.5.4
 	github.com/soheilhy/cmux v0.1.5
 	github.com/valyala/fasthttp v1.72.0
