@@ -9,10 +9,10 @@
     "build": "vite build"
   },
   "devDependencies": {
-    "vite": "^8.2.2"
+    "vite": "^8.3.4"
   },
   "dependencies": {
     "bootstrap": "^5.3.8",
-    "plotly.js-cartesian-dist": "^4.0.0"
+    "plotly.js-cartesian-dist": "^4.1.2"
   }
 }
