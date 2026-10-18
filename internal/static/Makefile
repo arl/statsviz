@@ -1,16 +1,11 @@
 # Runs the frontend tooling inside Docker. Run `make help` for the target list.
 
 IMAGE_TAG ?= statsviz-ui
-NODE_IMAGE ?= node:22-alpine
 NPM_CACHE_VOLUME ?= statsviz-npm-cache
 PORT ?= 5173
 
 UID := $(shell id -u)
 GID := $(shell id -g)
-
-# Stamp file used to cache the `docker build` step so we only rebuild the
-# image when the Dockerfile or entrypoint change.
-IMAGE_STAMP := .docker-image-stamp
 
 # Common `docker run` flags. `docker run` argument order is:
 #   docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
@@ -19,20 +14,15 @@ IMAGE_STAMP := .docker-image-stamp
 DOCKER_FLAGS := --rm \
 	-v "$(CURDIR)":/app \
 	-v $(NPM_CACHE_VOLUME):/npm-cache \
-	-w /app \
-	-e HOST_UID=$(UID) \
-	-e HOST_GID=$(GID)
+	-w /app
 
 .PHONY: help image dev build zip release install run shell clean distclean
 
 help:
 	@awk 'BEGIN{FS=":.*##"; printf "Targets:\n"} /^[a-zA-Z_-]+:.*##/ {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-image: $(IMAGE_STAMP) ## Build the Docker image (cached)
-
-$(IMAGE_STAMP): Dockerfile docker-entrypoint.sh
-	docker build --build-arg NODE_IMAGE=$(NODE_IMAGE) -t $(IMAGE_TAG) .
-	@touch $(IMAGE_STAMP)
+image: ## Build the Docker image (cached by Docker)
+	docker build --build-arg UID=$(UID) --build-arg GID=$(GID) -t $(IMAGE_TAG) .
 
 dev: image ## Start the Vite dev server on http://localhost:$(PORT)
 	docker run -it $(DOCKER_FLAGS) -p $(PORT):5173 $(IMAGE_TAG) \
@@ -65,4 +55,3 @@ clean: ## Remove dist/, dist.zip, node_modules/
 distclean: clean ## Also remove the Docker image and npm cache volume
 	-docker image rm $(IMAGE_TAG) 2>/dev/null || true
 	-docker volume rm $(NPM_CACHE_VOLUME) 2>/dev/null || true
-	rm -f $(IMAGE_STAMP)
