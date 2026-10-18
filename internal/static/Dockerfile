@@ -1,11 +1,16 @@
 FROM node:26-alpine
 
-RUN apk add --no-cache zip su-exec
+ARG UID=1000
+ARG GID=1000
+
+RUN apk add --no-cache zip \
+ && mkdir -p /app /npm-cache \
+ && chown "$UID:$GID" /app /npm-cache
 
 WORKDIR /app
 
 ENV npm_config_cache=/npm-cache HOME=/tmp
 
-COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+USER $UID:$GID
+
 CMD ["sh"]
