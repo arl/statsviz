@@ -117,7 +117,7 @@ export function initNav(onUpdate) {
     r.addEventListener("change", () => {
       if (r.checked) {
         rangeInputs[i].checked = true;
-        const val = 60 * parseInt(rangeInputs[i].value, 10);
+        const val = 60 * Number.parseInt(rangeInputs[i].value, 10);
         navState.timerange = val;
         onUpdate(true);
       }
