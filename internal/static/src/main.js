@@ -8,7 +8,7 @@ connect();
 theme.updateThemeMode();
 
 document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
-  new Tooltip(el, {
+  Tooltip.getOrCreateInstance(el, {
     trigger: "hover focus",
     delay: { show: 700, hide: 100 },
     animation: true,

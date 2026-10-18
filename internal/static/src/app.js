@@ -1,11 +1,14 @@
 import StatsManager from "./StatsManager.js";
 import PlotManager from "./PlotManager.js";
-import { initNav, running, gcEnabled, timerange } from "./nav.js";
+import { initNav, navState } from "./nav.js";
 import { buildWebsocketURI } from "./utils.js";
 import WebSocketClient from "./socket.js";
 
-export let statsMgr;
-export let plotMgr;
+export const state = {
+  statsMgr: null,
+  plotMgr: null,
+  ws: null,
+};
 
 // RAF-based throttling for plot updates
 let rafId = null;
@@ -17,9 +20,14 @@ const scheduleUpdate = () => {
 
   rafId = requestAnimationFrame(() => {
     rafId = null;
-    if (pendingUpdate && running) {
-      const data = statsMgr.slice(timerange);
-      plotMgr.update(data, gcEnabled, timerange, forceNextUpdate);
+    if (pendingUpdate && navState.running) {
+      const data = state.statsMgr.slice(navState.timerange);
+      state.plotMgr.update(
+        data,
+        navState.gcEnabled,
+        navState.timerange,
+        forceNextUpdate,
+      );
       pendingUpdate = false;
       forceNextUpdate = false;
     }
@@ -37,12 +45,12 @@ export const drawPlots = (force) => {
 export const connect = () => {
   const uri = buildWebsocketURI();
 
-  new WebSocketClient(
+  state.ws = new WebSocketClient(
     uri,
     // onConfig
     (cfg) => {
-      plotMgr = new PlotManager(cfg);
-      statsMgr = new StatsManager(600, cfg);
+      state.plotMgr = new PlotManager(cfg);
+      state.statsMgr = new StatsManager(600, cfg);
 
       initNav(() => {
         drawPlots(false);
@@ -50,7 +58,7 @@ export const connect = () => {
     },
     // onData
     (msg) => {
-      statsMgr.pushData(msg);
+      state.statsMgr.pushData(msg);
       drawPlots(true);
     }
   );

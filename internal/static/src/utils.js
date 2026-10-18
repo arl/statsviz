@@ -44,8 +44,6 @@ export const formatFunction = (unit) => {
     case "bytes":
       return formatBytes;
   }
-  // Default formatting
-  return (y) => {
-    `${y} ${hover.yunit}`;
-  };
+  // Default formatting: append the unit when there is one.
+  return (y) => (unit ? `${y} ${unit}` : `${y}`);
 };

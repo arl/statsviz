@@ -1,9 +1,11 @@
 import * as theme from "./theme.js";
-import { plotMgr } from "./app.js";
+import { state } from "./app.js";
 
-export let running = true;
-export let gcEnabled = true;
-export let timerange = 60;
+export const navState = {
+  running: true,
+  gcEnabled: true,
+  timerange: 60,
+};
 
 export function updateVisibility() {
   const tagInputs = Array.from(
@@ -17,7 +19,7 @@ export function updateVisibility() {
 
   const query = searchInput ? searchInput.value.trim() : "";
 
-  plotMgr.plots.forEach((p) => {
+  state.plotMgr.plots.forEach((p) => {
     const matchesTag = activeTags.some((tag) => p.hasTag(tag));
     const matchesQuery = p.matches(query);
     p.setVisible(matchesTag && matchesQuery);
@@ -28,18 +30,18 @@ export function initNav(onUpdate) {
   // Show GC toggle.
   const gcbtn = document.getElementById("btn-gc-events");
 
-  gcbtn.checked = gcEnabled;
+  gcbtn.checked = navState.gcEnabled;
   gcbtn.addEventListener("change", (e) => {
-    gcEnabled = !gcEnabled;
-    gcbtn.checked = gcEnabled;
+    navState.gcEnabled = !navState.gcEnabled;
+    gcbtn.checked = navState.gcEnabled;
     onUpdate(true);
   });
 
   // Pause/Resume button.
   const playbtn = document.getElementById("btn-play");
   playbtn.addEventListener("click", (e) => {
-    running = !running;
-    playbtn.checked = running;
+    navState.running = !navState.running;
+    playbtn.checked = navState.running;
     onUpdate(true);
   });
 
@@ -51,7 +53,7 @@ export function initNav(onUpdate) {
     localStorage.setItem("theme-mode", newTheme);
 
     theme.updateThemeMode();
-    plotMgr.plots.forEach((p) => p.updateTheme());
+    state.plotMgr.plots.forEach((p) => p.updateTheme());
     onUpdate(true);
   });
 
@@ -96,7 +98,7 @@ export function initNav(onUpdate) {
   // Listen for search input changes
   searchInput.addEventListener("input", () => {
     // If a plot is maximized, minimize it before applying search input filtering.
-    plotMgr.plots.forEach((p) => {
+    state.plotMgr.plots.forEach((p) => {
       if (p.isMaximized()) {
         p.minimize();
       }
@@ -115,8 +117,8 @@ export function initNav(onUpdate) {
     r.addEventListener("change", () => {
       if (r.checked) {
         rangeInputs[i].checked = true;
-        const val = 60 * parseInt(rangeInputs[i].value, 10);
-        timerange = val;
+        const val = 60 * Number.parseInt(rangeInputs[i].value, 10);
+        navState.timerange = val;
         onUpdate(true);
       }
     })
