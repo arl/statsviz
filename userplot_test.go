@@ -19,6 +19,15 @@ func TestTimeSeriesPlotConfigErrors(t *testing.T) {
 			t.Errorf("Build() returned err = %v, want %v", err, target)
 		}
 	})
+	t.Run("missing value function", func(t *testing.T) {
+		config := TimeSeriesPlotConfig{
+			Name:   "some name",
+			Series: []TimeSeries{{Name: "some series"}},
+		}
+		if _, err := config.Build(); err == nil {
+			t.Error("Build() accepted a time series without a GetValue function")
+		}
+	})
 	t.Run("no time series", func(t *testing.T) {
 		tsb := TimeSeriesPlotConfig{Name: "some name"}
 		if _, err := tsb.Build(); !errors.Is(err, ErrNoTimeSeries) {
