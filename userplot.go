@@ -137,6 +137,10 @@ func (p TimeSeriesPlotConfig) Build() (TimeSeriesPlot, error) {
 		funcs    []func() float64
 	)
 	for _, ts := range p.Series {
+		if ts.GetValue == nil {
+			return zero, fmt.Errorf("time series %q has no GetValue function", ts.Name)
+		}
+
 		switch ts.HoverOn {
 		case "":
 			ts.HoverOn = HoverOnFills
