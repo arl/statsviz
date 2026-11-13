@@ -1,0 +1,280 @@
+# Runtime plots of statsviz, in UI order. Run 'go generate ./internal/plot'
+# (with the latest Go version) after editing this file.
+#
+# Only what can't be deduced from runtime/metrics is here. Units, axes, hover
+# format and info text are deduced by the generator.
+#
+# - type: "scatter", "bar" or "heatmap".
+# - series.expr: a metric, or an expression of metrics.
+# - series.transform: optional, the name of a transform function in
+#   internal/plot/helpers.go: delta, rate, cpuRate, gcRate or noLimit.
+# - heatmaps have a single series, its name is what's counted in buckets.
+# - custom: name of a hand-written description to register instead.
+#
+# At runtime, a plot is skipped if one of its metrics is unknown to the Go
+# version, or if a plot with the same name has already been registered (this
+# provides fallbacks for older Go versions).
+
+[[plot]]
+name = "cgo"
+title = "CGO Calls"
+tags = ["misc"]
+type = "bar"
+series = [
+  { name = "calls from go to c", transform = "delta", expr = "/cgo/go-to-c-calls:calls" },
+]
+
+[[plot]]
+name = "cpu-gc"
+title = "CPU (Garbage Collector)"
+tags = ["cpu", "gc"]
+type = "bar"
+series = [
+  { name = "mark assist", transform = "cpuRate", expr = "/cpu/classes/gc/mark/assist:cpu-seconds" },
+  { name = "mark dedicated", transform = "cpuRate", expr = "/cpu/classes/gc/mark/dedicated:cpu-seconds" },
+  { name = "mark idle", transform = "cpuRate", expr = "/cpu/classes/gc/mark/idle:cpu-seconds" },
+  { name = "pause", transform = "cpuRate", expr = "/cpu/classes/gc/pause:cpu-seconds" },
+]
+
+[[plot]]
+name = "cpu-overall"
+title = "CPU (Overall)"
+tags = ["cpu"]
+type = "bar"
+series = [
+  { name = "user", transform = "cpuRate", expr = "/cpu/classes/user:cpu-seconds" },
+  { name = "scavenge", transform = "cpuRate", expr = "/cpu/classes/scavenge/total:cpu-seconds" },
+  { name = "idle", transform = "cpuRate", expr = "/cpu/classes/idle:cpu-seconds" },
+  { name = "gc total", transform = "cpuRate", expr = "/cpu/classes/gc/total:cpu-seconds" },
+]
+
+[[plot]]
+name = "cpu-scavenger"
+title = "CPU (Scavenger)"
+tags = ["cpu", "gc"]
+type = "bar"
+series = [
+  { name = "assist", transform = "cpuRate", expr = "/cpu/classes/scavenge/assist:cpu-seconds" },
+  { name = "background", transform = "cpuRate", expr = "/cpu/classes/scavenge/background:cpu-seconds" },
+]
+
+[[plot]]
+name = "garbage collection"
+title = "GC Memory Summary"
+tags = ["gc"]
+type = "scatter"
+series = [
+  { name = "memory limit", transform = "noLimit", expr = "/gc/gomemlimit:bytes" },
+  { name = "in-use memory", expr = "/memory/classes/total:bytes - /memory/classes/heap/released:bytes" },
+  { name = "heap live", expr = "/gc/heap/live:bytes" },
+  { name = "heap goal", expr = "/gc/heap/goal:bytes" },
+]
+
+[[plot]]
+name = "gc-cleanups"
+title = "GC Cleanups Queue"
+tags = ["gc"]
+type = "bar"
+series = [
+  { name = "queue size", expr = "/gc/cleanups/queued:cleanups - /gc/cleanups/executed:cleanups" },
+]
+
+[[plot]]
+name = "gc-cycles"
+title = "Completed GC Cycles"
+tags = ["gc"]
+type = "bar"
+series = [
+  { name = "automatic", transform = "delta", expr = "/gc/cycles/automatic:gc-cycles" },
+  { name = "forced", transform = "delta", expr = "/gc/cycles/forced:gc-cycles" },
+]
+
+[[plot]]
+name = "gc-finalizers"
+title = "GC Finalizers Queue"
+tags = ["gc"]
+type = "bar"
+series = [
+  { name = "queue size", expr = "/gc/finalizers/queued:finalizers - /gc/finalizers/executed:finalizers" },
+]
+
+[[plot]]
+name = "gc-scan"
+title = "GC Scan"
+tags = ["gc"]
+type = "bar"
+series = [
+  { name = "scannable globals", expr = "/gc/scan/globals:bytes" },
+  { name = "scannable heap", expr = "/gc/scan/heap:bytes" },
+  { name = "scanned stack", expr = "/gc/scan/stack:bytes" },
+]
+
+[[plot]]
+name = "gc-stack-size"
+title = "Goroutines stack starting size"
+tags = ["gc"]
+type = "scatter"
+series = [
+  { name = "new goroutines stack size", expr = "/gc/stack/starting-size:bytes" },
+]
+
+[[plot]]
+name = "goroutines"
+title = "Goroutines"
+tags = ["scheduler"]
+type = "scatter"
+series = [
+  { name = "created", transform = "delta", expr = "/sched/goroutines-created:goroutines" },
+  { name = "goroutines", expr = "/sched/goroutines:goroutines" },
+  { name = "not in Go", expr = "/sched/goroutines/not-in-go:goroutines" },
+  { name = "runnable", expr = "/sched/goroutines/runnable:goroutines" },
+  { name = "running", expr = "/sched/goroutines/running:goroutines" },
+  { name = "waiting", expr = "/sched/goroutines/waiting:goroutines" },
+]
+
+# Fallback for Go < 1.26.
+[[plot]]
+name = "goroutines"
+title = "Goroutines"
+tags = ["scheduler"]
+type = "scatter"
+series = [
+  { name = "goroutines", expr = "/sched/goroutines:goroutines" },
+]
+
+[[plot]]
+name = "alloc-free-rate"
+title = "Heap Allocation & Free Rates"
+tags = ["gc"]
+type = "scatter"
+series = [
+  { name = "allocs/sec", transform = "gcRate", expr = "/gc/heap/allocs:objects" },
+  { name = "frees/sec", transform = "gcRate", expr = "/gc/heap/frees:objects" },
+]
+
+[[plot]]
+name = "heap (details)"
+title = "Heap (details)"
+tags = ["gc"]
+type = "scatter"
+series = [
+  { name = "heap sys", expr = "/memory/classes/heap/objects:bytes + /memory/classes/heap/unused:bytes + /memory/classes/heap/free:bytes + /memory/classes/heap/released:bytes" },
+  { name = "heap objects", expr = "/memory/classes/heap/objects:bytes" },
+  { name = "heap stacks", expr = "/memory/classes/heap/stacks:bytes" },
+  { name = "heap goal", expr = "/gc/heap/goal:bytes" },
+]
+
+[[plot]]
+name = "live-bytes"
+title = "Live Bytes in Heap"
+tags = ["gc"]
+type = "bar"
+series = [
+  { name = "live bytes", expr = "/gc/heap/allocs:bytes - /gc/heap/frees:bytes" },
+]
+
+[[plot]]
+name = "live-objects"
+title = "Live Objects in Heap"
+tags = ["gc"]
+type = "bar"
+series = [
+  { name = "live objects", expr = "/gc/heap/objects:objects" },
+]
+
+[[plot]]
+name = "memory-classes"
+title = "Memory classes"
+tags = ["gc"]
+type = "scatter"
+series = [
+  { name = "os stacks", expr = "/memory/classes/os-stacks:bytes" },
+  { name = "other", expr = "/memory/classes/other:bytes" },
+  { name = "profiling buckets", expr = "/memory/classes/profiling/buckets:bytes" },
+  { name = "total", expr = "/memory/classes/total:bytes" },
+]
+
+[[plot]]
+name = "mspan-mcache"
+title = "MSpan/MCache"
+tags = ["gc"]
+type = "scatter"
+series = [
+  { name = "mspan in-use", expr = "/memory/classes/metadata/mspan/inuse:bytes" },
+  { name = "mspan free", expr = "/memory/classes/metadata/mspan/free:bytes" },
+  { name = "mcache in-use", expr = "/memory/classes/metadata/mcache/inuse:bytes" },
+  { name = "mcache free", expr = "/memory/classes/metadata/mcache/free:bytes" },
+]
+
+[[plot]]
+name = "mutex-wait"
+title = "Mutex wait time"
+tags = ["misc"]
+type = "bar"
+series = [
+  { name = "mutex wait", transform = "rate", expr = "/sync/mutex/wait/total:seconds" },
+]
+
+[[plot]]
+name = "runnable-time"
+title = "Time Goroutines Spend in 'Runnable' state"
+tags = ["scheduler"]
+type = "heatmap"
+colorscale = "GreenShades"
+series = [
+  { name = "goroutines", expr = "/sched/latencies:seconds" },
+]
+
+# See plot_size_classes.go.
+[[plot]]
+name = "size-classes"
+custom = "sizeClasses"
+
+[[plot]]
+name = "stopping-pauses-gc"
+title = "Stop-the-world Stopping Latencies (GC)"
+tags = ["scheduler", "gc"]
+type = "heatmap"
+colorscale = "GreenShades"
+series = [
+  { name = "pauses", expr = "/sched/pauses/stopping/gc:seconds" },
+]
+
+[[plot]]
+name = "stopping-pauses-other"
+title = "Stop-the-world Stopping Latencies (Other)"
+tags = ["scheduler"]
+type = "heatmap"
+colorscale = "GreenShades"
+series = [
+  { name = "pauses", expr = "/sched/pauses/stopping/other:seconds" },
+]
+
+[[plot]]
+name = "threads"
+title = "Threads"
+tags = ["scheduler"]
+type = "scatter"
+series = [
+  { name = "threads", expr = "/sched/threads/total:threads" },
+]
+
+[[plot]]
+name = "total-pauses-gc"
+title = "Stop-the-world Pause Latencies (Total)"
+tags = ["scheduler", "gc"]
+type = "heatmap"
+colorscale = "PinkShades"
+series = [
+  { name = "pauses", expr = "/sched/pauses/total/gc:seconds" },
+]
+
+[[plot]]
+name = "total-pauses-other"
+title = "Stop-the-world Pause Latencies (Other)"
+tags = ["scheduler"]
+type = "heatmap"
+colorscale = "PinkShades"
+series = [
+  { name = "pauses", expr = "/sched/pauses/total/other:seconds" },
+]

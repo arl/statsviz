@@ -1,8 +1,11 @@
-// Command gen generates internal/plot/plots_gen.go from spec.go and from the
-// runtime/metrics metadata (unit and description) of the Go toolchain running
-// it. Run it with the latest Go version supported by statsviz:
+// Command gen generates internal/plot/plots_gen.go from plots.toml and from
+// the runtime/metrics metadata (unit and description) of the Go toolchain
+// running it. Run it with the latest Go version supported by statsviz:
 //
-//	cd internal/plot && go generate
+//	go generate ./internal/plot
+//
+// It's a separate module so that its dependencies don't appear in the
+// statsviz go.mod. It must be run from its own directory.
 package main
 
 import (
@@ -17,12 +20,16 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/BurntSushi/toml"
 )
 
+// Plot and Series are described in plots.toml.
 type Plot struct {
-	Name, Title, Tags, Type string
-	Colorscale              string // heatmaps only
-	Series                  []Series
+	Name, Title, Type string
+	Tags              []string
+	Colorscale        string
+	Series            []Series
 
 	// Custom is the name of a hand-written description to register instead.
 	Custom string
@@ -50,6 +57,16 @@ func main() {
 	for _, d := range metrics.All() {
 		descs[d.Name] = d.Description
 	}
+	var spec struct{ Plot []Plot }
+	md, err := toml.DecodeFile("plots.toml", &spec)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if keys := md.Undecoded(); len(keys) > 0 {
+		log.Fatalf("plots.toml: unknown keys %v", keys)
+	}
+	plots := spec.Plot
+
 	tmpl := template.Must(template.New("").Parse(tmplText))
 	var buf bytes.Buffer
 	buf.WriteString(header)
@@ -62,7 +79,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("%v\n%s", err, buf.Bytes())
 	}
-	if err := os.WriteFile("plots_gen.go", src, 0o644); err != nil {
+	if err := os.WriteFile("../../plots_gen.go", src, 0o644); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -105,7 +122,10 @@ func view(p Plot) map[string]any {
 			info = append(info, "<b>"+m+"</b>: "+descs[m])
 		}
 	}
-	for _, t := range strings.Fields(p.Tags) {
+	for _, t := range p.Tags {
+		if tagConst[t] == "" {
+			log.Fatalf("%s: unknown tag %q", p.Name, t)
+		}
 		tags = append(tags, tagConst[t])
 	}
 
