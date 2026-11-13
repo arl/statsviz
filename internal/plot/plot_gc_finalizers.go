@@ -33,8 +33,8 @@ var _ = register(description{
 		Subplots: []Subplot{
 			{Unitfmt: "%{y}", Type: "bar", Name: "queue size"},
 		},
-		InfoText: `Length of the finalizer functions queue (created by runtime.AddFinalizer).
-Its <i>/gc/finalizers/queued:cleanups</i> - <i>/gc/finalizers/executed:cleanups</i>.
+		InfoText: `Length of the finalizer functions queue (created by runtime.SetFinalizer).
+It's <i>/gc/finalizers/queued:finalizers</i> - <i>/gc/finalizers/executed:finalizers</i>.
 Useful for detecting finalizers overwhelming the queue, either by being too slow, or by there being too many of them.
 `},
 })

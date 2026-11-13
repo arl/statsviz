@@ -55,9 +55,9 @@ var _ = register(description{
 			{Unitfmt: "%{y:.4s}B", Name: "heap goal"},
 		},
 		InfoText: `
-<i>Heap</i> sys is <b>/memory/classes/heap/{objects + unused + released + free}</b>. It's an estimate of all the heap memory obtained from the OS.
+<i>Heap sys</i> is <b>/memory/classes/heap/{objects + unused + released + free}</b>. It's an estimate of all the heap memory obtained from the OS.
 <i>Heap objects</i> is <b>/memory/classes/heap/objects</b>, the memory occupied by live objects and dead objects that have not yet been marked free by the GC.
 <i>Heap stacks</i> is <b>/memory/classes/heap/stacks</b>, the memory used for stack space.
-<i>Heap goal</i> is <b>gc/heap/goal</b>, the heap size target for the end of the GC cycle.`,
+<i>Heap goal</i> is <b>/gc/heap/goal</b>, the heap size target for the end of the GC cycle.`,
 	},
 })

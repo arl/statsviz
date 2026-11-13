@@ -53,7 +53,7 @@ type (
 		Colorscale []WeightedColor `json:"colorscale"`
 		Buckets    []float64       `json:"buckets"`
 		CustomData []float64       `json:"custom_data"`
-		Hover      HeapmapHover    `json:"hover"`
+		Hover      HeatmapHover    `json:"hover"`
 		Metrics    []string        `json:"metrics"`
 	}
 
@@ -68,7 +68,7 @@ type (
 		TickText []float64 `json:"ticktext"`
 	}
 
-	HeapmapHover struct {
+	HeatmapHover struct {
 		YName string `json:"yname"`
 		YUnit string `json:"yunit"` // 'duration', 'bytes' or custom
 		ZName string `json:"zname"`

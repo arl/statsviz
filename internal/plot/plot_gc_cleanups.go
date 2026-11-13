@@ -34,7 +34,7 @@ var _ = register(description{
 			{Unitfmt: "%{y}", Type: "bar", Name: "queue size"},
 		},
 		InfoText: `Approximate length of the cleanup functions queue (created by runtime.AddCleanup).
-Its <i>/gc/cleanups/queued:cleanups</i> - <i>/gc/cleanups/executed:cleanups</i>.
+It's <i>/gc/cleanups/queued:cleanups</i> - <i>/gc/cleanups/executed:cleanups</i>.
 Useful for detecting slow cleanups holding up the queue.
 `},
 })

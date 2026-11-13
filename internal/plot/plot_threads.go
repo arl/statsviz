@@ -25,7 +25,7 @@ var _ = register(description{
 		Type:  "scatter",
 		Layout: ScatterLayout{
 			Yaxis: ScatterYAxis{
-				Title: "bytes",
+				Title: "threads",
 			},
 		},
 		Subplots: []Subplot{

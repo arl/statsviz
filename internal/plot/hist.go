@@ -5,7 +5,7 @@ import (
 	"runtime/metrics"
 )
 
-// maxBuckets is the maximum number of buckets we'll plots in heatmaps.
+// maxBuckets is the maximum number of buckets we'll plot in heatmaps.
 // Histograms with more buckets than that are going to be downsampled.
 const maxBuckets = 100
 
@@ -27,7 +27,7 @@ func downsampleFactor(norg, nfinal int) int {
 // Given that metrics.Float64Histogram contains the boundaries of histogram
 // buckets, the first bucket is not even considered since we're only interested
 // in upper bounds. Also, since we can't draw an infinitely large bucket, if h
-// last bucket holds +Inf, the width of the last returned bucket will
+// last bucket holds +Inf, the width of the last returned bucket will be
 // extrapolated from the previous 2 buckets.
 func downsampleBuckets(h *metrics.Float64Histogram, factor int) []float64 {
 	var ret []float64
@@ -57,7 +57,7 @@ func downsampleBuckets(h *metrics.Float64Histogram, factor int) []float64 {
 // downsampleCounts downsamples the counts in the provided histogram, using the
 // given factor. Every 'factor' buckets are merged into one, larger, bucket. If
 // the number of buckets is not divisible by 'factor', then an additional last
-// bucket will contain the sum of the counts in all relainbing buckets.
+// bucket will contain the sum of the counts in all remaining buckets.
 //
 // Note: slice should be a slice of maxBuckets elements, so that it can be
 // reused across calls.

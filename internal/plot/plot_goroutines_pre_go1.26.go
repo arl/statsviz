@@ -31,6 +31,6 @@ var _ = register(description{
 		Subplots: []Subplot{
 			{Name: "goroutines", Unitfmt: "%{y}"},
 		},
-		InfoText: `<i>Goroutines</i> is <b>/sched/goroutines</b>, the count of live goroutines`,
+		InfoText: `<i>Goroutines</i> is <b>/sched/goroutines</b>, the count of live goroutines.`,
 	},
 })

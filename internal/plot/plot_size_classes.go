@@ -52,7 +52,7 @@ var _ = register(description{
 			Colorscale: BlueShades,
 			Buckets:    floatseq(len(buckets)),
 			CustomData: buckets,
-			Hover: HeapmapHover{
+			Hover: HeatmapHover{
 				YName: "size class",
 				YUnit: "bytes",
 				ZName: "objects",

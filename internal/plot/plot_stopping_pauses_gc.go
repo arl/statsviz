@@ -36,7 +36,7 @@ var _ = register(description{
 			Colorscale: GreenShades,
 			Buckets:    floatseq(len(buckets)),
 			CustomData: buckets,
-			Hover: HeapmapHover{
+			Hover: HeatmapHover{
 				YName: "stopping duration",
 				YUnit: "duration",
 				ZName: "pauses",

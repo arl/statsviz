@@ -15,11 +15,11 @@ var _ = register(description{
 	getvalues: func() getvalues {
 		return func(_ time.Time, samples []metrics.Sample) any {
 			mspanInUse := samples[idx_memory_classes_metadata_mspan_inuse_bytes].Value.Uint64()
-			mspanSys := samples[idx_memory_classes_metadata_mspan_free_bytes].Value.Uint64()
+			mspanFree := samples[idx_memory_classes_metadata_mspan_free_bytes].Value.Uint64()
 			mcacheInUse := samples[idx_memory_classes_metadata_mcache_inuse_bytes].Value.Uint64()
-			mcacheSys := samples[idx_memory_classes_metadata_mcache_free_bytes].Value.Uint64()
+			mcacheFree := samples[idx_memory_classes_metadata_mcache_free_bytes].Value.Uint64()
 
-			return []uint64{mspanInUse, mspanSys, mcacheInUse, mcacheSys}
+			return []uint64{mspanInUse, mspanFree, mcacheInUse, mcacheFree}
 		}
 	},
 	layout: Scatter{
