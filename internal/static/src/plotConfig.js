@@ -82,7 +82,7 @@ export const newLayoutObject = (cfg, isMaximized) => {
       tickvals: copyArrayOrNull(cfg.layout.yaxis.tickvals),
       title: { text: cfg.layout.yaxis.title },
       fixedrange: true,
-      rangemode: "normal",
+      rangemode: cfg.layout.yaxis.integer ? "tozero" : "normal",
       tickformat: "s",
       ticksuffix: cfg.layout.yaxis.ticksuffix,
       minexponent: 3,
