@@ -5,7 +5,8 @@ import (
 	"time"
 )
 
-var _ = register(description{
+// sizeClasses is registered in plots_gen.go.
+var sizeClasses = description{
 	metrics: []string{
 		"/gc/heap/allocs-by-size:bytes",
 		"/gc/heap/frees-by-size:bytes",
@@ -14,8 +15,8 @@ var _ = register(description{
 		var sizeClasses []uint64
 
 		return func(_ time.Time, samples []metrics.Sample) any {
-			allocsBySize := samples[idx_gc_heap_allocs_by_size_bytes].Value.Float64Histogram()
-			freesBySize := samples[idx_gc_heap_frees_by_size_bytes].Value.Float64Histogram()
+			allocsBySize := sample(samples, "/gc/heap/allocs-by-size:bytes").Float64Histogram()
+			freesBySize := sample(samples, "/gc/heap/frees-by-size:bytes").Float64Histogram()
 
 			if sizeClasses == nil {
 				sizeClasses = make([]uint64, len(allocsBySize.Counts))
@@ -33,8 +34,8 @@ var _ = register(description{
 		// 'frees' size classes histograms. Statsviz plots a single histogram based
 		// on those 2 so we want them to have the same number of buckets, which
 		// should be true.
-		allocsBySize := samples[idx_gc_heap_allocs_by_size_bytes].Value.Float64Histogram()
-		freesBySize := samples[idx_gc_heap_frees_by_size_bytes].Value.Float64Histogram()
+		allocsBySize := sample(samples, "/gc/heap/allocs-by-size:bytes").Float64Histogram()
+		freesBySize := sample(samples, "/gc/heap/frees-by-size:bytes").Float64Histogram()
 		if len(allocsBySize.Buckets) != len(freesBySize.Buckets) {
 			panic("different number of buckets in allocs and frees size classes histograms")
 		}
@@ -70,4 +71,4 @@ var _ = register(description{
 			},
 		}
 	},
-})
+}

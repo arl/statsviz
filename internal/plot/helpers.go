@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-// value returns the value of the metric at index idx, as a float64.
-func value(samples []metrics.Sample, idx int) float64 {
-	v := samples[idx].Value
+// value returns the value of a metric, as a float64.
+func value(samples []metrics.Sample, metric string) float64 {
+	v := sample(samples, metric)
 	if v.Kind() == metrics.KindUint64 {
 		return float64(v.Uint64())
 	}
@@ -68,8 +68,8 @@ func cpuRate() transform {
 	r := heldRate()
 	r(0, 0, 0) // so that the first rate is the average since program start
 	return func(_ time.Time, samples []metrics.Sample, cur float64) float64 {
-		total := value(samples, idx_cpu_classes_total_cpu_seconds)
-		maxprocs := value(samples, idx_sched_gomaxprocs_threads)
+		total := value(samples, "/cpu/classes/total:cpu-seconds")
+		maxprocs := value(samples, "/sched/gomaxprocs:threads")
 		// total/maxprocs is a clock, in seconds.
 		return r(total, total/maxprocs, cur)
 	}
@@ -90,7 +90,7 @@ func gcRate() transform {
 		if start.IsZero() {
 			start = now
 		}
-		cycles := value(samples, idx_gc_cycles_total_gc_cycles)
+		cycles := value(samples, "/gc/cycles/total:gc-cycles")
 		return r(cycles, now.Sub(start).Seconds(), cur)
 	}
 }
