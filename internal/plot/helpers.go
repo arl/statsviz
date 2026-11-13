@@ -1,44 +1,129 @@
 package plot
 
 import (
+	"math"
 	"runtime/debug"
+	"runtime/metrics"
 	"time"
 )
 
-// delta returns a function that computes the delta between successive calls.
-func delta[T uint64 | float64]() func(T) T {
+// value returns the value of the metric at index idx, as a float64.
+func value(samples []metrics.Sample, idx int) float64 {
+	v := samples[idx].Value
+	if v.Kind() == metrics.KindUint64 {
+		return float64(v.Uint64())
+	}
+	return v.Float64()
+}
+
+// A transform converts the successive values of a metric (or of an
+// expression of metrics) into the values to plot. Each series gets its own
+// transform instance, created by one of the functions below.
+type transform = func(now time.Time, samples []metrics.Sample, cur float64) float64
+
+// delta computes the difference with the previous value.
+func delta() transform {
 	first := true
-	var last T
-	return func(cur T) T {
-		delta := cur - last
+	var last float64
+
+	return func(_ time.Time, _ []metrics.Sample, cur float64) float64 {
+		d := cur - last
 		if first {
-			delta = 0
+			d = 0
 			first = false
 		}
 		last = cur
-		return delta
+		return d
 	}
 }
 
-// rate returns a function that computes the rate of change per second.
-func rate[T uint64 | float64]() func(time.Time, T) float64 {
-	var last T
+// rate computes the rate of change per second.
+func rate() transform {
+	var last float64
 	var lastTime time.Time
 
-	return func(now time.Time, cur T) float64 {
+	return func(now time.Time, _ []metrics.Sample, cur float64) float64 {
 		if lastTime.IsZero() {
-			last = cur
-			lastTime = now
+			last, lastTime = cur, now
 			return 0
 		}
 
-		t := now.Sub(lastTime).Seconds()
-		rate := float64(cur-last) / t
+		r := (cur - last) / now.Sub(lastTime).Seconds()
+		last, lastTime = cur, now
+		return r
+	}
+}
 
-		last = cur
-		lastTime = now
+// cpuRate converts a cumulative /cpu/classes metric into a rate, in
+// CPU-seconds per second.
+//
+// The runtime only updates /cpu/classes metrics once per GC cycle, so the rate
+// can't be computed between 2 successive samples: it would be 0 most of the
+// time, with a spike after each GC cycle. Instead, the rate is averaged over
+// the period between 2 updates, and held until the next one. Updates are
+// detected, and time is measured, with /cpu/classes/total:cpu-seconds, which
+// grows by GOMAXPROCS CPU-seconds per second. Before the second update, the
+// returned rate is the average since the program started.
+func cpuRate() transform {
+	r := heldRate()
+	r(0, 0, 0) // so that the first rate is the average since program start
+	return func(_ time.Time, samples []metrics.Sample, cur float64) float64 {
+		total := value(samples, idx_cpu_classes_total_cpu_seconds)
+		maxprocs := value(samples, idx_sched_gomaxprocs_threads)
+		// total/maxprocs is a clock, in seconds.
+		return r(total, total/maxprocs, cur)
+	}
+}
 
-		return rate
+// gcRate converts a cumulative metric into a rate of change per second,
+// averaged over GC cycles.
+//
+// It's meant for metrics which the runtime mostly updates in bursts around GC
+// cycles, such as heap allocations (counted when allocation caches are
+// flushed) and frees (counted when memory is swept). The rate is computed each
+// time the count of completed GC cycles changes, and held until the next
+// change.
+func gcRate() transform {
+	r := heldRate()
+	var start time.Time
+	return func(now time.Time, samples []metrics.Sample, cur float64) float64 {
+		if start.IsZero() {
+			start = now
+		}
+		cycles := value(samples, idx_gc_cycles_total_gc_cycles)
+		return r(cycles, now.Sub(start).Seconds(), cur)
+	}
+}
+
+// heldRate returns a function computing the rate of change per second of cur,
+// only when version changes, and returning the last computed rate otherwise.
+// clock is the current time, in seconds.
+func heldRate() func(version, clock, cur float64) float64 {
+	first := true
+	var lastVersion, lastClock, last, r float64
+
+	return func(version, clock, cur float64) float64 {
+		if first {
+			first = false
+			lastVersion, lastClock, last = version, clock, cur
+			return 0
+		}
+		if version != lastVersion && clock != lastClock {
+			r = (cur - last) / (clock - lastClock)
+			lastVersion, lastClock, last = version, clock, cur
+		}
+		return r
+	}
+}
+
+// noLimit replaces math.MaxInt64, which the runtime uses to represent 'no
+// limit', with 0.
+func noLimit() transform {
+	return func(_ time.Time, _ []metrics.Sample, cur float64) float64 {
+		if cur == math.MaxInt64 {
+			return 0
+		}
+		return cur
 	}
 }
 
@@ -49,55 +134,4 @@ func goversion() string {
 	}
 
 	return "<unknown version>"
-}
-
-// cpuRate returns a function that converts a cumulative /cpu/classes metric
-// into a rate, in CPU-seconds per second.
-//
-// The runtime only updates /cpu/classes metrics once per GC cycle, so the rate
-// can't be computed between 2 successive samples: it would be 0 most of the
-// time, with a spike after each GC cycle. Instead, the rate is averaged over
-// the period between 2 updates, and held until the next one. Updates are
-// detected, and time is measured, with /cpu/classes/total:cpu-seconds, which
-// grows by GOMAXPROCS CPU-seconds per second. Before the second update, the
-// returned rate is the average since the program started.
-func cpuRate() func(total float64, maxprocs uint64, cur float64) float64 {
-	var lastTotal, last, rate float64
-
-	return func(total float64, maxprocs uint64, cur float64) float64 {
-		if total != lastTotal {
-			rate = (cur - last) / (total - lastTotal) * float64(maxprocs)
-			lastTotal = total
-			last = cur
-		}
-		return rate
-	}
-}
-
-// gcRate returns a function that converts a cumulative metric into a rate of
-// change per second, averaged over GC cycles.
-//
-// It's meant for metrics which the runtime mostly updates in bursts around GC
-// cycles, such as heap allocations (counted when allocation caches are
-// flushed) and frees (counted when memory is swept). The rate is computed each
-// time cycles, the count of completed GC cycles, changes, and held until the
-// next change.
-func gcRate[T uint64 | float64]() func(now time.Time, cycles uint64, cur T) float64 {
-	var (
-		last       T
-		lastCycles uint64
-		lastTime   time.Time
-		rate       float64
-	)
-
-	return func(now time.Time, cycles uint64, cur T) float64 {
-		switch {
-		case lastTime.IsZero():
-			last, lastCycles, lastTime = cur, cycles, now
-		case cycles != lastCycles:
-			rate = float64(cur-last) / now.Sub(lastTime).Seconds()
-			last, lastCycles, lastTime = cur, cycles, now
-		}
-		return rate
-	}
 }

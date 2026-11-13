@@ -57,7 +57,9 @@ var _ = register(description{
 				YUnit: "bytes",
 				ZName: "objects",
 			},
-			InfoText: `This heatmap shows <b>/gc/heap/allocs-by-size:bytes - /gc/heap/frees-by-size:bytes</b>.`,
+			InfoText: `This heatmap shows <b>/gc/heap/allocs-by-size:bytes - /gc/heap/frees-by-size:bytes</b>.
+<b>/gc/heap/allocs-by-size:bytes</b>: Distribution of heap allocations by approximate size. Bucket counts increase monotonically. Note that this does not include tiny objects as defined by /gc/heap/tiny/allocs:objects, only tiny blocks.
+<b>/gc/heap/frees-by-size:bytes</b>: Distribution of freed heap allocations by approximate size. Bucket counts increase monotonically. Note that this does not include tiny objects as defined by /gc/heap/tiny/allocs:objects, only tiny blocks.`,
 			Layout: HeatmapLayout{
 				YAxis: HeatmapYaxis{
 					Title:    "bytes",

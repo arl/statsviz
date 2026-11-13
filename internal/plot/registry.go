@@ -1,6 +1,8 @@
 // Package plot defines and builds the plots available in Statsviz.
 package plot
 
+//go:generate go run ./internal/gen
+
 import (
 	"runtime/metrics"
 	"slices"
