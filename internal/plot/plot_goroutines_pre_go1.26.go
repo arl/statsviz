@@ -14,15 +14,18 @@ var _ = register(description{
 	getvalues: func() getvalues {
 		return func(_ time.Time, samples []metrics.Sample) any {
 			goroutines := samples[idx_sched_goroutines_goroutines].Value.Uint64()
-			return []uint64{goroutines}
+
+			return []uint64{
+				goroutines,
+			}
 		}
 	},
-
 	layout: Scatter{
-		Name:  "goroutines",
-		Tags:  []tag{tagScheduler},
-		Title: "Goroutines",
-		Type:  "scatter",
+		Name:   "goroutines",
+		Tags:   []tag{tagScheduler},
+		Title:  "Goroutines",
+		Type:   "scatter",
+		Events: "lastgc",
 		Layout: ScatterLayout{
 			Yaxis: ScatterYAxis{
 				Title: "goroutines",
@@ -31,6 +34,6 @@ var _ = register(description{
 		Subplots: []Subplot{
 			{Name: "goroutines", Unitfmt: "%{y}"},
 		},
-		InfoText: `<i>Goroutines</i> is <b>/sched/goroutines</b>, the count of live goroutines.`,
+		InfoText: `<i>goroutines</i> is <b>/sched/goroutines:goroutines</b>. Count of live goroutines.`,
 	},
 })

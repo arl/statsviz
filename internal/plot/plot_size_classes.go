@@ -53,14 +53,14 @@ var _ = register(description{
 			Buckets:    floatseq(len(buckets)),
 			CustomData: buckets,
 			Hover: HeatmapHover{
-				YName: "size class",
+				YName: "bytes",
 				YUnit: "bytes",
 				ZName: "objects",
 			},
-			InfoText: `This heatmap shows the distribution of size classes, using <b>/gc/heap/allocs-by-size</b> and <b>/gc/heap/frees-by-size</b>.`,
+			InfoText: `This heatmap shows <b>/gc/heap/allocs-by-size:bytes - /gc/heap/frees-by-size:bytes</b>.`,
 			Layout: HeatmapLayout{
 				YAxis: HeatmapYaxis{
-					Title:    "size class",
+					Title:    "bytes",
 					TickMode: "array",
 					TickVals: []float64{1, 9, 17, 25, 31, 37, 43, 50, 58, 66},
 					TickText: []float64{1 << 4, 1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15},

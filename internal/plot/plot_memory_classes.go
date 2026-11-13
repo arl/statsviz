@@ -40,16 +40,14 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{Unitfmt: "%{y:.4s}B", Name: "os stacks"},
-			{Unitfmt: "%{y:.4s}B", Name: "other"},
-			{Unitfmt: "%{y:.4s}B", Name: "profiling buckets"},
-			{Unitfmt: "%{y:.4s}B", Name: "total"},
+			{Name: "os stacks", Unitfmt: "%{y:.4s}B"},
+			{Name: "other", Unitfmt: "%{y:.4s}B"},
+			{Name: "profiling buckets", Unitfmt: "%{y:.4s}B"},
+			{Name: "total", Unitfmt: "%{y:.4s}B"},
 		},
-
-		InfoText: `
-<i>OS stacks</i> is <b>/memory/classes/os-stacks</b>, stack memory allocated by the underlying operating system.
-<i>Other</i> is <b>/memory/classes/other</b>, memory used by execution trace buffers, structures for debugging the runtime, finalizer and profiler specials, and more.
-<i>Profiling buckets</i> is <b>/memory/classes/profiling/buckets</b>, memory that is used by the stack trace hash map used for profiling.
-<i>Total</i> is <b>/memory/classes/total</b>, all memory mapped by the Go runtime into the current process as read-write.`,
+		InfoText: `<i>os stacks</i> is <b>/memory/classes/os-stacks:bytes</b>. Stack memory allocated by the underlying operating system.
+<i>other</i> is <b>/memory/classes/other:bytes</b>. Memory used by execution trace buffers, structures for debugging the runtime, finalizer and profiler specials, and more.
+<i>profiling buckets</i> is <b>/memory/classes/profiling/buckets:bytes</b>. Memory that is used by the stack trace hash map used for profiling.
+<i>total</i> is <b>/memory/classes/total:bytes</b>. All memory mapped by the Go runtime into the current process as read-write.`,
 	},
 })

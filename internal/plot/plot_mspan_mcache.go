@@ -19,7 +19,12 @@ var _ = register(description{
 			mcacheInUse := samples[idx_memory_classes_metadata_mcache_inuse_bytes].Value.Uint64()
 			mcacheFree := samples[idx_memory_classes_metadata_mcache_free_bytes].Value.Uint64()
 
-			return []uint64{mspanInUse, mspanFree, mcacheInUse, mcacheFree}
+			return []uint64{
+				mspanInUse,
+				mspanFree,
+				mcacheInUse,
+				mcacheFree,
+			}
 		}
 	},
 	layout: Scatter{
@@ -35,16 +40,14 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{Unitfmt: "%{y:.4s}B", Name: "mspan in-use"},
-			{Unitfmt: "%{y:.4s}B", Name: "mspan free"},
-			{Unitfmt: "%{y:.4s}B", Name: "mcache in-use"},
-			{Unitfmt: "%{y:.4s}B", Name: "mcache free"},
+			{Name: "mspan in-use", Unitfmt: "%{y:.4s}B"},
+			{Name: "mspan free", Unitfmt: "%{y:.4s}B"},
+			{Name: "mcache in-use", Unitfmt: "%{y:.4s}B"},
+			{Name: "mcache free", Unitfmt: "%{y:.4s}B"},
 		},
-		InfoText: `
-<i>Mspan in-use</i> is <b>/memory/classes/metadata/mspan/inuse</b>, the memory that is occupied by runtime mspan structures that are currently being used.
-<i>Mspan free</i> is <b>/memory/classes/metadata/mspan/free</b>, the memory that is reserved for runtime mspan structures, but not in-use.
-<i>Mcache in-use</i> is <b>/memory/classes/metadata/mcache/inuse</b>, the memory that is occupied by runtime mcache structures that are currently being used.
-<i>Mcache free</i> is <b>/memory/classes/metadata/mcache/free</b>, the memory that is reserved for runtime mcache structures, but not in-use.
-`,
+		InfoText: `<i>mspan in-use</i> is <b>/memory/classes/metadata/mspan/inuse:bytes</b>. Memory that is occupied by runtime mspan structures that are currently being used.
+<i>mspan free</i> is <b>/memory/classes/metadata/mspan/free:bytes</b>. Memory that is reserved for runtime mspan structures, but not in-use.
+<i>mcache in-use</i> is <b>/memory/classes/metadata/mcache/inuse:bytes</b>. Memory that is occupied by runtime mcache structures that are currently being used.
+<i>mcache free</i> is <b>/memory/classes/metadata/mcache/free:bytes</b>. Memory that is reserved for runtime mcache structures, but not in-use.`,
 	},
 })

@@ -15,39 +15,31 @@ var _ = register(description{
 		ratefrees := rate[uint64]()
 
 		return func(now time.Time, samples []metrics.Sample) any {
-			curallocs := samples[idx_gc_heap_allocs_objects].Value.Uint64()
-			curfrees := samples[idx_gc_heap_frees_objects].Value.Uint64()
+			allocs := samples[idx_gc_heap_allocs_objects].Value.Uint64()
+			frees := samples[idx_gc_heap_frees_objects].Value.Uint64()
 
 			return []float64{
-				rateallocs(now, curallocs),
-				ratefrees(now, curfrees),
+				rateallocs(now, allocs),
+				ratefrees(now, frees),
 			}
 		}
 	},
 	layout: Scatter{
-		Name:  "alloc-free-rate",
-		Tags:  []tag{tagGC},
-		Title: "Heap Allocation & Free Rates",
-		Type:  "scatter",
+		Name:   "alloc-free-rate",
+		Tags:   []tag{tagGC},
+		Title:  "Heap Allocation & Free Rates",
+		Type:   "scatter",
+		Events: "lastgc",
 		Layout: ScatterLayout{
 			Yaxis: ScatterYAxis{
-				Title: "objects / second",
+				Title: "objects / second",
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "allocs/sec",
-				Unitfmt: "%{y:.4s}",
-				Color:   RGBString(66, 133, 244),
-			},
-			{
-				Name:    "frees/sec",
-				Unitfmt: "%{y:.4s}",
-				Color:   RGBString(219, 68, 55),
-			},
+			{Name: "allocs/sec", Unitfmt: "%{y:.4s}"},
+			{Name: "frees/sec", Unitfmt: "%{y:.4s}"},
 		},
-		InfoText: `
-<i>Allocations per second</i> is the rate of change, per second, of the cumulative <b>/gc/heap/allocs:objects</b> metric.
-<i>Frees per second</i> is the rate of change, per second, of the cumulative <b>/gc/heap/frees:objects</b> metric.`,
+		InfoText: `<i>allocs/sec</i> is the rate of change, per second, of <b>/gc/heap/allocs:objects</b>. Cumulative count of heap allocations triggered by the application.
+<i>frees/sec</i> is the rate of change, per second, of <b>/gc/heap/frees:objects</b>. Cumulative count of heap allocations whose storage was freed by the garbage collector.`,
 	},
 })

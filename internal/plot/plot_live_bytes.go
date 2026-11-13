@@ -15,7 +15,9 @@ var _ = register(description{
 			allocBytes := samples[idx_gc_heap_allocs_bytes].Value.Uint64()
 			freedBytes := samples[idx_gc_heap_frees_bytes].Value.Uint64()
 
-			return []uint64{allocBytes - freedBytes}
+			return []uint64{
+				allocBytes - freedBytes,
+			}
 		}
 	},
 	layout: Scatter{
@@ -25,17 +27,15 @@ var _ = register(description{
 		Type:   "bar",
 		Events: "lastgc",
 		Layout: ScatterLayout{
+			BarMode: "stack",
 			Yaxis: ScatterYAxis{
-				Title: "bytes",
+				Title:      "bytes",
+				TickSuffix: "B",
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "live bytes",
-				Unitfmt: "%{y:.4s}B",
-				Color:   RGBString(135, 182, 218),
-			},
+			{Name: "live bytes", Unitfmt: "%{y:.4s}B"},
 		},
-		InfoText: `<i>Live bytes</i> is <b>/gc/heap/allocs - /gc/heap/frees</b>. It's the number of bytes currently allocated (and not yet GC'ed) to the heap by the application.`,
+		InfoText: `<i>live bytes</i> is <b>/gc/heap/allocs:bytes - /gc/heap/frees:bytes</b>.`,
 	},
 })

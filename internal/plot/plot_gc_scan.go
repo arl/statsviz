@@ -17,7 +17,11 @@ var _ = register(description{
 			heap := samples[idx_gc_scan_heap_bytes].Value.Uint64()
 			stack := samples[idx_gc_scan_stack_bytes].Value.Uint64()
 
-			return []uint64{globals, heap, stack}
+			return []uint64{
+				globals,
+				heap,
+				stack,
+			}
 		}
 	},
 	layout: Scatter{
@@ -29,32 +33,17 @@ var _ = register(description{
 		Layout: ScatterLayout{
 			BarMode: "stack",
 			Yaxis: ScatterYAxis{
-				TickSuffix: "B",
 				Title:      "bytes",
+				TickSuffix: "B",
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "scannable globals",
-				Unitfmt: "%{y:.4s}B",
-				Type:    "bar",
-			},
-			{
-				Name:    "scannable heap",
-				Unitfmt: "%{y:.4s}B",
-				Type:    "bar",
-			},
-			{
-				Name:    "scanned stack",
-				Unitfmt: "%{y:.4s}B",
-				Type:    "bar",
-			},
+			{Name: "scannable globals", Unitfmt: "%{y:.4s}B"},
+			{Name: "scannable heap", Unitfmt: "%{y:.4s}B"},
+			{Name: "scanned stack", Unitfmt: "%{y:.4s}B"},
 		},
-		InfoText: `
-This plot shows the amount of memory that is scannable by the GC.
-<i>scannable globals</i> is <b>/gc/scan/globals</b>, the total amount of global variable space that is scannable.
-<i>scannable heap</i> is <b>/gc/scan/heap</b>, the total amount of heap space that is scannable.
-<i>scanned stack</i> is <b>/gc/scan/stack</b>, the number of bytes of stack that were scanned last GC cycle.
-`,
+		InfoText: `<i>scannable globals</i> is <b>/gc/scan/globals:bytes</b>. The total amount of global variable space that is scannable.
+<i>scannable heap</i> is <b>/gc/scan/heap:bytes</b>. The total amount of heap space that is scannable.
+<i>scanned stack</i> is <b>/gc/scan/stack:bytes</b>. The number of bytes of stack that were scanned last GC cycle.`,
 	},
 })

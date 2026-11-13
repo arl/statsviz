@@ -50,19 +50,16 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{Unitfmt: "%{y:.4s}s", Type: "bar", Name: "user"},
-			{Unitfmt: "%{y:.4s}s", Type: "bar", Name: "scavenge"},
-			{Unitfmt: "%{y:.4s}s", Type: "bar", Name: "idle"},
-			{Unitfmt: "%{y:.4s}s", Type: "bar", Name: "gc total"},
-			{Unitfmt: "%{y:.4s}s", Type: "scatter", Name: "total"},
+			{Name: "user", Unitfmt: "%{y:.4s}s"},
+			{Name: "scavenge", Unitfmt: "%{y:.4s}s"},
+			{Name: "idle", Unitfmt: "%{y:.4s}s"},
+			{Name: "gc total", Unitfmt: "%{y:.4s}s"},
+			{Name: "total", Unitfmt: "%{y:.4s}s", Type: "scatter"},
 		},
-		InfoText: `Shows the fraction of CPU spent in your code vs. runtime vs. wasted. Helps track overall utilization and potential headroom.
-<i>user</i> is the rate of change, per second, of <b>/cpu/classes/user:cpu-seconds</b>, the CPU time spent running user Go code.
-<i>scavenge</i> is the rate of change, per second, of <b>/cpu/classes/scavenge/total:cpu-seconds</b>, the CPU time spent performing tasks that return unused memory to the OS.
-<i>idle</i> is the rate of change, per second, of <b>/cpu/classes/idle:cpu-seconds</b>, the available CPU time not spent executing any Go or Go runtime code.
-<i>gc total</i> is the rate of change, per second, of <b>/cpu/classes/gc/total:cpu-seconds</b>, the CPU time spent performing GC tasks (sum of all metrics in <b>/cpu/classes/gc</b>).
-<i>total</i> is the rate of change, per second, of <b>/cpu/classes/total:cpu-seconds</b>, the available CPU time for user Go code or the Go runtime, as defined by GOMAXPROCS. In other words, GOMAXPROCS integrated over the wall-clock duration this process has been executing for.
-
-All metrics are rates in CPU-seconds per second.`,
+		InfoText: `<i>user</i> is the rate of change, per second, of <b>/cpu/classes/user:cpu-seconds</b>. Estimated total CPU time spent running user Go code.
+<i>scavenge</i> is the rate of change, per second, of <b>/cpu/classes/scavenge/total:cpu-seconds</b>. Estimated total CPU time spent performing tasks that return unused memory to the underlying platform.
+<i>idle</i> is the rate of change, per second, of <b>/cpu/classes/idle:cpu-seconds</b>. Estimated total available CPU time not spent executing any Go or Go runtime code.
+<i>gc total</i> is the rate of change, per second, of <b>/cpu/classes/gc/total:cpu-seconds</b>. Estimated total CPU time spent performing GC tasks.
+<i>total</i> is the rate of change, per second, of <b>/cpu/classes/total:cpu-seconds</b>. Estimated total available CPU time for user Go code or the Go runtime, as defined by GOMAXPROCS.`,
 	},
 })

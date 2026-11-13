@@ -13,7 +13,9 @@ var _ = register(description{
 		return func(_ time.Time, samples []metrics.Sample) any {
 			gcHeapObjects := samples[idx_gc_heap_objects_objects].Value.Uint64()
 
-			return []uint64{gcHeapObjects}
+			return []uint64{
+				gcHeapObjects,
+			}
 		}
 	},
 	layout: Scatter{
@@ -23,17 +25,14 @@ var _ = register(description{
 		Type:   "bar",
 		Events: "lastgc",
 		Layout: ScatterLayout{
+			BarMode: "stack",
 			Yaxis: ScatterYAxis{
 				Title: "objects",
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "live objects",
-				Unitfmt: "%{y:.4s}",
-				Color:   RGBString(255, 195, 128),
-			},
+			{Name: "live objects", Unitfmt: "%{y}"},
 		},
-		InfoText: `<i>Live objects</i> is <b>/gc/heap/objects</b>. It's the number of objects, live or unswept, occupying heap memory.`,
+		InfoText: `<i>live objects</i> is <b>/gc/heap/objects:objects</b>. Number of objects, live or unswept, occupying heap memory.`,
 	},
 })

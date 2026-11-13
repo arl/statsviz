@@ -17,6 +17,7 @@ var _ = register(description{
 		return func(now time.Time, samples []metrics.Sample) any {
 			assist := samples[idx_cpu_classes_scavenge_assist_cpu_seconds].Value.Float64()
 			background := samples[idx_cpu_classes_scavenge_background_cpu_seconds].Value.Float64()
+
 			return []float64{
 				rateassist(now, assist),
 				ratebackground(now, background),
@@ -37,21 +38,10 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "assist",
-				Unitfmt: "%{y:.4s}s",
-				Type:    "bar",
-			},
-			{
-				Name:    "background",
-				Unitfmt: "%{y:.4s}s",
-				Type:    "bar",
-			},
+			{Name: "assist", Unitfmt: "%{y:.4s}s"},
+			{Name: "background", Unitfmt: "%{y:.4s}s"},
 		},
-		InfoText: `Breakdown of how the GC scavenger returns memory to the OS (eagerly vs background).
-<i>assist</i> is the rate of change, per second, of <b>/cpu/classes/scavenge/assist</b>, the CPU time spent returning unused memory eagerly in response to memory pressure.
-<i>background</i> is the rate of change, per second, of <b>/cpu/classes/scavenge/background</b>, the CPU time spent performing background tasks to return unused memory to the OS.
-
-Both metrics are rates in CPU-seconds per second.`,
+		InfoText: `<i>assist</i> is the rate of change, per second, of <b>/cpu/classes/scavenge/assist:cpu-seconds</b>. Estimated total CPU time spent returning unused memory to the underlying platform in response eagerly to memory pressure.
+<i>background</i> is the rate of change, per second, of <b>/cpu/classes/scavenge/background:cpu-seconds</b>. Estimated total CPU time spent performing background tasks to return unused memory to the underlying platform.`,
 	},
 })

@@ -21,21 +21,16 @@ var _ = register(description{
 			heapFree := samples[idx_memory_classes_heap_free_bytes].Value.Uint64()
 			heapReleased := samples[idx_memory_classes_heap_released_bytes].Value.Uint64()
 			heapStacks := samples[idx_memory_classes_heap_stacks_bytes].Value.Uint64()
-			nextGC := samples[idx_gc_heap_goal_bytes].Value.Uint64()
-
-			heapIdle := heapReleased + heapFree
-			heapInUse := heapObjects + heapUnused
-			heapSys := heapInUse + heapIdle
+			heapGoal := samples[idx_gc_heap_goal_bytes].Value.Uint64()
 
 			return []uint64{
-				heapSys,
+				heapObjects + heapUnused + heapFree + heapReleased,
 				heapObjects,
 				heapStacks,
-				nextGC,
+				heapGoal,
 			}
 		}
 	},
-
 	layout: Scatter{
 		Name:   "heap (details)",
 		Tags:   []tag{tagGC},
@@ -49,15 +44,14 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{Unitfmt: "%{y:.4s}B", Name: "heap sys"},
-			{Unitfmt: "%{y:.4s}B", Name: "heap objects"},
-			{Unitfmt: "%{y:.4s}B", Name: "heap stacks"},
-			{Unitfmt: "%{y:.4s}B", Name: "heap goal"},
+			{Name: "heap sys", Unitfmt: "%{y:.4s}B"},
+			{Name: "heap objects", Unitfmt: "%{y:.4s}B"},
+			{Name: "heap stacks", Unitfmt: "%{y:.4s}B"},
+			{Name: "heap goal", Unitfmt: "%{y:.4s}B"},
 		},
-		InfoText: `
-<i>Heap sys</i> is <b>/memory/classes/heap/{objects + unused + released + free}</b>. It's an estimate of all the heap memory obtained from the OS.
-<i>Heap objects</i> is <b>/memory/classes/heap/objects</b>, the memory occupied by live objects and dead objects that have not yet been marked free by the GC.
-<i>Heap stacks</i> is <b>/memory/classes/heap/stacks</b>, the memory used for stack space.
-<i>Heap goal</i> is <b>/gc/heap/goal</b>, the heap size target for the end of the GC cycle.`,
+		InfoText: `<i>heap sys</i> is <b>/memory/classes/heap/objects:bytes + /memory/classes/heap/unused:bytes + /memory/classes/heap/free:bytes + /memory/classes/heap/released:bytes</b>.
+<i>heap objects</i> is <b>/memory/classes/heap/objects:bytes</b>. Memory occupied by live objects and dead objects that have not yet been marked free by the garbage collector.
+<i>heap stacks</i> is <b>/memory/classes/heap/stacks:bytes</b>. Memory allocated from the heap that is reserved for stack space, whether or not it is currently in-use.
+<i>heap goal</i> is <b>/gc/heap/goal:bytes</b>. Heap size target for the end of the GC cycle.`,
 	},
 })

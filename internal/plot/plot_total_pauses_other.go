@@ -37,22 +37,22 @@ var _ = register(description{
 			Buckets:    floatseq(len(buckets)),
 			CustomData: buckets,
 			Hover: HeatmapHover{
-				YName: "pause duration",
+				YName: "duration",
 				YUnit: "duration",
 				ZName: "pauses",
 			},
 			Layout: HeatmapLayout{
 				YAxis: HeatmapYaxis{
-					Title:    "pause duration",
+					Title:    "duration",
 					TickMode: "array",
 					TickVals: []float64{6, 13, 20, 26, 33, 39.5, 46, 53, 60, 66, 73, 79, 86},
 					TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
 				},
 			},
-			InfoText: `This heatmap shows the distribution of individual <b>non-GC-related</b> stop-the-world <i>pause latencies</i>.
+			InfoText: `This heatmap shows <b>/sched/pauses/total/other:seconds</b>.
+Distribution of individual non-GC-related stop-the-world pause latencies.
 This is the time from deciding to stop the world until the world is started again.
-Some of this time is spent getting all threads to stop (measured directly in <i>/sched/pauses/stopping/other:seconds</i>).
-Uses <b>/sched/pauses/total/other:seconds</b>.`,
+Some of this time is spent getting all threads to stop (measured directly in /sched/pauses/stopping/other:seconds).`,
 		}
 	},
 })

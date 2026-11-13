@@ -13,9 +13,11 @@ var _ = register(description{
 		ratemxwait := rate[float64]()
 
 		return func(now time.Time, samples []metrics.Sample) any {
-			mxwait := ratemxwait(now, samples[idx_sync_mutex_wait_total_seconds].Value.Float64())
+			mxwait := samples[idx_sync_mutex_wait_total_seconds].Value.Float64()
 
-			return []float64{mxwait}
+			return []float64{
+				ratemxwait(now, mxwait),
+			}
 		}
 	},
 	layout: Scatter{
@@ -25,22 +27,15 @@ var _ = register(description{
 		Type:   "bar",
 		Events: "lastgc",
 		Layout: ScatterLayout{
+			BarMode: "stack",
 			Yaxis: ScatterYAxis{
 				Title:      "seconds / second",
 				TickSuffix: "s",
 			},
 		},
 		Subplots: []Subplot{
-			{
-				Name:    "mutex wait",
-				Unitfmt: "%{y:.4s}s",
-				Type:    "bar",
-			},
+			{Name: "mutex wait", Unitfmt: "%{y:.4s}s"},
 		},
-
-		InfoText: `Cumulative metrics are converted to rates by Statsviz so as to be more easily comparable and readable.
-<i>mutex wait</i> is the rate of change, per second, of <b>/sync/mutex/wait/total</b>, approximate cumulative time goroutines have spent blocked on a sync.Mutex or sync.RWMutex.
-
-This metric is useful for identifying global changes in lock contention. Collect a mutex or block profile using the runtime/pprof package for more detailed contention data.`,
+		InfoText: `<i>mutex wait</i> is the rate of change, per second, of <b>/sync/mutex/wait/total:seconds</b>. Approximate cumulative time goroutines have spent blocked on a sync.Mutex, sync.RWMutex, or runtime-internal lock.`,
 	},
 })

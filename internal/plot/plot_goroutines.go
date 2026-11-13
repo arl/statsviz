@@ -17,25 +17,32 @@ var _ = register(description{
 		"/sched/goroutines/waiting:goroutines",
 	},
 	getvalues: func() getvalues {
-		deltaCreated := delta[uint64]()
+		deltacreated := delta[uint64]()
 
 		return func(_ time.Time, samples []metrics.Sample) any {
-			created := deltaCreated(samples[idx_sched_goroutines_created_goroutines].Value.Uint64())
 			goroutines := samples[idx_sched_goroutines_goroutines].Value.Uint64()
+			created := samples[idx_sched_goroutines_created_goroutines].Value.Uint64()
 			notInGo := samples[idx_sched_goroutines_not_in_go_goroutines].Value.Uint64()
 			runnable := samples[idx_sched_goroutines_runnable_goroutines].Value.Uint64()
 			running := samples[idx_sched_goroutines_running_goroutines].Value.Uint64()
 			waiting := samples[idx_sched_goroutines_waiting_goroutines].Value.Uint64()
 
-			return []uint64{created, goroutines, notInGo, runnable, running, waiting}
+			return []uint64{
+				deltacreated(created),
+				goroutines,
+				notInGo,
+				runnable,
+				running,
+				waiting,
+			}
 		}
 	},
-
 	layout: Scatter{
-		Name:  "goroutines",
-		Tags:  []tag{tagScheduler},
-		Title: "Goroutines",
-		Type:  "scatter",
+		Name:   "goroutines",
+		Tags:   []tag{tagScheduler},
+		Title:  "Goroutines",
+		Type:   "scatter",
+		Events: "lastgc",
 		Layout: ScatterLayout{
 			Yaxis: ScatterYAxis{
 				Title: "goroutines",
@@ -49,11 +56,11 @@ var _ = register(description{
 			{Name: "running", Unitfmt: "%{y}"},
 			{Name: "waiting", Unitfmt: "%{y}"},
 		},
-		InfoText: `<i>Goroutines</i> is <b>/sched/goroutines</b>, the count of live goroutines.
-<i>Created</i> is the delta of <b>/sched/goroutines-created</b>, the cumulative number of created goroutines.
-<i>Not in Go</i> is <b>/sched/goroutines/not-in-go</b>, the approximate count of goroutines running or blocked in a system call or cgo call.
-<i>Runnable</i> is <b>/sched/goroutines/runnable</b>, the approximate count of goroutines ready to execute, but not executing.
-<i>Running</i> is <b>/sched/goroutines/running</b>, the approximate count of goroutines executing.
-<i>Waiting</i> is <b>/sched/goroutines/waiting</b>, the approximate count of goroutines waiting on a resource (I/O or sync primitives).`,
+		InfoText: `<i>created</i> is the delta of <b>/sched/goroutines-created:goroutines</b>. Count of goroutines created since program start.
+<i>goroutines</i> is <b>/sched/goroutines:goroutines</b>. Count of live goroutines.
+<i>not in Go</i> is <b>/sched/goroutines/not-in-go:goroutines</b>. Approximate count of goroutines running or blocked in a system call or cgo call.
+<i>runnable</i> is <b>/sched/goroutines/runnable:goroutines</b>. Approximate count of goroutines ready to execute, but not executing.
+<i>running</i> is <b>/sched/goroutines/running:goroutines</b>. Approximate count of goroutines executing.
+<i>waiting</i> is <b>/sched/goroutines/waiting:goroutines</b>. Approximate count of goroutines waiting on a resource (I/O or sync primitives).`,
 	},
 })

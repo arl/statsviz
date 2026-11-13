@@ -16,14 +16,18 @@ var _ = register(description{
 		return func(_ time.Time, samples []metrics.Sample) any {
 			executed := samples[idx_gc_finalizers_executed_finalizers].Value.Uint64()
 			queued := samples[idx_gc_finalizers_queued_finalizers].Value.Uint64()
-			return []uint64{queued - executed}
+
+			return []uint64{
+				queued - executed,
+			}
 		}
 	},
 	layout: Scatter{
-		Name:  "gc-finalizers",
-		Tags:  []tag{tagGC},
-		Title: "GC Finalizers Queue",
-		Type:  "bar",
+		Name:   "gc-finalizers",
+		Tags:   []tag{tagGC},
+		Title:  "GC Finalizers Queue",
+		Type:   "bar",
+		Events: "lastgc",
 		Layout: ScatterLayout{
 			BarMode: "stack",
 			Yaxis: ScatterYAxis{
@@ -31,10 +35,8 @@ var _ = register(description{
 			},
 		},
 		Subplots: []Subplot{
-			{Unitfmt: "%{y}", Type: "bar", Name: "queue size"},
+			{Name: "queue size", Unitfmt: "%{y}"},
 		},
-		InfoText: `Length of the finalizer functions queue (created by runtime.SetFinalizer).
-It's <i>/gc/finalizers/queued:finalizers</i> - <i>/gc/finalizers/executed:finalizers</i>.
-Useful for detecting finalizers overwhelming the queue, either by being too slow, or by there being too many of them.
-`},
+		InfoText: `<i>queue size</i> is <b>/gc/finalizers/queued:finalizers - /gc/finalizers/executed:finalizers</b>.`,
+	},
 })
