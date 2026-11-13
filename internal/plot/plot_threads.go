@@ -28,7 +28,8 @@ var _ = register(description{
 		Events: "lastgc",
 		Layout: ScatterLayout{
 			Yaxis: ScatterYAxis{
-				Title: "threads",
+				Title:   "threads",
+				Integer: true,
 			},
 		},
 		Subplots: []Subplot{

@@ -30,6 +30,8 @@ type (
 	ScatterYAxis struct {
 		Title      string `json:"title"`
 		TickSuffix string `json:"ticksuffix"`
+		// Integer indicates the axis only shows whole numbers.
+		Integer bool `json:"integer"`
 	}
 
 	Subplot struct {

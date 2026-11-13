@@ -27,7 +27,8 @@ var _ = register(description{
 		Layout: ScatterLayout{
 			BarMode: "stack",
 			Yaxis: ScatterYAxis{
-				Title: "objects",
+				Title:   "objects",
+				Integer: true,
 			},
 		},
 		Subplots: []Subplot{

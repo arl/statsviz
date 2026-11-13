@@ -194,6 +194,10 @@ class Plot {
       // Move the xaxis time range.
       this.#plotlyLayout.xaxis.range = xrange;
 
+      if (this.#cfg.layout.yaxis.integer) {
+        this.#setIntegerTicks();
+      }
+
       if (this.#maximized) {
         this.#plotlyConfig.responsive = true;
       } else {
@@ -207,6 +211,35 @@ class Plot {
       if (this.#inViewport) {
         this.#react();
       }
+    }
+  }
+
+  // On an integer axis (counts), automatic ticks are fine as long as the
+  // values are large enough. For small values, force ticks on whole numbers
+  // to avoid fractional ones (0.2, 0.4, etc.).
+  #setIntegerTicks() {
+    // Sum the traces since they may be stacked.
+    let max = 0;
+    const n = this.#lastData[0]?.y?.length ?? 0;
+    for (let i = 0; i < n; i++) {
+      let sum = 0;
+      for (const trace of this.#lastData) {
+        sum += trace.y[i] ?? 0;
+      }
+      if (sum > max) max = sum;
+    }
+
+    const yaxis = this.#plotlyLayout.yaxis;
+    if (max < 5) {
+      yaxis.tickmode = "linear";
+      yaxis.tick0 = 0;
+      yaxis.dtick = 1;
+      // Keep a constant scale, whether there's something to show or not.
+      yaxis.autorange = false;
+      yaxis.range = [0, 5];
+    } else {
+      yaxis.tickmode = "auto";
+      yaxis.autorange = true;
     }
   }
 

@@ -30,7 +30,8 @@ var _ = register(description{
 		Layout: ScatterLayout{
 			BarMode: "stack",
 			Yaxis: ScatterYAxis{
-				Title: "calls",
+				Title:   "calls",
+				Integer: true,
 			},
 		},
 		Subplots: []Subplot{

@@ -31,7 +31,8 @@ var _ = register(description{
 		Layout: ScatterLayout{
 			BarMode: "stack",
 			Yaxis: ScatterYAxis{
-				Title: "finalizers",
+				Title:   "finalizers",
+				Integer: true,
 			},
 		},
 		Subplots: []Subplot{

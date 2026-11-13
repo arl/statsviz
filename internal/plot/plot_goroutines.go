@@ -45,7 +45,8 @@ var _ = register(description{
 		Events: "lastgc",
 		Layout: ScatterLayout{
 			Yaxis: ScatterYAxis{
-				Title: "goroutines",
+				Title:   "goroutines",
+				Integer: true,
 			},
 		},
 		Subplots: []Subplot{

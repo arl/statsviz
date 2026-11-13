@@ -31,7 +31,8 @@ var _ = register(description{
 		Layout: ScatterLayout{
 			BarMode: "stack",
 			Yaxis: ScatterYAxis{
-				Title: "cleanups",
+				Title:   "cleanups",
+				Integer: true,
 			},
 		},
 		Subplots: []Subplot{
