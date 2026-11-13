@@ -3,6 +3,10 @@ updates:
   - package-ecosystem: "gomod"
     directories:
       - "/"
+    # The _example/* modules are standalone examples, not shipped code:
+    # keep them out of both version and security updates.
+    exclude-paths:
+      - "_example/**"
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
