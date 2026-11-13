@@ -49,8 +49,7 @@ var _ = register(description{
 					TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
 				},
 			},
-			InfoText: `This heatmap shows <b>/sched/latencies:seconds</b>.
-Distribution of the time goroutines have spent in the scheduler in a runnable state before actually running.`,
+			InfoText: `This heatmap shows <b>/sched/latencies:seconds</b>. Distribution of the time goroutines have spent in the scheduler in a runnable state before actually running.`,
 		}
 	},
 })

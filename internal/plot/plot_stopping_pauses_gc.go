@@ -49,11 +49,7 @@ var _ = register(description{
 					TickText: []float64{1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1, 5, 10},
 				},
 			},
-			InfoText: `This heatmap shows <b>/sched/pauses/stopping/gc:seconds</b>.
-Distribution of individual GC-related stop-the-world stopping latencies.
-This is the time it takes from deciding to stop the world until all Ps are stopped.
-This is a subset of the total GC-related stop-the-world time (/sched/pauses/total/gc:seconds).
-During this time, some threads may be executing.`,
+			InfoText: `This heatmap shows <b>/sched/pauses/stopping/gc:seconds</b>. Distribution of individual GC-related stop-the-world stopping latencies.`,
 		}
 	},
 })
