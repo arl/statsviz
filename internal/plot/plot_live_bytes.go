@@ -36,6 +36,6 @@ var _ = register(description{
 				Color:   RGBString(135, 182, 218),
 			},
 		},
-		InfoText: `<i>Live bytes</i> is <b>/gc/heap/allocs - /gc/heap/frees</b>. It's the number of bytes currently allocated (and not yet GC'ec) to the heap by the application.`,
+		InfoText: `<i>Live bytes</i> is <b>/gc/heap/allocs - /gc/heap/frees</b>. It's the number of bytes currently allocated (and not yet GC'ed) to the heap by the application.`,
 	},
 })

@@ -53,9 +53,9 @@ var _ = register(description{
 			{Name: "heap goal", Unitfmt: "%{y:.4s}B"},
 		},
 		InfoText: `
-<i>Memory limit</i> is <b>/gc/gomemlimit:bytes</b>, the Go runtime memory limit configured by the user (via GOMEMLIMIT or debug.SetMemoryLimt), otherwise 0. 
+<i>Memory limit</i> is <b>/gc/gomemlimit:bytes</b>, the Go runtime memory limit configured by the user (via GOMEMLIMIT or debug.SetMemoryLimit), otherwise 0.
 <i>In-use memory</i> is the total mapped memory minus released heap memory (<b>/memory/classes/total - /memory/classes/heap/released</b>).
-<i>Heap live</i> is <b>/gc/heap/live:bytes</b>, heap memory occupied by live objects.  
+<i>Heap live</i> is <b>/gc/heap/live:bytes</b>, heap memory occupied by live objects.
 <i>Heap goal</i> is <b>/gc/heap/goal:bytes</b>, the heap size target at the end of each GC cycle.`,
 	},
 })
